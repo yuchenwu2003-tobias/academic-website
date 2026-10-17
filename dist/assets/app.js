@@ -1,0 +1,113 @@
+const icons = {
+  home:'<path d="m3 9 7-6 7 6v8H6V9m2 8v-6h4v6"/>',
+  writing:'<path d="M4 3h9l3 3v11H4V3Zm8 0v4h4M7 10h6M7 13h5"/>',
+  videos:'<rect x="3" y="4" width="14" height="12" rx="2"/><path d="m8 8 5 2-5 3V8Z"/>',
+  about:'<circle cx="10" cy="6" r="3"/><path d="M4 17v-2a6 6 0 0 1 12 0v2"/>',
+  projects:'<rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 4V2h6v2"/>'
+};
+const icon = name => `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.projects}</svg>`;
+const e = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = (value, mail = false) => { try { const url = new URL(value); return (['https:','http:',...(mail?['mailto:']:[])].includes(url.protocol)) ? e(url.href) : ''; } catch { return ''; } };
+const imageUrl = value => { if (!value) return ''; try { const url = new URL(value, location.href); return ['https:','http:'].includes(url.protocol) ? e(url.href) : ''; } catch { return ''; } };
+const externalAttrs = 'target="_blank" rel="noopener noreferrer"';
+const date = value => { const d = new Date(`${value}T12:00:00`); return Number.isNaN(d.getTime()) ? '' : new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric'}).format(d); };
+let data;
+let currentRoute = '';
+const main = document.querySelector('#main');
+const urlForPost = post => post.url ? safeUrl(post.url) : `#/post/${encodeURIComponent(post.id)}`;
+const postCard = post => `<a class="article-card" href="${urlForPost(post)}" ${post.url ? externalAttrs : ''}><div class="article-meta"><span class="category">${e(post.category)}</span><span class="mono">${e(post.date.replaceAll('-','.'))}</span></div><h3>${e(post.title)} <span class="card-arrow">↗</span></h3><p>${e(post.excerpt)}</p><div class="article-bottom"><span>${post.url ? '前往原文阅读' : `${e(post.readingMinutes || 1)} 分钟阅读`}</span><span>${post.url ? '外链文章' : '站内文章'} <span aria-hidden="true">↗</span></span></div></a>`;
+const videoCard = video => `<a class="video-card" href="${safeUrl(video.url)}" ${externalAttrs}><div class="video-poster"><span class="video-platform mono">${e(video.platform)}</span><span class="play-symbol" aria-hidden="true">▶</span><span class="poster-mark" aria-hidden="true">${e(video.category.slice(0,2))}</span></div><div class="video-caption"><span class="category">${e(video.category)}</span><h3>${e(video.title)} <span>↗</span></h3><p>${e(video.description || '')}</p><small>${e(video.creator || video.platform)}</small></div></a>`;
+const emptyState = (kind, filtered = false) => `<div class="empty-state"><div class="empty-icon">${icon(kind)}</div><span class="mono">${filtered ? 'NOT FOUND' : kind==='videos'?'THE SCREEN IS READY':'A BLANK PAGE'}</span><h2>${filtered ? '暂时没有找到' : kind === 'videos' ? '好片刻，值得再看一遍。' : '下一篇，正在路上。'}</h2><p>${filtered ? '换一个关键词或分类试试。' : kind === 'videos' ? '这里将收藏我喜欢的视频。<br>第一条真实收藏，会从这里开始。' : '文字会在这里慢慢积累。<br>欢迎过些时候，再来看看。'}</p>${filtered ? '<button class="text-link" data-reset>清除筛选 <span>↗</span></button>' : '<a class="text-link" href="#/">先回首页逛逛 <span>↗</span></a>'}</div>`;
+
+function travelSection() {
+  const travel = data.travel || {title:'下一站，去哪里玩？',description:'山野、城市，或某个还没遇见的角落。把想去的地方，慢慢放进这张清单。',destinations:[]};
+  return `<section class="travel-section" aria-labelledby="travel-title"><div class="section-heading"><div><span class="section-kicker mono">02 / WANDERLUST</span><h2 id="travel-title">${e(travel.title)}</h2></div><span class="travel-count mono">${String(travel.destinations.length).padStart(2,'0')} PLACES TO GO</span></div><p class="section-description">${e(travel.description)}</p>${travel.destinations.length ? `<div class="destination-grid">${travel.destinations.map((place,i)=>`<article class="destination-card"><div class="destination-art art-${i%3}">${imageUrl(place.image) ? `<img class="destination-photo" src="${imageUrl(place.image)}" alt="${e(place.name)}" loading="lazy">` : ""}<span class="mono">${String(i+1).padStart(2,'0')}</span><span class="landscape-sun"></span><span class="landscape-hill"></span><span class="landscape-hill second"></span><span class="landscape-label">${e(place.region || 'ON MY WISHLIST')}</span></div><div class="destination-caption"><span class="category">旅行心愿</span><h3>${e(place.name)}</h3><p>${e(place.description || '想找个时间，去这里走走。')}</p>${safeUrl(place.url) ? `<a class="text-link" href="${safeUrl(place.url)}" ${externalAttrs}>了解这个地方 <span>↗</span></a>` : ''}</div></article>`).join('')}</div>` : `<div class="travel-empty"><div class="travel-illustration" aria-hidden="true"><span class="travel-sun"></span><span class="mountain mountain-back"></span><span class="mountain mountain-front"></span><span class="travel-path"></span><span class="map-pin">✳</span></div><div class="travel-empty-copy"><span class="mono">THE NEXT CHAPTER</span><h3>下一程，留给好奇心。</h3><p>旅行心愿清单正在酝酿。<br>等一个心动的地名，成为新的起点。</p><span class="quiet-badge"><span class="status-dot"></span> 目的地待加入</span></div><div class="compass" aria-hidden="true">N<span>✧</span>S</div></div>`}</section>`;
+}
+
+function home() {
+  return `<section class="intro-section" aria-labelledby="intro-title"><div class="hero"><div class="hero-copy"><span class="section-kicker mono">01 / A LITTLE ABOUT ME</span><p class="eyebrow"><span class="status-dot"></span>${e(data.profile.eyebrow)}</p><h1 id="intro-title">你好，我是<br><em>${e(data.profile.name)}<span>。</span></em></h1><p class="hero-description">${e(data.profile.description)}</p><a class="primary-link" href="#/about">多认识我一点 <span>↗</span></a></div><div class="hero-art"><span class="art-label mono">A PERSONAL GARDEN</span><img src="assets/garden.svg" alt="书本、植物与一扇字母 t 的拱门，象征慢慢生长的个人空间" width="520" height="500"><div class="art-caption"><span class="handwritten">保持好奇，慢慢生长。</span><span class="mono">FIG. 01</span></div></div></div><div class="intro-links"><span class="intro-links-title">也可以在这里找到我<span aria-hidden="true">⤵</span></span><a href="#/writing">${icon('writing')}<span>读我的文章</span><span class="link-count mono">${String(data.posts.length).padStart(2,'0')}</span><span>↗</span></a><a href="#/videos">${icon('videos')}<span>看我的视频收藏</span><span class="link-count mono">${String(data.videos.length).padStart(2,'0')}</span><span>↗</span></a></div></section>${travelSection()}`;
+}
+
+function collectionHeader(kind) {
+  const video = kind === 'videos';
+  return `<div class="page-heading"><span class="section-kicker mono">${video ? 'THE WATCHLIST' : 'WORDS & THOUGHTS'}</span><h1>${video ? '收藏视频<span>。</span>' : '一些文字<span>。</span>'}</h1><p>${video ? '把值得重看的片刻，留在这里。' : '把想法写下来，让它们有迹可循。'}</p></div><div class="collection-toolbar"><div class="filter-tabs" role="group" aria-label="按分类筛选"><button class="filter-tab active" data-category="全部" aria-pressed="true">全部 <span>${data[kind==='videos'?'videos':'posts'].length}</span></button>${[...new Set(data[kind==='videos'?'videos':'posts'].map(item=>item.category))].map(category=>`<button class="filter-tab" data-category="${e(category)}" aria-pressed="false">${e(category)}</button>`).join('')}</div><label class="search-field"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input type="search" id="collection-search" aria-label="${video ? '搜索收藏视频' : '搜索文章'}" placeholder="${video ? '搜索视频…' : '搜索文字…'}" autocomplete="off"></label></div><div id="collection-results" aria-live="polite"></div>`;
+}
+function writing() { return collectionHeader('writing'); }
+function videos() { return collectionHeader('videos'); }
+function about() {
+  return `<div class="page-heading"><span class="section-kicker mono">NICE TO MEET YOU</span><h1>很高兴，<br>在这里遇见你<span>。</span></h1></div><div class="about-layout"><div class="about-copy"><span class="about-initial" aria-hidden="true">${e(data.profile.name.charAt(0).toLowerCase())}<span>·</span></span><h2>我是 ${e(data.profile.name)}。</h2><p>${e(data.profile.bio)}</p>${data.profile.location ? `<p class="muted">目前在 ${e(data.profile.location)}</p>` : ''}<div class="social-links">${data.links.map(link=>safeUrl(link.url,true)?`<a class="pill-link" href="${safeUrl(link.url,true)}" ${link.url.startsWith('mailto:')?'':externalAttrs}>${e(link.label)} <span>↗</span></a>`:'').join('')}</div></div><aside class="about-note"><span class="section-kicker mono">IN THIS LITTLE SPACE</span><h3>记录，也收藏。</h3><div class="about-note-item"><span>01</span><div><a href="#/writing">一些文字 ↗</a><p>写下想法，让思考有自己的位置。</p></div></div><div class="about-note-item"><span>02</span><div><a href="#/videos">视频收藏 ↗</a><p>好内容，值得一次又一次地重看。</p></div></div><div class="about-note-item"><span>03</span><div><a href="#/">旅行心愿 ↗</a><p>把想去的远方，慢慢变成足迹。</p></div></div></aside></div><div class="closing-note"><span aria-hidden="true">✳</span><p>这里会持续更新。<br>愿每一次回访，都有一点新的发现。</p><span class="mono">TO BE CONTINUED…</span></div>`;
+}
+function projects() {
+  return `<div class="page-heading"><span class="section-kicker mono">THINGS I MAKE</span><h1>项目与探索<span>。</span></h1><p>一些已经开始的想法。</p></div>${data.projects.length ? `<div class="article-grid">${data.projects.map(project=>`<article class="article-card"><span class="category">${e(project.category)}</span><h3>${e(project.title)}</h3><p>${e(project.description)}</p><span class="quiet-badge">${e(project.status)}</span>${safeUrl(project.url)?`<a class="text-link" href="${safeUrl(project.url)}" ${externalAttrs}>查看项目 ↗</a>`:''}</article>`).join('')}</div>` : emptyState('projects')}`;
+}
+
+// Register a renderer here and enable its matching navigation entry to add a page.
+export const pageRenderers = {home,writing,videos,about,projects};
+
+function article(id) {
+  const post = data.posts.find(post=>post.id===id);
+  if (!post || post.url) return notFound();
+  return `<article class="post"><a class="text-link back-link" href="#/writing">← 所有文章</a><header class="post-header"><span class="category">${e(post.category)}</span><h1>${e(post.title)}</h1><div class="post-meta"><span>${e(data.profile.name)}</span><span>·</span><time datetime="${e(post.date)}">${date(post.date)}</time><span>·</span><span>${e(post.readingMinutes || 1)} 分钟阅读</span></div></header><div class="post-body">${(post.body || []).map(block=>block.type==='heading'?`<h2>${e(block.text)}</h2>`:block.type==='quote'?`<blockquote>${e(block.text)}</blockquote>`:block.type==='list'?`<ul>${(block.items || []).map(item=>`<li>${e(item)}</li>`).join('')}</ul>`:`<p>${e(block.text)}</p>`).join('')}</div><footer class="post-end"><span>✳</span><p>谢谢你读到这里。</p><a class="text-link" href="#/writing">再读一篇 <span>↗</span></a></footer></article>`;
+}
+function notFound() { return '<div class="empty-state"><span class="mono">404 / A LITTLE DETOUR</span><h1>好像走到了一条小岔路。</h1><p>这个页面还没有出现，或已经搬家了。</p><a class="primary-link" href="#/">回到首页 <span>↗</span></a></div>'; }
+
+function bindCollection(kind) {
+  let category = '全部';
+  const input = document.querySelector('#collection-search');
+  const list = data[kind==='videos'?'videos':'posts'];
+  function refresh() {
+    const query = input.value.trim().toLocaleLowerCase();
+    const filtered = list.filter(item=>(category==='全部'||item.category===category) && [item.title,item.excerpt,item.description,item.creator,item.category].filter(Boolean).join(' ').toLocaleLowerCase().includes(query));
+    document.querySelector('#collection-results').innerHTML = filtered.length ? `<div class="${kind==='videos'?'video-grid':'article-grid'}">${filtered.map(kind==='videos'?videoCard:postCard).join('')}</div><p class="collection-end mono">${String(filtered.length).padStart(2,'0')} ${kind==='videos'?'VIDEOS TO REVISIT':'STORIES SO FAR'} · 持续更新中</p>` : emptyState(kind,Boolean(query||category!=='全部'));
+    document.querySelector('[data-reset]')?.addEventListener('click',()=>{input.value='';document.querySelector('[data-category="全部"]').click();input.focus();});
+  }
+  document.querySelectorAll('[data-category]').forEach(button=>button.addEventListener('click',()=>{category=button.dataset.category;document.querySelectorAll('[data-category]').forEach(tab=>{tab.classList.toggle('active',tab===button);tab.setAttribute('aria-pressed',String(tab===button));});refresh();}));
+  input.addEventListener('input',refresh);
+  refresh();
+}
+
+export function renderRoute() {
+  let raw = location.hash.slice(1) || '/';
+  if (raw === 'main') { if (currentRoute) { main.focus(); return; } raw='/'; }
+  const segments = raw.replace(/^\//,'').split('/');
+  let id;
+  try { id=decodeURIComponent(segments[1] || ''); } catch { id=''; }
+  const route = segments[0] || 'home';
+  const active = route==='post'?'writing':route;
+  main.innerHTML = route==='post' ? article(id) : Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
+  main.dataset.page = route;
+  document.querySelectorAll('.nav-link').forEach(link=>{const selected=link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
+  const label = data.navigation.find(item=>item.id===active)?.label || '页面';
+  const postTitle = route==='post'?data.posts.find(post=>post.id===id)?.title:undefined;
+  document.title = `${postTitle || label} · ${data.profile.name} 的个人空间`;
+  document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');
+  document.querySelector('.menu-toggle').setAttribute('aria-label','展开导航');
+  document.querySelector('.sidebar').classList.remove('menu-open');
+  if (['writing','videos'].includes(route)) bindCollection(route);
+  if (currentRoute) { window.scrollTo({top:0,behavior:'instant'}); main.focus({preventScroll:true}); }
+  currentRoute=route;
+}
+
+async function start() {
+  try {
+    const response=await fetch('content/site.json');
+    if(!response.ok) throw new Error('Content unavailable');
+    data=await response.json();
+    ['posts','videos','projects','links','navigation'].forEach(key=>{data[key] ||= [];});
+    document.querySelector('#navigation').innerHTML=data.navigation.filter(item=>item.enabled).map(item=>`<a class="nav-link" data-page="${e(item.id)}" href="#/${item.id==='home'?'':e(item.id)}">${icon(item.id)}<span>${e(item.label)}</span><span class="nav-indicator">↗</span></a>`).join('');
+    document.querySelector('.brand-name').innerHTML=`${e(data.profile.name)}<small>一小块互联网</small>`;
+    document.querySelector('.brand').setAttribute('aria-label',`${data.profile.name} 首页`);
+    document.querySelector('#footer-name').textContent=data.profile.name;
+    document.querySelector('#year').textContent=new Date().getFullYear();
+    const github=data.links.find(link=>link.label.toLowerCase()==='github');
+    if(github&&safeUrl(github.url)) document.querySelector('#github-link').href=github.url;
+    else document.querySelector('#github-link').hidden=true;
+    document.querySelector('meta[name="description"]').content=data.profile.description;
+    window.addEventListener('hashchange',renderRoute);
+    document.querySelector('.skip-link').addEventListener('click',event=>{event.preventDefault();main.focus();main.scrollIntoView({block:'start'});});
+    document.querySelector('.menu-toggle').addEventListener('click',()=>{const button=document.querySelector('.menu-toggle');const expanded=button.getAttribute('aria-expanded')!=='true';button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-label',expanded?'收起导航':'展开导航');document.querySelector('.sidebar').classList.toggle('menu-open',expanded);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelector('.sidebar').classList.remove('menu-open');document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');}});
+    renderRoute();
+  } catch(error) { main.innerHTML='<div class="empty-state"><h1>内容暂时没有加载出来。</h1><p>请刷新页面，再试一次。</p><button class="primary-link" id="retry">重新加载 ↗</button></div>';document.querySelector('#retry').addEventListener('click',()=>location.reload());console.error(error); }
+}
+start();
