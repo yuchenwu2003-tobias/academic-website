@@ -1,0 +1,16 @@
+Made with Natural Earth.
+
+Dataset: Natural Earth 1:110m Admin 0 - Countries
+Source: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson
+Project: https://github.com/nvkelso/natural-earth-vector
+License: Public domain; no permission or attribution required.
+Terms: https://www.naturalearthdata.com/about/terms-of-use/
+Accessed: 2026-10-17
+
+Derived asset: world-map.svg
+Projection: Equirectangular / plate carree, longitude [-180,180], latitude [-90,90].
+SVG viewBox: 0 0 1000 500
+x=(longitude+180)/360*1000; y=(90-latitude)/180*500.
+Each of the 177 source country features is retained as a path, including polygons and holes.
+Coordinates are rounded to 0.01 SVG units. The original antimeridian split is retained.
+The full-width south-pole edge belongs to Antarctica, closing the polygon at y=500.

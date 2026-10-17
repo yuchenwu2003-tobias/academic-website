@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = path.join(root, 'dist');
 const errors = [];
-const registeredPages = new Set(['home', 'writing', 'videos', 'about', 'projects']);
+const registeredPages = new Set(['home', 'travel', 'writing', 'videos', 'about', 'projects']);
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function expect(condition, message) {
@@ -144,10 +144,28 @@ if (expect(isObject(site), 'site.json 必须包含配置对象。')) {
     fields(site.travel, ['title', 'description'], 'travel');
     entries(site.travel.destinations, 'travel.destinations', (destination, label) => {
       fields(destination, ['name', 'region', 'description'], label);
+      const hasLatitude = destination.lat !== undefined;
+      const hasLongitude = destination.lon !== undefined;
+      expect(hasLatitude === hasLongitude, `${label}.lat 与 .lon 必须同时填写或同时省略。`);
+      if (hasLatitude || hasLongitude) {
+        expect(typeof destination.name === 'string' && destination.name.length <= 80, `${label}.name 地图地点名称不能超过 80 个字符。`);
+        expect(typeof destination.description === 'string' && destination.description.length <= 500, `${label}.description 地图地点备注不能超过 500 个字符。`);
+        expect(typeof destination.id === 'string' && `source-${destination.id}`.length <= 100, `${label}.id 加上 source- 前缀后不能超过 100 个字符（id 最多 93 个字符）。`);
+      }
+      if (hasLatitude) {
+        expect(Number.isFinite(destination.lat) && destination.lat >= -90 && destination.lat <= 90, `${label}.lat 必须是 -90 至 90 的数字。`);
+      }
+      if (hasLongitude) {
+        expect(Number.isFinite(destination.lon) && destination.lon >= -180 && destination.lon <= 180, `${label}.lon 必须是 -180 至 180 的数字。`);
+      }
+      if (destination.status !== undefined) {
+        expect(['want', 'visited'].includes(destination.status), `${label}.status 必须是 want 或 visited。`);
+      }
       if (destination.url !== undefined) webUrl(destination.url, `${label}.url`);
       if (destination.image !== undefined) text(destination.image, `${label}.image`);
     });
     if (Array.isArray(site.travel.destinations)) {
+      expect(site.travel.destinations.filter(destination => Number.isFinite(destination?.lat) && Number.isFinite(destination?.lon)).length <= 1000, 'travel.destinations 地图最多包含 1000 个有坐标的地点。');
       for (const [index, destination] of site.travel.destinations.entries()) {
         if (typeof destination?.image !== 'string') continue;
         const label = `travel.destinations[${index}].image`;

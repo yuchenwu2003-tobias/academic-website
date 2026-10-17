@@ -1,4 +1,6 @@
+import {renderTravelMap,mountTravelMap} from './travel-map.js';
 const icons = {
+  travel:'<circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3a14 14 0 0 1 0 14 14 14 0 0 1 0-14Z"/>',
   home:'<path d="m3 9 7-6 7 6v8H6V9m2 8v-6h4v6"/>',
   writing:'<path d="M4 3h9l3 3v11H4V3Zm8 0v4h4M7 10h6M7 13h5"/>',
   videos:'<rect x="3" y="4" width="14" height="12" rx="2"/><path d="m8 8 5 2-5 3V8Z"/>',
@@ -13,6 +15,7 @@ const externalAttrs = 'target="_blank" rel="noopener noreferrer"';
 const date = value => { const d = new Date(`${value}T12:00:00`); return Number.isNaN(d.getTime()) ? '' : new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric'}).format(d); };
 let data;
 let currentRoute = '';
+let mapCleanup = ()=>{};
 const main = document.querySelector('#main');
 const urlForPost = post => post.url ? safeUrl(post.url) : `#/post/${encodeURIComponent(post.id)}`;
 const postCard = post => `<a class="article-card" href="${urlForPost(post)}" ${post.url ? externalAttrs : ''}><div class="article-meta"><span class="category">${e(post.category)}</span><span class="mono">${e(post.date.replaceAll('-','.'))}</span></div><h3>${e(post.title)} <span class="card-arrow">↗</span></h3><p>${e(post.excerpt)}</p><div class="article-bottom"><span>${post.url ? '前往原文阅读' : `${e(post.readingMinutes || 1)} 分钟阅读`}</span><span>${post.url ? '外链文章' : '站内文章'} <span aria-hidden="true">↗</span></span></div></a>`;
@@ -20,8 +23,12 @@ const videoCard = video => `<a class="video-card" href="${safeUrl(video.url)}" $
 const emptyState = (kind, filtered = false) => `<div class="empty-state"><div class="empty-icon">${icon(kind)}</div><span class="mono">${filtered ? 'NOT FOUND' : kind==='videos'?'THE SCREEN IS READY':'A BLANK PAGE'}</span><h2>${filtered ? '暂时没有找到' : kind === 'videos' ? '好片刻，值得再看一遍。' : '下一篇，正在路上。'}</h2><p>${filtered ? '换一个关键词或分类试试。' : kind === 'videos' ? '这里将收藏我喜欢的视频。<br>第一条真实收藏，会从这里开始。' : '文字会在这里慢慢积累。<br>欢迎过些时候，再来看看。'}</p>${filtered ? '<button class="text-link" data-reset>清除筛选 <span>↗</span></button>' : '<a class="text-link" href="#/">先回首页逛逛 <span>↗</span></a>'}</div>`;
 
 function travelSection() {
-  const travel = data.travel || {title:'下一站，去哪里玩？',description:'山野、城市，或某个还没遇见的角落。把想去的地方，慢慢放进这张清单。',destinations:[]};
-  return `<section class="travel-section" aria-labelledby="travel-title"><div class="section-heading"><div><span class="section-kicker mono">02 / WANDERLUST</span><h2 id="travel-title">${e(travel.title)}</h2></div><span class="travel-count mono">${String(travel.destinations.length).padStart(2,'0')} PLACES TO GO</span></div><p class="section-description">${e(travel.description)}</p>${travel.destinations.length ? `<div class="destination-grid">${travel.destinations.map((place,i)=>`<article class="destination-card"><div class="destination-art art-${i%3}">${imageUrl(place.image) ? `<img class="destination-photo" src="${imageUrl(place.image)}" alt="${e(place.name)}" loading="lazy">` : ""}<span class="mono">${String(i+1).padStart(2,'0')}</span><span class="landscape-sun"></span><span class="landscape-hill"></span><span class="landscape-hill second"></span><span class="landscape-label">${e(place.region || 'ON MY WISHLIST')}</span></div><div class="destination-caption"><span class="category">旅行心愿</span><h3>${e(place.name)}</h3><p>${e(place.description || '想找个时间，去这里走走。')}</p>${safeUrl(place.url) ? `<a class="text-link" href="${safeUrl(place.url)}" ${externalAttrs}>了解这个地方 <span>↗</span></a>` : ''}</div></article>`).join('')}</div>` : `<div class="travel-empty"><div class="travel-illustration" aria-hidden="true"><span class="travel-sun"></span><span class="mountain mountain-back"></span><span class="mountain mountain-front"></span><span class="travel-path"></span><span class="map-pin">✳</span></div><div class="travel-empty-copy"><span class="mono">THE NEXT CHAPTER</span><h3>下一程，留给好奇心。</h3><p>旅行心愿清单正在酝酿。<br>等一个心动的地名，成为新的起点。</p><span class="quiet-badge"><span class="status-dot"></span> 目的地待加入</span></div><div class="compass" aria-hidden="true">N<span>✧</span>S</div></div>`}</section>`;
+  const travel = data.travel || {title:'下一站，去哪里玩？',description:'把想去的地方，慢慢放进这张地图。'};
+  return `<section class="travel-section" aria-labelledby="travel-title"><div class="section-heading"><div><span class="section-kicker mono">02 / WANDERLUST</span><h2 id="travel-title">${e(travel.title)}</h2></div><div class="travel-title-meta"><span class="travel-count mono">00 PLACES TO GO</span><a class="travel-map-link" href="#/travel">打开旅行地图 <span>↗</span></a></div></div><p class="section-description">${e(travel.description)}</p>${renderTravelMap({compact:true})}</section>`;
+}
+
+function travel() {
+  return `<section class="map-page"><div class="page-heading"><span class="section-kicker mono">PLACES, PLANS & MEMORIES</span><h1>把向往，<br>钉在地图上<span>。</span></h1><p>下一站或上一程，都在这张地图里。点击“添加地点”，再在地图上选一个位置。</p></div>${renderTravelMap()}</section>`;
 }
 
 function home() {
@@ -35,14 +42,14 @@ function collectionHeader(kind) {
 function writing() { return collectionHeader('writing'); }
 function videos() { return collectionHeader('videos'); }
 function about() {
-  return `<div class="page-heading"><span class="section-kicker mono">NICE TO MEET YOU</span><h1>很高兴，<br>在这里遇见你<span>。</span></h1></div><div class="about-layout"><div class="about-copy"><span class="about-initial" aria-hidden="true">${e(data.profile.name.charAt(0).toLowerCase())}<span>·</span></span><h2>我是 ${e(data.profile.name)}。</h2><p>${e(data.profile.bio)}</p>${data.profile.location ? `<p class="muted">目前在 ${e(data.profile.location)}</p>` : ''}<div class="social-links">${data.links.map(link=>safeUrl(link.url,true)?`<a class="pill-link" href="${safeUrl(link.url,true)}" ${link.url.startsWith('mailto:')?'':externalAttrs}>${e(link.label)} <span>↗</span></a>`:'').join('')}</div></div><aside class="about-note"><span class="section-kicker mono">IN THIS LITTLE SPACE</span><h3>记录，也收藏。</h3><div class="about-note-item"><span>01</span><div><a href="#/writing">一些文字 ↗</a><p>写下想法，让思考有自己的位置。</p></div></div><div class="about-note-item"><span>02</span><div><a href="#/videos">视频收藏 ↗</a><p>好内容，值得一次又一次地重看。</p></div></div><div class="about-note-item"><span>03</span><div><a href="#/">旅行心愿 ↗</a><p>把想去的远方，慢慢变成足迹。</p></div></div></aside></div><div class="closing-note"><span aria-hidden="true">✳</span><p>这里会持续更新。<br>愿每一次回访，都有一点新的发现。</p><span class="mono">TO BE CONTINUED…</span></div>`;
+  return `<div class="page-heading"><span class="section-kicker mono">NICE TO MEET YOU</span><h1>很高兴，<br>在这里遇见你<span>。</span></h1></div><div class="about-layout"><div class="about-copy"><span class="about-initial" aria-hidden="true">${e(data.profile.name.charAt(0).toLowerCase())}<span>·</span></span><h2>我是 ${e(data.profile.name)}。</h2><p>${e(data.profile.bio)}</p>${data.profile.location ? `<p class="muted">目前在 ${e(data.profile.location)}</p>` : ''}<div class="social-links">${data.links.map(link=>safeUrl(link.url,true)?`<a class="pill-link" href="${safeUrl(link.url,true)}" ${link.url.startsWith('mailto:')?'':externalAttrs}>${e(link.label)} <span>↗</span></a>`:'').join('')}</div></div><aside class="about-note"><span class="section-kicker mono">IN THIS LITTLE SPACE</span><h3>记录，也收藏。</h3><div class="about-note-item"><span>01</span><div><a href="#/writing">一些文字 ↗</a><p>写下想法，让思考有自己的位置。</p></div></div><div class="about-note-item"><span>02</span><div><a href="#/videos">视频收藏 ↗</a><p>好内容，值得一次又一次地重看。</p></div></div><div class="about-note-item"><span>03</span><div><a href="#/travel">旅行心愿 ↗</a><p>把想去的远方，慢慢变成足迹。</p></div></div></aside></div><div class="closing-note"><span aria-hidden="true">✳</span><p>这里会持续更新。<br>愿每一次回访，都有一点新的发现。</p><span class="mono">TO BE CONTINUED…</span></div>`;
 }
 function projects() {
   return `<div class="page-heading"><span class="section-kicker mono">THINGS I MAKE</span><h1>项目与探索<span>。</span></h1><p>一些已经开始的想法。</p></div>${data.projects.length ? `<div class="article-grid">${data.projects.map(project=>`<article class="article-card"><span class="category">${e(project.category)}</span><h3>${e(project.title)}</h3><p>${e(project.description)}</p><span class="quiet-badge">${e(project.status)}</span>${safeUrl(project.url)?`<a class="text-link" href="${safeUrl(project.url)}" ${externalAttrs}>查看项目 ↗</a>`:''}</article>`).join('')}</div>` : emptyState('projects')}`;
 }
 
 // Register a renderer here and enable its matching navigation entry to add a page.
-export const pageRenderers = {home,writing,videos,about,projects};
+export const pageRenderers = {home,travel,writing,videos,about,projects};
 
 function article(id) {
   const post = data.posts.find(post=>post.id===id);
@@ -74,6 +81,7 @@ export function renderRoute() {
   try { id=decodeURIComponent(segments[1] || ''); } catch { id=''; }
   const route = segments[0] || 'home';
   const active = route==='post'?'writing':route;
+  mapCleanup();
   main.innerHTML = route==='post' ? article(id) : Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
   main.dataset.page = route;
   document.querySelectorAll('.nav-link').forEach(link=>{const selected=link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
@@ -84,6 +92,7 @@ export function renderRoute() {
   document.querySelector('.menu-toggle').setAttribute('aria-label','展开导航');
   document.querySelector('.sidebar').classList.remove('menu-open');
   if (['writing','videos'].includes(route)) bindCollection(route);
+  if (['home','travel'].includes(route)) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[]);
   if (currentRoute) { window.scrollTo({top:0,behavior:'instant'}); main.focus({preventScroll:true}); }
   currentRoute=route;
 }

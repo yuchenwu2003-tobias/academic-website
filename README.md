@@ -1,8 +1,10 @@
 # Tobias 个人网站
 
-首页由个人介绍、旅行目的地心愿清单两块组成；文章与视频收藏通过独立入口访问。网站使用纯 HTML、CSS 和原生 JavaScript，内容集中保存在 `dist/content/site.json`，没有构建依赖。
+首页由个人介绍、旅行地图预览两块组成；完整旅行地图、文章与视频收藏通过独立入口访问。网站使用纯 HTML、CSS 和原生 JavaScript，发布内容集中保存在 `dist/content/site.json`，没有构建依赖。
 
-显示姓名暂用 GitHub handle 中的 **Tobias**，可随时修改。默认导航为首页、文章、视频与关于，作品栏目作为可启用的扩展入口保留。
+显示姓名暂用 GitHub handle 中的 **Tobias**，可随时修改。默认导航为首页、旅行地图、文章、视频与关于，作品栏目作为可启用的扩展入口保留。
+
+右上角的白昼 / 黑夜按钮可切换主题，并会记住当前浏览器的选择。
 
 ## 本地运行与检查
 
@@ -25,7 +27,9 @@ node scripts/check.mjs
 | 位置 | 用途 |
 | --- | --- |
 | `dist/` | 可直接部署的网站文件 |
-| `dist/content/site.json` | 个人资料、旅行心愿、链接、导航、文章、视频与作品 |
+| `dist/content/site.json` | 个人资料、发布的旅行地点、链接、导航、文章、视频与作品 |
+| `dist/assets/world-map.svg` | Natural Earth 世界地图底图 |
+| `dist/assets/map-attribution.txt` | 地图数据来源与公共领域许可说明 |
 | `scripts/serve.mjs` | 本地预览服务 |
 | `scripts/check.mjs` | 项目检查 |
 | `README.md` | 内容维护与扩展说明 |
@@ -66,9 +70,15 @@ node scripts/check.mjs
 
 默认只配置 GitHub；添加邮箱链接后，关于页才会显示邮箱入口。`dist/` 中的内容会公开，请勿放入私密资料或密钥。
 
-## 编辑旅行心愿清单
+## 使用与编辑旅行地图
 
-`travel` 控制首页第二块内容。`title` 与 `description` 是这一块的标题和介绍，`destinations` 保存想去的目的地。初始列表为空，待你选择真实的心愿后再添加：
+首页第二块保留旅行地图预览；左侧“旅行地图”进入 `#/travel` 独立页面，查看和管理完整地图。初始地点为空，供你添加自己的旅行心愿与足迹。
+
+在旅行地图页点击“添加地点”，再选择地图位置，填写名称、备注与“想去 / 去过”状态后保存；也可以输入经纬度确定位置。已有地点支持编辑和删除。地图支持缩放与重置视图，方便查看密集的标记。
+
+地图最多保留 1000 个可见地点。通过页面添加的标记默认只保存在当前浏览器的 `localStorage`，不会云同步，也不会自动写回网站源码。换设备时先导出 JSON，再在另一台设备导入；导入文件上限为 5 MB。导出文件也保留已隐藏的发布地点记录，导入时与当前地图合并。清理浏览器数据可能移除这些标记，建议定期导出备份。
+
+若要把地点发布给所有有权访问网站的访问者，在 `dist/content/site.json` 的 `travel.destinations` 中配置地点并重新发布网站。`travel.title` 与 `travel.description` 设置旅行内容的标题和介绍：
 
 ```json
 {
@@ -81,6 +91,9 @@ node scripts/check.mjs
         "name": "目的地名称",
         "region": "所在地区",
         "description": "为什么想去这里。",
+        "lat": 48.8566,
+        "lon": 2.3522,
+        "status": "want",
         "url": "https://example.com/destination",
         "image": "assets/my-destination.jpg"
       }
@@ -89,7 +102,9 @@ node scripts/check.mjs
 }
 ```
 
-`id` 应唯一。`url` 与 `image` 可省略。链接使用完整的 http(s) 地址；本地图片放入 `dist/` 内，并填写相对该目录的路径。目的地由你维护，当前没有地图、订票或实时信息服务。
+`id` 应唯一。`lat` 与 `lon` 可省略，但填写时必须成对出现，且必须为数字；纬度范围为 `-90` 至 `90`，经度范围为 `-180` 至 `180`。有坐标的地点才能在地图上定位，最多配置 1000 个；其 `name` 最长 80 个字符、`description` 最长 500 个字符、`id` 最长 93 个字符（地图内部会添加 `source-` 前缀）。可选的 `status` 为 `want`（想去）或 `visited`（去过），省略时默认想去。
+
+`url` 与 `image` 是可省略的保留元数据，目前地图只使用坐标、名称、说明和 `status`，不会显示目的地照片或链接。保留链接应使用完整的 http(s) 地址；保留本地图片应放入 `dist/` 内，并填写相对该目录的路径。配置文件中的地点属于发布内容；浏览器内保存的个人标记属于本地数据，两者无需服务器存储。地图底图使用公共领域 Natural Earth 数据，未接入订票或实时信息服务。
 
 ## 添加作品（预留栏目）
 
@@ -187,6 +202,7 @@ node scripts/check.mjs
 {
   "navigation": [
     { "id": "home", "label": "首页", "enabled": true },
+    { "id": "travel", "label": "旅行地图", "enabled": true },
     { "id": "writing", "label": "文章", "enabled": true },
     { "id": "videos", "label": "视频", "enabled": true },
     { "id": "about", "label": "关于", "enabled": true },
@@ -204,13 +220,14 @@ node scripts/check.mjs
 | 地址 | 页面 |
 | --- | --- |
 | `#/` | 首页 |
+| `#/travel` | 完整旅行地图与地点管理 |
 | `#/writing` | 文章列表 |
 | `#/videos` | 视频收藏 |
 | `#/about` | 关于 |
 | `#/post/<id>` | 文章详情 |
 | `#/projects` | 预留作品页，默认隐藏导航入口 |
 
-`app.js` 导出 `pageRenderers` 映射，现有键为 `home`、`writing`、`videos`、`about` 与 `projects`。`renderRoute` 根据 hash 路径选择页面，`navigation` 中的 `id` 对应映射中的键。
+`app.js` 导出 `pageRenderers` 映射，现有键为 `home`、`travel`、`writing`、`videos`、`about` 与 `projects`。`renderRoute` 根据 hash 路径选择页面，`navigation` 中的 `id` 对应映射中的键。
 
 例如未来增加“阅读”栏目，可以沿用现有结构：
 
@@ -236,5 +253,4 @@ node scripts/check.mjs
 2. 本地预览涉及的页面，检查手机布局与外部链接。
 3. 运行 `node scripts/check.mjs`。
 4. 备份源码到 GitHub，并按托管方式更新 `dist/`。
-
 
