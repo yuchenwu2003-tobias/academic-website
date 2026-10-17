@@ -1,6 +1,5 @@
 export const STORAGE_KEY = 'tobias.travel-map.v1';
-export const project = (lat, lon) => ({x:(lon+180)/360*1000,y:(90-lat)/180*500});
-export const unproject = (x,y) => ({lat:Math.max(-90,Math.min(90,90-y/500*180)),lon:Math.max(-180,Math.min(180,x/1000*360-180))});
+export {project,unproject} from './projection.js';
 export function normalizePin(pin) {
   if (!pin || typeof pin !== 'object' || typeof pin.title !== 'string' || !pin.title.trim() || pin.title.length>80 || typeof pin.lat!=='number' || !Number.isFinite(pin.lat) || Math.abs(pin.lat)>90 || typeof pin.lon!=='number' || !Number.isFinite(pin.lon) || Math.abs(pin.lon)>180 || (pin.note!==undefined && (typeof pin.note!=='string'||pin.note.length>500)) || !['want','visited'].includes(pin.status ?? 'want')) throw new Error('地点需要名称、有效经纬度，以及“想去”或“去过”状态。');
   return {id:typeof pin.id==='string'&&/^[\w-]{1,100}$/.test(pin.id)?pin.id:crypto.randomUUID(),title:pin.title.trim(),note:pin.note || '',lat:pin.lat,lon:pin.lon,status:pin.status || 'want'};

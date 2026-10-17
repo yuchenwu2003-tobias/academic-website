@@ -5,3 +5,6 @@ node_modules/
 *.log
 .env*
 !.env.example
+
+# Private portrait is retained only in the private Site source.
+/dist/assets/portrait.jpg

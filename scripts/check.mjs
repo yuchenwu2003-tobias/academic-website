@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = path.join(root, 'dist');
 const errors = [];
-const registeredPages = new Set(['home', 'travel', 'writing', 'videos', 'about', 'projects']);
+const registeredPages = new Set(['home', 'travel', 'interests', 'writing', 'videos', 'about', 'projects']);
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function expect(condition, message) {
@@ -99,6 +99,12 @@ if (expect(isObject(site), 'site.json 必须包含配置对象。')) {
     text(item.label, `${label}.label`);
     expect(registeredPages.has(item.id), `${label}.id 未注册为可用页面：${item.id}。`);
     expect(typeof item.enabled === 'boolean', `${label}.enabled 必须是布尔值。`);
+  });
+
+  if (site.interests !== undefined) entries(site.interests, 'interests', (item, label) => {
+    fields(item, ['title', 'description'], label);
+    if (array(item.topics, `${label}.topics`)) item.topics.forEach((topic, index) => text(topic, `${label}.topics[${index}]`));
+    if (array(item.notes, `${label}.notes`)) item.notes.forEach((note, index) => text(typeof note === 'string' ? note : note?.text, `${label}.notes[${index}]`));
   });
 
   entries(site.posts, 'posts', (post, label) => {
@@ -245,6 +251,8 @@ for (const filename of await walk(dist)) {
     }
   }
   if (extension === '.js') {
+    const checked = spawnSync(process.execPath, ['--check', filename], { encoding: 'utf8' });
+    if (checked.error || checked.status !== 0) errors.push(`${label} 语法检查失败：${checked.error?.message ?? checked.stderr.trim()}`);
     for (const match of source.matchAll(/\bfetch\(\s*["']([^"']+)["']/g)) await localReference(match[1], dist, label);
     for (const match of source.matchAll(/\b(?:from\s*|import\s*\(\s*)["'](\.{1,2}\/[^"']+)["']/g)) await localReference(match[1], path.dirname(filename), label);
   }

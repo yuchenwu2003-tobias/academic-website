@@ -1,4 +1,6 @@
-import {STORAGE_KEY,project,unproject,normalizePin,parseImportState,combinePins} from './map-model.js';
+import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js';
+import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js';
+import {fitRegion,pinsInRegion} from './geography.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let memoryState;
@@ -9,28 +11,25 @@ function readState() {
   return memoryState;
 }
 
-export function renderTravelMap({compact=false}={}) {
+export function renderTravelMap({compact=false,region={kind:"world",name:"世界"}}={}) {
   return `<div class="travel-map ${compact?'map-compact':''}" data-travel-map>
     <div class="map-toolbar"><div class="map-toolbar-start"><button class="map-add" data-map-add aria-pressed="false"><span aria-hidden="true">＋</span> 添加地点</button><button class="map-tool" data-map-coordinates>输入坐标</button></div><div class="map-file-tools"><button class="map-tool" data-map-export>导出地图 ↗</button><button class="map-tool" data-map-import>导入</button><input type="file" accept="application/json,.json" data-map-file hidden></div></div>
-    <div class="map-stage"><svg class="world-map" data-world-map viewBox="0 0 1000 500" role="group" aria-label="可交互世界地图。使用添加地点或输入坐标放置旅行标记。"><defs><pattern id="map-grid" width="83.33333" height="83.33333" patternUnits="userSpaceOnUse"><path d="M83.33333 0H0V83.33333" fill="none" stroke="#dce3d3" stroke-width=".65"/></pattern></defs><rect width="1000" height="500" fill="#edf1e7"/><rect width="1000" height="500" fill="url(#map-grid)"/><image href="assets/world-map.svg" width="1000" height="500"/><g class="map-markers" data-map-markers></g></svg>
-      <div class="map-zoom" role="group" aria-label="地图缩放"><button data-map-zoom="in" aria-label="放大地图">＋</button><button data-map-zoom="out" aria-label="缩小地图">−</button><button data-map-reset aria-label="查看完整世界地图">⌂</button></div><div class="map-coordinate-hint mono" aria-hidden="true">90° N <span>180° W — 180° E</span></div><div class="map-placement-hint" data-map-hint hidden>点击地图，放下你的第一枚 📌 <button data-map-cancel>取消</button></div>
-    </div>
-    <div class="map-bottom"><div class="map-legend"><span><i class="legend-dot"></i> 想去</span><span><i class="legend-dot visited"></i> 去过</span><strong data-pin-count>0 个地点</strong></div><span class="map-data-credit">底图：<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a></span></div>
+    ${renderMapScene(region,compact)}
+    <div class="map-bottom"><div class="map-legend"><span><i class="legend-dot"></i> 想去</span><span><i class="legend-dot visited"></i> 去过</span><strong data-pin-count>0 个地点</strong></div><span class="map-data-credit">投影：<a href="https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map" target="_blank" rel="noopener noreferrer">Equal Earth</a> · 边界：<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a></span></div>
     <p class="map-storage-note" data-map-message role="status">标记保存在当前浏览器；导出后可备份或在其他设备导入。</p>
+    ${renderRegionDirectory(region,compact)}
     <div class="map-place-list" data-map-list></div>
     <dialog class="pin-dialog" aria-labelledby="pin-dialog-title"><form data-pin-form><div class="pin-dialog-top"><span class="mono">A PLACE TO REMEMBER</span><button type="button" class="pin-close" data-dialog-close aria-label="关闭地点窗口">×</button></div><h2 id="pin-dialog-title">放下一枚 📌</h2><p class="pin-form-intro">一个地名，一点期待。为下一程留个坐标。</p><label>地点名称<input name="title" maxlength="80" placeholder="例如：京都、冰岛、马赛马拉…" required autocomplete="off"></label><div class="pin-form-row"><label>纬度<input name="lat" type="number" min="-90" max="90" step="any" placeholder="-90 到 90" required></label><label>经度<input name="lon" type="number" min="-180" max="180" step="any" placeholder="-180 到 180" required></label></div><label>状态<select name="status"><option value="want">想去 · 旅行心愿</option><option value="visited">去过 · 我的足迹</option></select></label><label>留一点备注 <span class="optional">选填</span><textarea name="note" maxlength="500" rows="3" placeholder="想在这里做什么，或一段旅行回忆…"></textarea></label><p class="pin-form-error" data-pin-error role="alert"></p><div class="pin-dialog-actions"><button type="button" class="pin-delete" data-pin-delete hidden>删除地点</button><button type="button" class="map-tool" data-dialog-cancel>取消</button><button type="submit" class="map-add">保存地点 ↗</button></div></form></dialog>
   </div>`;
 }
 
-export function mountTravelMap(root,destinations=[]) {
+export function mountTravelMap(root,destinations=[],region={kind:"world",name:"世界"}) {
   if(!root) return ()=>{};
   const presets=destinations.filter(place=>Number.isFinite(place.lat)&&Number.isFinite(place.lon)).map(place=>normalizePin({id:`source-${place.id}`,title:place.name,note:place.description,lat:place.lat,lon:place.lon,status:place.status||'want'}));
   let state=readState();
   let selectedId=null;
   let adding=false;
-  let view={x:0,y:0,width:1000,height:500};
-  let drag=null;
-  let suppressClick=false;
+  let view=fitRegion(region);
   const svg=root.querySelector('[data-world-map]');
   const markers=root.querySelector('[data-map-markers]');
   const dialog=root.querySelector('dialog');
@@ -57,13 +56,13 @@ export function mountTravelMap(root,destinations=[]) {
     if(value) announce('已进入标记模式。请点击地图选择地点；也可以使用“输入坐标”。');
   }
   function draw() {
-    const pins=allPins();
+    const pins=pinsInRegion(allPins(),region);
     const scale=view.width/1000;
     markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon);return `<g class="map-pin-marker ${pin.status==='visited'?'is-visited':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" aria-label="${esc(pin.title)}，${pin.status==='visited'?'去过':'想去'}，点击编辑"><title>${esc(pin.title)}</title><circle cy="-12" r="16" class="marker-halo"/><path class="marker-shape" d="M0 0C-3-5-10-10-10-17a10 10 0 0 1 20 0C10-10 3-5 0 0Z"/><circle cy="-17" r="3.2" class="marker-center"/></g>`;}).join('');
     root.querySelector('[data-pin-count]').textContent=`${pins.length} 个地点`;
     document.querySelector('.travel-count')?.replaceChildren(document.createTextNode(`${String(pins.length).padStart(2,'0')} PLACES TO GO`));
     const list=root.querySelector('[data-map-list]');
-    list.innerHTML=pins.length ? `<div class="map-list-heading"><h2>心愿与足迹 <span>${pins.length}</span></h2><span>点击地点，编辑你的旅行记录</span></div><div class="map-place-grid">${pins.map(pin=>`<button class="map-place-card" data-place-id="${esc(pin.id)}"><span class="place-status ${pin.status==='visited'?'visited':''}">${pin.status==='visited'?'已去过':'想去'}</span><strong>${esc(pin.title)}</strong>${pin.note?`<p>${esc(pin.note)}</p>`:''}<span class="place-coordinates mono">${Math.abs(pin.lat).toFixed(2)}° ${pin.lat>=0?'N':'S'} · ${Math.abs(pin.lon).toFixed(2)}° ${pin.lon>=0?'E':'W'} <span>↗</span></span></button>`).join('')}</div>` : '<div class="map-no-places"><span aria-hidden="true">✳</span><p>世界很大，先从一个想去的地方开始。</p><button class="text-link" data-first-pin>放下第一枚标记 <span>↗</span></button></div>';
+    list.innerHTML=pins.length ? `<div class="map-list-heading"><h2>心愿与足迹 <span>${pins.length}</span></h2><span>点击地点，编辑你的旅行记录</span></div><div class="map-place-grid">${pins.map(pin=>`<button class="map-place-card" data-place-id="${esc(pin.id)}"><span class="place-status ${pin.status==='visited'?'visited':''}">${pin.status==='visited'?'已去过':'想去'}</span><strong>${esc(pin.title)}</strong>${pin.note?`<p>${esc(pin.note)}</p>`:''}<span class="place-coordinates mono">${Math.abs(pin.lat).toFixed(2)}° ${pin.lat>=0?'N':'S'} · ${Math.abs(pin.lon).toFixed(2)}° ${pin.lon>=0?'E':'W'} <span>↗</span></span></button>`).join('')}</div>` : `<div class="map-no-places"><span aria-hidden="true">✳</span><p>${region.kind==='world'?'世界很大，先从一个想去的地方开始。':esc(region.name)+'的旅行记录，还在等第一枚标记。'}</p><button class="text-link" data-first-pin>放下第一枚标记 <span>↗</span></button></div>`;
   }
   function showEditor(pin) {
     selectedId=pin?.id||null;
@@ -80,41 +79,9 @@ export function mountTravelMap(root,destinations=[]) {
     setAdding(false);
   }
   function selectPin(id) {const pin=allPins().find(pin=>pin.id===id);if(pin)showEditor(pin);}
-  function setView() {svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.width} ${view.height}`);draw();}
-  function zoom(factor) {
-    const width=Math.max(125,Math.min(1000,view.width*factor));
-    const height=width/2;
-    view={x:Math.max(0,Math.min(1000-width,view.x+(view.width-width)/2)),y:Math.max(0,Math.min(500-height,view.y+(view.height-height)/2)),width,height};
-    setView();
-  }
   root.querySelector('[data-map-add]').addEventListener('click',()=>setAdding(!adding));
   root.querySelector('[data-map-coordinates]').addEventListener('click',()=>showEditor());
   root.querySelector('[data-map-cancel]').addEventListener('click',()=>setAdding(false));
-  root.querySelectorAll('[data-map-zoom]').forEach(button=>button.addEventListener('click',()=>zoom(button.dataset.mapZoom==='in'?.65:1/.65)));
-  root.querySelector('[data-map-reset]').addEventListener('click',()=>{view={x:0,y:0,width:1000,height:500};setView();});
-  svg.addEventListener('click',event=>{
-    if(suppressClick){suppressClick=false;return;}
-    const marker=event.target.closest('[data-pin-id]');
-    if(marker){selectPin(marker.dataset.pinId);return;}
-    if(!adding) return;
-    const point=svg.createSVGPoint();point.x=event.clientX;point.y=event.clientY;
-    const matrix=svg.getScreenCTM();if(!matrix)return;
-    const position=point.matrixTransform(matrix.inverse());
-    if(position.x<0||position.x>1000||position.y<0||position.y>500) return;
-    showEditor(unproject(position.x,position.y));
-  });
-  svg.addEventListener('keydown',event=>{const marker=event.target.closest('[data-pin-id]');if(marker&&['Enter',' '].includes(event.key)){event.preventDefault();selectPin(marker.dataset.pinId);}});
-  svg.addEventListener('pointerdown',event=>{if(adding||event.target.closest('[data-pin-id]')||event.button!==0)return;drag={x:event.clientX,y:event.clientY,startX:view.x,startY:view.y,moved:false};svg.setPointerCapture(event.pointerId);});
-  svg.addEventListener('pointermove',event=>{
-    if(!drag)return;
-    const matrix=svg.getScreenCTM();if(!matrix)return;
-    const dx=(event.clientX-drag.x)/matrix.a,dy=(event.clientY-drag.y)/matrix.d;
-    if(Math.abs(event.clientX-drag.x)+Math.abs(event.clientY-drag.y)>5)drag.moved=true;
-    view.x=Math.max(0,Math.min(1000-view.width,drag.startX-dx));view.y=Math.max(0,Math.min(500-view.height,drag.startY-dy));
-    svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.width} ${view.height}`);
-  });
-  const finishDrag=()=>{if(drag?.moved)suppressClick=true;drag=null;};
-  svg.addEventListener('pointerup',finishDrag);svg.addEventListener('pointercancel',()=>{drag=null;suppressClick=false;});
   root.addEventListener('click',event=>{const item=event.target.closest('[data-place-id]');if(item)selectPin(item.dataset.placeId);if(event.target.closest('[data-first-pin]')){setAdding(true);svg.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}});
   root.querySelectorAll('[data-dialog-close],[data-dialog-cancel]').forEach(button=>button.addEventListener('click',()=>dialog.close()));
   dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
@@ -124,7 +91,7 @@ export function mountTravelMap(root,destinations=[]) {
     try{
       const pin=normalizePin({id:selectedId||crypto.randomUUID(),title:fields.title.value,note:fields.note.value,lat:Number(fields.lat.value),lon:Number(fields.lon.value),status:fields.status.value});
       if(!selectedId&&allPins().length>=1000)throw new Error('地图最多保存 1000 个地点。请先整理已有地点。');
-      state.pins=state.pins.filter(item=>item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);store();dialog.close();
+      state.pins=state.pins.filter(item=>item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);const saved=store();dialog.close();if(saved&&!pinsInRegion([pin],region).length)announce('地点已保存到世界地图；它不在当前区域内。');
     }catch(err){error.textContent=err.message;}
   });
   root.querySelector('[data-pin-delete]').addEventListener('click',()=>{if(!selectedId)return;state.pins=state.pins.filter(pin=>pin.id!==selectedId);if(presets.some(pin=>pin.id===selectedId))state.hidden=[...new Set([...state.hidden,selectedId])];const saved=store();dialog.close();if(saved)announce('地点已删除，当前浏览器中的地图已更新。');});
@@ -142,6 +109,7 @@ export function mountTravelMap(root,destinations=[]) {
   function onStorage(event){if(event.key===STORAGE_KEY){memoryState=undefined;state=readState();draw();announce('地图已与此浏览器中的另一个标签页同步。');}}
   function onEscape(event){if(event.key==='Escape')setAdding(false);}
   window.addEventListener('storage',onStorage);document.addEventListener('keydown',onEscape);
+  const scene=mountMapScene(root,{region,isAdding:()=>adding,onMarkerClick:selectPin,onChoosePoint:showEditor,announce,onViewChange:next=>{view=next;markers.querySelectorAll('[data-pin-id]').forEach(marker=>{const pin=allPins().find(pin=>pin.id===marker.dataset.pinId);if(pin){const p=project(pin.lat,pin.lon);marker.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${view.width/1000})`);}});}});
   draw();
-  return ()=>{window.removeEventListener('storage',onStorage);document.removeEventListener('keydown',onEscape);if(dialog.open)dialog.close();};
+  return ()=>{scene.destroy();window.removeEventListener('storage',onStorage);document.removeEventListener('keydown',onEscape);if(dialog.open)dialog.close();};
 }

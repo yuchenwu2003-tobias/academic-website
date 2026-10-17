@@ -24,6 +24,11 @@
       "enabled": true
     },
     {
+      "id": "interests",
+      "label": "兴趣爱好",
+      "enabled": true
+    },
+    {
       "id": "writing",
       "label": "文章",
       "enabled": true
@@ -106,5 +111,73 @@
     "title": "下一站，去哪里玩？",
     "description": "山野、城市，或某个还没遇见的角落。把想去的地方，钉在这张世界地图上。",
     "destinations": []
-  }
+  },
+  "interests": [
+    {
+      "id": "reading-writing",
+      "title": "阅读与写作",
+      "description": "给书、文字和一闪而过的想法留个位置。",
+      "topics": [
+        "阅读清单",
+        "写作片段",
+        "随手摘录"
+      ],
+      "notes": []
+    },
+    {
+      "id": "music-film",
+      "title": "音乐与影像",
+      "description": "旋律、画面，以及值得回味的片刻。",
+      "topics": [
+        "音乐与现场",
+        "电影与纪录片",
+        "值得重看的片段"
+      ],
+      "notes": []
+    },
+    {
+      "id": "sports-outdoors",
+      "title": "运动与户外",
+      "description": "走出门，给身体和心情一点新鲜空气。",
+      "topics": [
+        "散步与徒步",
+        "日常运动",
+        "户外体验"
+      ],
+      "notes": []
+    },
+    {
+      "id": "travel-nature",
+      "title": "旅行与自然",
+      "description": "远方的风景，也有身边的小小发现。",
+      "topics": [
+        "想看的风景",
+        "自然观察",
+        "旅途中的发现"
+      ],
+      "notes": []
+    },
+    {
+      "id": "technology-making",
+      "title": "科技与创造",
+      "description": "给新工具、小实验和未成形的点子留白。",
+      "topics": [
+        "有趣的工具",
+        "小项目与实验",
+        "新的学习方向"
+      ],
+      "notes": []
+    },
+    {
+      "id": "art-everyday",
+      "title": "艺术与生活",
+      "description": "收集日常里让人多看一眼的细节。",
+      "topics": [
+        "展览与设计",
+        "摄影与手作",
+        "生活里的小发现"
+      ],
+      "notes": []
+    }
+  ]
 }

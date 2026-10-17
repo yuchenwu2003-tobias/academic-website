@@ -1,5 +1,9 @@
 import {renderTravelMap,mountTravelMap} from './travel-map.js';
+import {resolveRegion,continentById,regionHref} from './geography.js';
+import {renderInterests} from './interests.js';
+import {renderPortrait} from './portrait.js';
 const icons = {
+  interests:'<path d="M10 17S2 12 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 5-8 10-8 10Z"/>',
   travel:'<circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3a14 14 0 0 1 0 14 14 14 0 0 1 0-14Z"/>',
   home:'<path d="m3 9 7-6 7 6v8H6V9m2 8v-6h4v6"/>',
   writing:'<path d="M4 3h9l3 3v11H4V3Zm8 0v4h4M7 10h6M7 13h5"/>',
@@ -27,12 +31,17 @@ function travelSection() {
   return `<section class="travel-section" aria-labelledby="travel-title"><div class="section-heading"><div><span class="section-kicker mono">02 / WANDERLUST</span><h2 id="travel-title">${e(travel.title)}</h2></div><div class="travel-title-meta"><span class="travel-count mono">00 PLACES TO GO</span><a class="travel-map-link" href="#/travel">打开旅行地图 <span>↗</span></a></div></div><p class="section-description">${e(travel.description)}</p>${renderTravelMap({compact:true})}</section>`;
 }
 
-function travel() {
-  return `<section class="map-page"><div class="page-heading"><span class="section-kicker mono">PLACES, PLANS & MEMORIES</span><h1>把向往，<br>钉在地图上<span>。</span></h1><p>下一站或上一程，都在这张地图里。点击“添加地点”，再在地图上选一个位置。</p></div>${renderTravelMap()}</section>`;
+function travel(region={kind:'world',name:'世界'}) {
+  if(!region)return notFound();
+  const parent=region.kind==='country'?continentById.get(region.continent):null;
+  const crumbs=`<nav class="map-breadcrumbs" aria-label="地图层级"><a href="#/travel">世界地图</a>${parent?`<span>/</span><a href="#/travel/continent/${parent.id}">${e(parent.name)}</a>`:''}${region.kind!=='world'?`<span>/</span><span aria-current="page">${e(region.name)}</span>`:''}</nav>`;
+  const title=region.kind==='world'?'把向往，<br>钉在地图上':e(region.name);
+  const description=region.kind==='world'?'从七大洲出发，点击大洲，再走进一个国家。滚动鼠标滚轮缩放，拖拽移动地图。':region.kind==='continent'?'点击地图中的国家，或在下方选择一个名字，继续探索。':'在这个国家留下旅行心愿与足迹。可切换地理地图或地标插画，继续添加自己的标记。';
+  return `<section class="map-page">${crumbs}<div class="page-heading"><span class="section-kicker mono">${e(region.english?.toUpperCase()||'PLACES, PLANS & MEMORIES')}</span><h1>${title}<span>。</span></h1><p>${description}</p></div>${renderTravelMap({region})}</section>`;
 }
 
 function home() {
-  return `<section class="intro-section" aria-labelledby="intro-title"><div class="hero"><div class="hero-copy"><span class="section-kicker mono">01 / A LITTLE ABOUT ME</span><p class="eyebrow"><span class="status-dot"></span>${e(data.profile.eyebrow)}</p><h1 id="intro-title">你好，我是<br><em>${e(data.profile.name)}<span>。</span></em></h1><p class="hero-description">${e(data.profile.description)}</p><a class="primary-link" href="#/about">多认识我一点 <span>↗</span></a></div><div class="hero-art"><span class="art-label mono">A PERSONAL GARDEN</span><img src="assets/garden.svg" alt="书本、植物与一扇字母 t 的拱门，象征慢慢生长的个人空间" width="520" height="500"><div class="art-caption"><span class="handwritten">保持好奇，慢慢生长。</span><span class="mono">FIG. 01</span></div></div></div><div class="intro-links"><span class="intro-links-title">也可以在这里找到我<span aria-hidden="true">⤵</span></span><a href="#/writing">${icon('writing')}<span>读我的文章</span><span class="link-count mono">${String(data.posts.length).padStart(2,'0')}</span><span>↗</span></a><a href="#/videos">${icon('videos')}<span>看我的视频收藏</span><span class="link-count mono">${String(data.videos.length).padStart(2,'0')}</span><span>↗</span></a></div></section>${travelSection()}`;
+  return `<section class="intro-section" aria-labelledby="intro-title"><div class="hero"><div class="hero-copy"><span class="section-kicker mono">01 / A LITTLE ABOUT ME</span><p class="eyebrow">${data.profile.avatar?renderPortrait(data.profile.avatar,data.profile.name,"small"):'<span class="status-dot"></span>'}${e(data.profile.eyebrow)}</p><h1 id="intro-title">你好，我是<br><em>${e(data.profile.name)}<span>。</span></em></h1><p class="hero-description">${e(data.profile.description)}</p><a class="primary-link" href="#/about">多认识我一点 <span>↗</span></a></div><div class="hero-art"><span class="art-label mono">A PERSONAL GARDEN</span><img src="assets/garden.svg" alt="书本、植物与一扇字母 t 的拱门，象征慢慢生长的个人空间" width="520" height="500"><div class="art-caption"><span class="handwritten">保持好奇，慢慢生长。</span><span class="mono">FIG. 01</span></div></div></div><div class="intro-links"><span class="intro-links-title">也可以在这里找到我<span aria-hidden="true">⤵</span></span><a href="#/writing">${icon('writing')}<span>读我的文章</span><span class="link-count mono">${String(data.posts.length).padStart(2,'0')}</span><span>↗</span></a><a href="#/videos">${icon('videos')}<span>看我的视频收藏</span><span class="link-count mono">${String(data.videos.length).padStart(2,'0')}</span><span>↗</span></a></div></section>${travelSection()}`;
 }
 
 function collectionHeader(kind) {
@@ -41,15 +50,16 @@ function collectionHeader(kind) {
 }
 function writing() { return collectionHeader('writing'); }
 function videos() { return collectionHeader('videos'); }
+function interests() { return renderInterests(data.interests); }
 function about() {
-  return `<div class="page-heading"><span class="section-kicker mono">NICE TO MEET YOU</span><h1>很高兴，<br>在这里遇见你<span>。</span></h1></div><div class="about-layout"><div class="about-copy"><span class="about-initial" aria-hidden="true">${e(data.profile.name.charAt(0).toLowerCase())}<span>·</span></span><h2>我是 ${e(data.profile.name)}。</h2><p>${e(data.profile.bio)}</p>${data.profile.location ? `<p class="muted">目前在 ${e(data.profile.location)}</p>` : ''}<div class="social-links">${data.links.map(link=>safeUrl(link.url,true)?`<a class="pill-link" href="${safeUrl(link.url,true)}" ${link.url.startsWith('mailto:')?'':externalAttrs}>${e(link.label)} <span>↗</span></a>`:'').join('')}</div></div><aside class="about-note"><span class="section-kicker mono">IN THIS LITTLE SPACE</span><h3>记录，也收藏。</h3><div class="about-note-item"><span>01</span><div><a href="#/writing">一些文字 ↗</a><p>写下想法，让思考有自己的位置。</p></div></div><div class="about-note-item"><span>02</span><div><a href="#/videos">视频收藏 ↗</a><p>好内容，值得一次又一次地重看。</p></div></div><div class="about-note-item"><span>03</span><div><a href="#/travel">旅行心愿 ↗</a><p>把想去的远方，慢慢变成足迹。</p></div></div></aside></div><div class="closing-note"><span aria-hidden="true">✳</span><p>这里会持续更新。<br>愿每一次回访，都有一点新的发现。</p><span class="mono">TO BE CONTINUED…</span></div>`;
+  return `<div class="page-heading"><span class="section-kicker mono">NICE TO MEET YOU</span><h1>很高兴，<br>在这里遇见你<span>。</span></h1></div><div class="about-layout"><div class="about-copy">${data.profile.avatar?renderPortrait(data.profile.avatar,data.profile.name,"about"):`<span class="about-initial" aria-hidden="true">${e(data.profile.name.charAt(0).toLowerCase())}<span>·</span></span>`}<h2>我是 ${e(data.profile.name)}。</h2><p>${e(data.profile.bio)}</p>${data.profile.location ? `<p class="muted">目前在 ${e(data.profile.location)}</p>` : ''}<div class="social-links">${data.links.map(link=>safeUrl(link.url,true)?`<a class="pill-link" href="${safeUrl(link.url,true)}" ${link.url.startsWith('mailto:')?'':externalAttrs}>${e(link.label)} <span>↗</span></a>`:'').join('')}</div></div><aside class="about-note"><span class="section-kicker mono">IN THIS LITTLE SPACE</span><h3>记录，也收藏。</h3><div class="about-note-item"><span>01</span><div><a href="#/writing">一些文字 ↗</a><p>写下想法，让思考有自己的位置。</p></div></div><div class="about-note-item"><span>02</span><div><a href="#/videos">视频收藏 ↗</a><p>好内容，值得一次又一次地重看。</p></div></div><div class="about-note-item"><span>03</span><div><a href="#/travel">旅行心愿 ↗</a><p>把想去的远方，慢慢变成足迹。</p></div></div></aside></div><div class="closing-note"><span aria-hidden="true">✳</span><p>这里会持续更新。<br>愿每一次回访，都有一点新的发现。</p><span class="mono">TO BE CONTINUED…</span></div>`;
 }
 function projects() {
   return `<div class="page-heading"><span class="section-kicker mono">THINGS I MAKE</span><h1>项目与探索<span>。</span></h1><p>一些已经开始的想法。</p></div>${data.projects.length ? `<div class="article-grid">${data.projects.map(project=>`<article class="article-card"><span class="category">${e(project.category)}</span><h3>${e(project.title)}</h3><p>${e(project.description)}</p><span class="quiet-badge">${e(project.status)}</span>${safeUrl(project.url)?`<a class="text-link" href="${safeUrl(project.url)}" ${externalAttrs}>查看项目 ↗</a>`:''}</article>`).join('')}</div>` : emptyState('projects')}`;
 }
 
 // Register a renderer here and enable its matching navigation entry to add a page.
-export const pageRenderers = {home,travel,writing,videos,about,projects};
+export const pageRenderers = {home,travel,interests,writing,videos,about,projects};
 
 function article(id) {
   const post = data.posts.find(post=>post.id===id);
@@ -81,18 +91,19 @@ export function renderRoute() {
   try { id=decodeURIComponent(segments[1] || ''); } catch { id=''; }
   const route = segments[0] || 'home';
   const active = route==='post'?'writing':route;
+  const region=route==='travel'?resolveRegion(segments.slice(1)):null;
   mapCleanup();
-  main.innerHTML = route==='post' ? article(id) : Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
+  main.innerHTML = route==='post' ? article(id) : route==='travel' ? travel(region) : Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
   main.dataset.page = route;
   document.querySelectorAll('.nav-link').forEach(link=>{const selected=link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
   const label = data.navigation.find(item=>item.id===active)?.label || '页面';
   const postTitle = route==='post'?data.posts.find(post=>post.id===id)?.title:undefined;
-  document.title = `${postTitle || label} · ${data.profile.name} 的个人空间`;
+  document.title = `${postTitle || (route==='travel'&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
   document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');
   document.querySelector('.menu-toggle').setAttribute('aria-label','展开导航');
   document.querySelector('.sidebar').classList.remove('menu-open');
   if (['writing','videos'].includes(route)) bindCollection(route);
-  if (['home','travel'].includes(route)) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[]);
+  if (['home','travel'].includes(route)) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[],route==='travel'?region:{kind:'world',name:'世界'});
   if (currentRoute) { window.scrollTo({top:0,behavior:'instant'}); main.focus({preventScroll:true}); }
   currentRoute=route;
 }
@@ -105,6 +116,7 @@ async function start() {
     ['posts','videos','projects','links','navigation'].forEach(key=>{data[key] ||= [];});
     document.querySelector('#navigation').innerHTML=data.navigation.filter(item=>item.enabled).map(item=>`<a class="nav-link" data-page="${e(item.id)}" href="#/${item.id==='home'?'':e(item.id)}">${icon(item.id)}<span>${e(item.label)}</span><span class="nav-indicator">↗</span></a>`).join('');
     document.querySelector('.brand-name').innerHTML=`${e(data.profile.name)}<small>一小块互联网</small>`;
+    if(data.profile.avatar) document.querySelector('.brand-mark')?.replaceWith(document.createRange().createContextualFragment(renderPortrait(data.profile.avatar,data.profile.name,'nav')));
     document.querySelector('.brand').setAttribute('aria-label',`${data.profile.name} 首页`);
     document.querySelector('#footer-name').textContent=data.profile.name;
     document.querySelector('#year').textContent=new Date().getFullYear();

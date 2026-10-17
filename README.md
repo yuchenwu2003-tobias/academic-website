@@ -237,7 +237,9 @@ node scripts/check.mjs
 4. 在 `navigation` 中添加 `{ "id": "reading", "label": "阅读", "enabled": true }`，并同步 `scripts/check.mjs` 中的 `registeredPages` 页面列表。
 5. 检查直接打开链接、刷新、浏览器前进后退、空列表和手机布局。
 
-`profile.avatar`、`now`、`featured`、`accent` 为预留字段，当前页面不读取它们；修改这些值不会产生可见变化。保留现有默认值即可。`extensionNotes` 记录维护约定，也不直接生成页面功能。
+`now`、`featured`、`accent` 为预留字段，当前页面不读取它们；修改这些值不会产生可见变化。保留现有默认值即可。`extensionNotes` 记录维护约定，也不直接生成页面功能。
+
+`profile.avatar` 现用于侧栏、首页和关于页头像。网站用原始照片加圆形显示窗口呈现面部，裁切位置在 `portrait.css` 中设置，照片像素未被改写。私人头像照片及该配置字段不包含在公开 GitHub 源码中；私有 Sites 源码和本人下载的交付包保留照片。
 
 ## 未来接入 CMS 或更多功能
 
@@ -253,4 +255,39 @@ node scripts/check.mjs
 2. 本地预览涉及的页面，检查手机布局与外部链接。
 3. 运行 `node scripts/check.mjs`。
 4. 备份源码到 GitHub，并按托管方式更新 `dist/`。
+
+## 分层旅行地图与 Equal Earth 投影
+
+旅行地图现可从世界进入大洲，再点击国家或地区继续查看；地图与对应列表都提供入口。每层都有独立的 hash 地址，可以直接打开、刷新或使用浏览器前进后退：
+
+| 地址 | 范围 |
+| --- | --- |
+| `#/travel` | 世界与七大洲入口 |
+| `#/travel/continent/asia` | 亚洲；其他大洲使用各自稳定 ID |
+| `#/travel/country/chn` | 由数据中 `chn` 标识的国家页面；其他国家或地区同理 |
+
+大洲 ID 为 `asia`、`europe`、`africa`、`north-america`、`south-america`、`oceania`、`antarctica`。国家或地区 ID 沿用 Natural Earth 的 `ADM0_A3` 小写形式。当前数据保留 177 个地理单元及其多边形、岛屿和孔洞；地点根据经纬度归入相应国家或地区，再按大洲筛选显示。落在海洋的标记仍可在世界页查看。
+
+地图可切换**卡通导览**与**地理地图**两种样式。卡通样式中的著名地标用于导航和辨认区域，属于地图插图，不代表 Tobias 收藏过或去过，也不会加入个人地点数量。两种样式使用同一组地理坐标与个人标记。
+
+地图支持鼠标滚轮以光标位置为中心缩放、拖动平移、`＋ / −` 按钮缩放，以及重置视图。放大后点击大洲或国家可进入对应页面；添加地点模式用于放置个人 📌。
+
+地图采用 **Equal Earth 等面积投影**，参考联合国在 2026 年 9 月“Correct the Map”倡议中鼓励使用 Equal Earth 等投影的说明：[联合国非洲问题特别顾问办公室原文](https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map)。地理边界仍来自公共领域的 [Natural Earth 1:110m Admin 0 – Countries 数据](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson)；这不是联合国发布的官方边界地图。
+
+`dist/assets/projection.js` 负责投影与逆投影；`geography-data.js` 保存已经投影的地理数据与大洲视图；`geography.js` 负责地区路由、地理包含判断、标记筛选和视图计算。地图画面中的新位置由投影计算得到，**旧标记保存的纬度、经度、名称、状态与备注保持不变**，原有版本 1 的 JSON 备份仍使用同样的经纬度字段。
+
+## 维护兴趣爱好页
+
+左侧导航的“兴趣爱好”位于“旅行地图”之后，地址为 `#/interests`。页面先预留六个方向，供以后添加个人内容；默认方向示例不代表已经确认的个人爱好或经历。
+
+| ID | 方向 |
+| --- | --- |
+| `reading-writing` | 阅读与写作 |
+| `music-film` | 音乐与影像 |
+| `sports-outdoors` | 运动与户外 |
+| `travel-nature` | 旅行与自然 |
+| `technology-making` | 科技与创造 |
+| `art-everyday` | 艺术与生活 |
+
+内容保存在 `dist/content/site.json` 的 `interests` 数组。每项包含稳定的 `id`、显示标题 `title`、说明 `description`、可展开的方向示例 `topics` 数组，以及真实记录 `notes` 数组。向 `notes` 添加文字后，卡片会显示记录及数量；空数组显示“待补充”。修改这些内容并重新发布即可更新页面，访客不能直接在页面编辑，也不会写入旅行地图的本地标记存储。
 
