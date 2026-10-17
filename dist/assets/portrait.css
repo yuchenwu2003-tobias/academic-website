@@ -13,9 +13,9 @@
   vertical-align: middle;
   isolation: isolate;
 }
-.profile-photo--small { --portrait-size: 42px; }
-.profile-photo--nav { --portrait-size: 49px; }
-.profile-photo--about { --portrait-size: 84px; }
+.profile-photo--small { --portrait-size: 64px; }
+.profile-photo--nav { --portrait-size: 56px; }
+.profile-photo--about { --portrait-size: 168px; }
 .profile-photo > .portrait-source {
   position: absolute;
   display: block;
@@ -34,3 +34,9 @@
   border-color: #58654d;
   background: #29382a;
 }
+@media(max-width:700px) {
+  .profile-photo--nav { --portrait-size: 44px; }
+  .profile-photo--small { --portrait-size: 56px; }
+  .profile-photo--about { --portrait-size: 140px; }
+}
+
