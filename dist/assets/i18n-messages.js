@@ -32,7 +32,7 @@ export const UI_EN = {
   'Equal Earth 互动地图，支持滚轮缩放、拖拽、点击大洲和国家': 'Interactive Equal Earth map. Scroll to zoom, drag to pan, and select continents or countries.',
   '放大地图，发现更多地标': 'Zoom in to discover more landmarks',
   '地图缩放': 'Map zoom', '放大地图': 'Zoom in', '缩小地图': 'Zoom out',
-  '重置地图视图': 'Reset map view', '缩放比例': 'Zoom level',
+  '重置地图视图': 'Reset map view', '返回世界地图': 'Back to world map', '缩放比例': 'Zoom level',
   '世界概览': 'World overview', '区域细节': 'Regional detail', '高清细节': 'Fine detail',
   '国界': 'Borders', '投影：': 'Projection: ', '· 边界：': '· Borders: ',
   '七个大洲，七种出发。': 'Seven continents. Seven beginnings.',

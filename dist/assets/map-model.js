@@ -1,8 +1,19 @@
+import {COUNTRIES} from './geography-data.js';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
 export {project,unproject} from './projection.js';
+const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
+export function normalizeCountryHint(hint) {
+  if(!hint||typeof hint!=='object'||typeof hint.id!=='string')return null;
+  const id=hint.id.toLowerCase();
+  if(!/^[a-z]{3}$/.test(id)||!countryHintIds.has(id)||typeof hint.lat!=='number'||!Number.isFinite(hint.lat)||Math.abs(hint.lat)>90||typeof hint.lon!=='number'||!Number.isFinite(hint.lon)||Math.abs(hint.lon)>180)return null;
+  return {id,lat:hint.lat,lon:hint.lon};
+}
 export function normalizePin(pin) {
   if (!pin || typeof pin !== 'object' || typeof pin.title !== 'string' || !pin.title.trim() || pin.title.length>80 || typeof pin.lat!=='number' || !Number.isFinite(pin.lat) || Math.abs(pin.lat)>90 || typeof pin.lon!=='number' || !Number.isFinite(pin.lon) || Math.abs(pin.lon)>180 || (pin.note!==undefined && (typeof pin.note!=='string'||pin.note.length>500)) || !['want','visited'].includes(pin.status ?? 'want')) throw new Error('地点需要名称、有效经纬度，以及“想去”或“去过”状态。');
-  return {id:typeof pin.id==='string'&&/^[\w-]{1,100}$/.test(pin.id)?pin.id:crypto.randomUUID(),title:pin.title.trim(),note:pin.note || '',lat:pin.lat,lon:pin.lon,status:pin.status || 'want'};
+  const result={id:typeof pin.id==='string'&&/^[\w-]{1,100}$/.test(pin.id)?pin.id:crypto.randomUUID(),title:pin.title.trim(),note:pin.note || '',lat:pin.lat,lon:pin.lon,status:pin.status || 'want'};
+  const countryHint=normalizeCountryHint(pin.countryHint);
+  if(countryHint)result.countryHint=countryHint;
+  return result;
 }
 export function parseImport(text) {
   const payload=JSON.parse(text);

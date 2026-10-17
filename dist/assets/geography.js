@@ -1,6 +1,7 @@
 import {CONTINENTS,COUNTRIES} from './geography-data.js';
 import {project} from './projection.js';
 import {DESTINATIONS} from './destination-catalog.js';
+import {normalizeCountryHint} from './map-model.js';
 export {CONTINENTS,COUNTRIES};
 export const continentById=new Map(CONTINENTS.map(item=>[item.id,item]));
 export const countryById=new Map(COUNTRIES.map(item=>[item.id,item]));
@@ -26,15 +27,22 @@ export function countryAt(lat,lon) {
 }
 const pinCache=new Map();
 const destinationById=new Map(DESTINATIONS.map(place=>[place.id,place]));
+function distanceMeters(a,b) {
+  const radians=Math.PI/180;
+  const latDelta=(a.lat-b.lat)*radians;
+  const lonDelta=(a.lon-b.lon)*radians;
+  const q=Math.sin(latDelta/2)**2+Math.cos(a.lat*radians)*Math.cos(b.lat*radians)*Math.sin(lonDelta/2)**2;
+  return 6371008.8*2*Math.asin(Math.sqrt(Math.max(0,Math.min(1,q))));
+}
+function hintedCountry(pin,hint) {
+  if(!hint||![pin.lat,pin.lon].every(Number.isFinite)||Math.abs(pin.lat)>90||Math.abs(pin.lon)>180||distanceMeters(pin,hint)>150+1e-6)return null;
+  return countryById.get(hint.id)||{id:hint.id,continent:'asia'};
+}
 function destinationCountry(pin) {
   if(typeof pin.id!=='string'||!pin.id.startsWith('destination-')||![pin.lat,pin.lon].every(Number.isFinite)||Math.abs(pin.lat)>90||Math.abs(pin.lon)>180)return null;
   const destination=destinationById.get(pin.id.slice('destination-'.length));
   if(!destination||!continentById.has(destination.continent))return null;
-  const radians=Math.PI/180;
-  const latDelta=(pin.lat-destination.lat)*radians;
-  const lonDelta=(pin.lon-destination.lon)*radians;
-  const a=Math.sin(latDelta/2)**2+Math.cos(pin.lat*radians)*Math.cos(destination.lat*radians)*Math.sin(lonDelta/2)**2;
-  const meters=6371008.8*2*Math.asin(Math.sqrt(Math.max(0,Math.min(1,a))));
+  const meters=distanceMeters(pin,destination);
   if(meters>150+1e-6)return null;
   // Catalog identity plus a nearby coordinate resolves small islands/coasts that
   // the overview polygons omit. A moved or custom pin still uses containment.
@@ -42,8 +50,9 @@ function destinationCountry(pin) {
 }
 function pinCountryInfo(pin) {
   if(!pin||typeof pin!=='object')return null;
-  const key=`${pin.id||''}|${pin.lat},${pin.lon}`;
-  if(!pinCache.has(key)){if(pinCache.size>3000)pinCache.clear();pinCache.set(key,destinationCountry(pin)||countryAt(pin.lat,pin.lon));}
+  const hint=normalizeCountryHint(pin.countryHint);
+  const key=`${pin.id||''}|${pin.lat},${pin.lon}|${hint?`${hint.id}@${hint.lat},${hint.lon}`:''}`;
+  if(!pinCache.has(key)){if(pinCache.size>3000)pinCache.clear();pinCache.set(key,(hint?hintedCountry(pin,hint):destinationCountry(pin))||countryAt(pin.lat,pin.lon));}
   return pinCache.get(key);
 }
 export function pinCountry(pin) {return pinCountryInfo(pin)?.id||null;}

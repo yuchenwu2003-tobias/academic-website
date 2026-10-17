@@ -10,10 +10,7 @@
   cursor: pointer;
   outline: none;
 }
-.map-landmark > svg {
-  width: 80px;
-  height: 80px;
-  overflow: hidden;
+.map-landmark-icon {
   filter: drop-shadow(0 2px 2px #454b3221);
   transition: filter .15s ease;
 }
@@ -27,8 +24,8 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.map-landmark:hover > svg,
-.map-landmark:focus-visible > svg {
+.map-landmark:hover .map-landmark-icon,
+.map-landmark:focus-visible .map-landmark-icon {
   filter: drop-shadow(0 0 4px #b07d40b3) drop-shadow(0 2px 2px #454b3221);
 }
 .map-landmark:hover text,
@@ -117,11 +114,17 @@
 .map-detail-status:empty,
 .map-cartoon-hint:empty { display: none; }
 .map-zoom { z-index: 4; }
+.map-zoom [data-map-world] { display:grid;place-items:center;min-width:37px;min-height:36px;border:0;border-top:1px solid #e3e8db;background:transparent;color:#7e8e6d;font-size:18px;line-height:1;text-decoration:none; }
+.map-zoom [data-map-world]:hover { background:#e1e8d6;color:#3e542e; }
+[data-theme=dark] .map-zoom [data-map-world] { color:#c1d3ad;border-color:#465b3d; }
+[data-theme=dark] .map-zoom [data-map-world]:hover { background:#405535;color:#eff4e7; }
+.map-landmark-anchor { fill:#b66d47;stroke:#fff8e8;stroke-width:1;pointer-events:none; }
+[data-theme=dark] .map-landmark-anchor { fill:#f3b67d;stroke:#25382e; }
 .map-placement-hint { z-index: 5; }
 .is-placing .map-cartoon-hint,
 .is-placing .map-hover-label { visibility: hidden; }
 
-[data-theme=dark] .map-landmark > svg {
+[data-theme=dark] .map-landmark-icon {
   filter: drop-shadow(0 2px 3px #09130bc2);
 }
 [data-theme=dark] .map-landmark text {
@@ -129,8 +132,8 @@
   stroke: #203128;
   stroke-width: 2.9px;
 }
-[data-theme=dark] .map-landmark:hover > svg,
-[data-theme=dark] .map-landmark:focus-visible > svg {
+[data-theme=dark] .map-landmark:hover .map-landmark-icon,
+[data-theme=dark] .map-landmark:focus-visible .map-landmark-icon {
   filter: drop-shadow(0 0 4px #d5ba6cbd) drop-shadow(0 2px 3px #09130bc2);
 }
 [data-theme=dark] .map-landmark:hover text,
@@ -180,5 +183,5 @@
   .map-hover-label { font-size: 9px; }
 }
 @media(prefers-reduced-motion:reduce) {
-  .map-landmark > svg { transition: none; }
+  .map-landmark-icon { transition: none; }
 }

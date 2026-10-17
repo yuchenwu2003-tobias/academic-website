@@ -3,6 +3,7 @@ import {COUNTRIES, CONTINENTS} from './geography-data.js';
 import {DESTINATIONS} from './destination-catalog.js';
 import {UI_EN} from './i18n-messages.js';
 import {DESTINATION_UI_EN} from './i18n-destinations.js';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
@@ -15,6 +16,7 @@ const english = {
   '新加坡': 'Singapore', '马尔代夫': 'Maldives',
   ...DESTINATION_UI_EN,
   ...UI_EN,
+  ...PLACE_SEARCH_UI_EN,
 };
 let language = 'zh-CN';
 try {
@@ -98,7 +100,7 @@ export function translateText(text, selectedLanguage = language) {
 const textRecords = new WeakMap();
 const attributeRecords = new WeakMap();
 const ATTRIBUTES = ['aria-label', 'title', 'placeholder', 'alt'];
-const SKIP_TEXT = 'script,style,textarea,[contenteditable="true"],[data-i18n-skip],[data-language-control],.post-body,.post-header h1,.post-header .category,.article-card h3,.article-card>p,.article-meta>.category,.video-caption,.video-platform,.poster-mark,.map-place-card strong,.map-place-card p,.map-pin-marker,.map-landmark,.interest-notes,.filter-tab[data-category]:not([data-category="全部"])';
+const SKIP_TEXT = 'script,style,textarea,[contenteditable="true"],[data-i18n-skip],[data-language-control],.post-body,.post-header h1,.post-header .category,.article-card h3,.article-card>p,.article-meta>.category,.video-caption,.video-platform,.poster-mark,.map-place-card strong,.map-place-card p,.map-pin-marker,.map-landmark,.interest-notes,.place-search-result-name,.place-search-result-address,.filter-tab[data-category]:not([data-category="全部"])';
 const SKIP_ATTRIBUTES = '[data-i18n-skip],.post-body';
 let observer;
 let framePending = false;

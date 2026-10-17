@@ -28,6 +28,17 @@ not metre-level positional accuracy. Detail is loaded only when needed.
 https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
 https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson
 
+Display correction for the Baikonur leased area (10m KAZ only):
+The source includes KAB / Baykonur Cosmodrome as TYPE=Lease,
+SOVEREIGNT=Kazakhstan, ADM0_ISO=KAZ, and NOTE_BRK="Leased to Russia by Kazakhstan".
+Its 65-point outer ring is exactly the reverse of KAZ polygon 0, inner ring 1.
+Our country display omits separate lease units, so that one verified matching
+inner ring is removed from the KAZ display surface to avoid exposing water colour.
+Kazakh sovereign coverage and the existing outer national boundary are retained;
+RUS geometry, other KAZ components, physical lakes and islands are unchanged.
+The raw source GeoJSON is preserved. The build verifies the exact reversed ring
+and source lease/sovereignty properties before applying this display correction.
+
 Flags: local flag-icons SVGs, MIT; see flags/LICENSE.txt and flags/SOURCES.txt.
 Antarctica uses a regional symbol, not an official national flag. Geographic
 units without an ISO2 flag use a neutral placeholder.

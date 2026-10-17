@@ -1,16 +1,5 @@
 import {project} from './projection.js';
 
-// Offsets are screen pixels, searched from the geographic point outward. Their
-// fixed order makes the greedy layout deterministic across identical renders.
-const OFFSETS = [[0, 0]];
-for (const radius of [24, 48, 72, 80]) {
-  const diagonal = radius / Math.sqrt(2);
-  OFFSETS.push(
-    [0, -radius], [radius, 0], [-radius, 0], [0, radius],
-    [diagonal, -diagonal], [-diagonal, -diagonal],
-    [diagonal, diagonal], [-diagonal, diagonal]
-  );
-}
 const PADDING = 8;
 const MARGIN = 10;
 const expand = box => ({x: box.x - PADDING, y: box.y - PADDING, width: box.width + PADDING * 2, height: box.height + PADDING * 2});
@@ -18,9 +7,12 @@ const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b
 const validRect = box => box && [box.x, box.y, box.width, box.height].every(Number.isFinite) && box.width > 0 && box.height > 0;
 
 /**
- * Place image-and-title landmark cards without collisions. `box` is in viewport
- * pixels; x/y/anchorX/anchorY are SVG world units. Images render at x=-size/2,
- * y=0 within translate(x y) scale(scale). Title baseline is size + 12 pixels.
+ * Keep every landmark's bottom-center fixed to its projected geographic point.
+ * `box` is in viewport pixels; x/y/anchorX/anchorY are SVG world units. Images
+ * render inside the local 80px frame at x=-size/2, y=0, bottom-aligned at size.
+ * The exact location is local (anchorLocalX, anchorLocalY) = (0, size); a small
+ * point can mark it. Title baseline is size + 12 pixels. Colliding or clipped
+ * cards are hidden rather than moved away from their real coordinates.
  * Empty or not-yet-measured viewports return an empty layout.
  */
 export function layoutLandmarks(items, view, viewport = {}, options = {}) {
@@ -53,26 +45,23 @@ export function layoutLandmarks(items, view, viewport = {}, options = {}) {
     if (anchorScreenX < 0 || anchorScreenX > width || anchorScreenY < 0 || anchorScreenY > height) continue;
     const boxWidth = Math.max(iconSize, String(item.title ?? '').length * 9) + 12;
     const boxHeight = iconSize + 20;
-    for (const [dx, dy] of OFFSETS) {
-      const centerX = anchorScreenX + dx;
-      const topY = anchorScreenY - iconSize / 2 + dy;
-      const box = {x: centerX - boxWidth / 2, y: topY, width: boxWidth, height: boxHeight};
-      const padded = expand(box);
-      if (padded.x < MARGIN || padded.y < MARGIN || padded.x + padded.width > width - MARGIN || padded.y + padded.height > height - MARGIN) continue;
-      if (occupied.some(other => overlaps(padded, other))) continue;
-      placed.push({
-        ...item,
-        x: view.x + (centerX - letterboxX) / renderScale,
-        y: view.y + (topY - letterboxY) / renderScale,
-        scale,
-        size: iconSize,
-        anchorX: anchor.x,
-        anchorY: anchor.y,
-        box
-      });
-      occupied.push(padded);
-      break;
-    }
+    const box = {x: anchorScreenX - boxWidth / 2, y: anchorScreenY - iconSize, width: boxWidth, height: boxHeight};
+    const padded = expand(box);
+    if (padded.x < MARGIN || padded.y < MARGIN || padded.x + padded.width > width - MARGIN || padded.y + padded.height > height - MARGIN) continue;
+    if (occupied.some(other => overlaps(padded, other))) continue;
+    placed.push({
+      ...item,
+      x: anchor.x,
+      y: anchor.y - iconSize * scale,
+      scale,
+      size: iconSize,
+      anchorX: anchor.x,
+      anchorY: anchor.y,
+      anchorLocalX: 0,
+      anchorLocalY: iconSize,
+      box
+    });
+    occupied.push(padded);
   }
   return placed;
 }

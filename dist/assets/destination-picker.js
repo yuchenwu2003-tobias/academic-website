@@ -65,7 +65,7 @@ export function mountDestinationPicker(root,{region,getPins,onAdd}) {
     results.innerHTML=visible.length?visible.map(place=>{
       const added=findDestinationPin(place,pins),country=countryFor(place);
       return `<article class="destination-pick-card ${added?'is-added':''}"><div class="destination-pick-meta"><span>${place.kind==='city'?'城市':'地标与风景'}</span><span>${esc(country.name)}</span></div><h3>${esc(place.name)}</h3><p class="destination-english">${esc(place.english)}</p><button type="button" class="destination-pick-add" data-destination-add="${esc(place.id)}" ${added?'disabled':''} aria-label="${esc(place.name)}${added?'，已在地图中':'，加入旅行心愿'}"><span aria-hidden="true">${added?'✓':'＋'}</span> ${added?'已在地图中':'加入心愿'}</button></article>`;
-    }).join(''):`<p class="destination-pick-empty">${candidates.length?'试试其他地名，或切换到“全部”。':'这里还没有预置地点。你仍然可以在地图上放置标记，或输入坐标。'}</p>`;
+    }).join(''):`<p class="destination-pick-empty">${candidates.length?'试试其他地名，或切换到“全部”。':'这里还没有预置地点。你仍然可以搜索地名，或在地图上放置标记。'}</p>`;
     more.hidden=visible.length>=matches.length;
     if(!more.hidden)more.innerHTML=`再看看更多 <span>↓</span><small>还有 ${matches.length-visible.length} 个</small>`;
   }
