@@ -1,0 +1,15 @@
+Country and region flag artwork
+Source: https://github.com/lipis/flag-icons
+Assets: https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/<iso2>.svg
+License: MIT; copied unchanged in LICENSE.txt.
+Retrieved: 2026-10-17.
+
+Mapping source: local Natural Earth 1:110m Admin 0 Countries GeoJSON.
+ADM0_A3 is matched to existing map-country ids. ISO_A2_EH is preferred over ISO_A2.
+The map names are preserved from geography-data.js.
+XK is the Natural Earth code for Kosovo; the repository supplies xk.svg.
+TW identifies the Taiwan map unit. AQ identifies Antarctica; aq.svg is the repository’s territory symbol.
+No ISO2 code is assigned in this dataset for cyn (Northern Cyprus) or sol (Somaliland).
+Those two entries explicitly have null code/src; no replacement country flag is invented.
+
+Map entries: 177. Local SVG files: 175. SVG bytes: 1211237.

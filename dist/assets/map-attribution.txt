@@ -12,7 +12,7 @@ The projection follows the equal-area approach promoted by the UN; country bound
 data is from Natural Earth. This website is not an official United Nations map.
 The illustrations are navigation aids, not the owner's saved travel destinations.
 
-Current interactive asset: geography-data.js, 177 country/area features.
+Current interactive assets: geography-data.js and geography-detail/, 177 country/area features.
 Uniform scale 176, origin [500,250], SVG viewBox 0 0 1000 500.
 
 Dataset: Natural Earth 1:110m Admin 0 - Countries
@@ -21,6 +21,16 @@ Project: https://github.com/nvkelso/natural-earth-vector
 License: Public domain; no permission or attribution required.
 Terms: https://www.naturalearthdata.com/about/terms-of-use/
 Accessed: 2026-10-17
+
+Progressive detail uses the same Natural Earth Admin 0 source at 1:50 million
+and 1:10 million scales, projected to Equal Earth. These are map scales,
+not metre-level positional accuracy. Detail is loaded only when needed.
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson
+
+Flags: local flag-icons SVGs, MIT; see flags/LICENSE.txt and flags/SOURCES.txt.
+Antarctica uses a regional symbol, not an official national flag. Geographic
+units without an ISO2 flag use a neutral placeholder.
 
 Legacy static asset retained for compatibility: world-map.svg
 Projection: Equirectangular / plate carree, longitude [-180,180], latitude [-90,90].

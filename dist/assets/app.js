@@ -2,6 +2,7 @@ import {renderTravelMap,mountTravelMap} from './travel-map.js';
 import {resolveRegion,continentById,regionHref} from './geography.js';
 import {renderInterests} from './interests.js';
 import {renderPortrait} from './portrait.js';
+import {refreshTranslations} from './i18n.js';
 const icons = {
   interests:'<path d="M10 17S2 12 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 5-8 10-8 10Z"/>',
   travel:'<circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3a14 14 0 0 1 0 14 14 14 0 0 1 0-14Z"/>',
@@ -106,6 +107,7 @@ export function renderRoute() {
   if (['home','travel'].includes(route)) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[],route==='travel'?region:{kind:'world',name:'世界'});
   if (currentRoute) { window.scrollTo({top:0,behavior:'instant'}); main.focus({preventScroll:true}); }
   currentRoute=route;
+  refreshTranslations();
 }
 
 async function start() {

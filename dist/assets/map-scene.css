@@ -4,3 +4,181 @@
 @media(max-width:1180px){.continent-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.country-directory{grid-template-columns:repeat(3,minmax(0,1fr))}.map-gesture-hint{font-size:8px}.continent-card{padding:18px 15px}}
 @media(max-width:700px){.map-style-bar{padding:10px 12px;gap:8px}.map-style-switch button{font-size:9px;padding:6px 10px}.map-gesture-hint{max-width:120px;font-size:8px;line-height:1.8;text-align:right}.map-breadcrumbs{position:static;display:flex;top:auto;left:auto;right:auto;border:0;padding:23px 0 0;margin:0;font-size:9px;gap:9px}.map-page:has(.map-breadcrumbs) .page-heading{padding-top:24px}.geo-directory-title h2{font-size:22px}.geo-directory-title>span{display:none}.continent-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.continent-card h3{font-size:24px}.country-directory{grid-template-columns:repeat(2,minmax(0,1fr))}.country-directory-link{padding:13px}.country-directory-link>span:first-child{font-size:11px}.geo-country-search{min-width:130px;max-width:150px}.geo-country-search input{font-size:10px}.map-hover-label{font-size:8px;padding:4px 7px;left:9px;bottom:8px}.map-hover-label span{display:none}.map-scale{font-size:6px;min-width:29px}.map-zoom button{min-width:31px;min-height:30px}.map-data-credit{max-width:none}.world-map{height:auto;aspect-ratio:2/1;min-height:230px}}
 @media(max-width:460px){.map-style-switch button{font-size:9px;padding:6px 8px}.map-gesture-hint{font-size:7px;max-width:105px}.continent-card{padding:15px 13px}.continent-card>.mono{font-size:6px}.continent-card h3{font-size:22px}.continent-card p{font-size:8px}.geo-directory-title{flex-wrap:wrap;gap:13px}.geo-country-search{max-width:none;width:100%}.country-directory-link small{font-size:7px}.map-data-credit{font-size:7px}.map-breadcrumbs{flex-wrap:wrap}}
+
+/* Detail layers and atlas illustrations are positioned in screen space by JS. */
+.cartoon-landmarks .map-landmark {
+  cursor: pointer;
+  outline: none;
+}
+.map-landmark > svg {
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  filter: drop-shadow(0 2px 2px #454b3221);
+  transition: filter .15s ease;
+}
+.map-landmark text {
+  fill: #515c3b;
+  font: 9px var(--sans);
+  font-weight: 500;
+  paint-order: stroke;
+  stroke: #fff8e8;
+  stroke-width: 2.7px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.map-landmark:hover > svg,
+.map-landmark:focus-visible > svg {
+  filter: drop-shadow(0 0 4px #b07d40b3) drop-shadow(0 2px 2px #454b3221);
+}
+.map-landmark:hover text,
+.map-landmark:focus-visible text {
+  fill: #9e6038;
+}
+.map-landmark:focus-visible text { text-decoration: underline; }
+[data-map-style=cartoon] .continent-labels {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.map-hover-label {
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  max-width: calc(100% - 30px);
+  padding: 6px 10px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #5e704c;
+  box-shadow: 0 1px 6px #4154350d;
+  overflow-wrap: anywhere;
+}
+.map-hover-label span { color: #71825e; font-size: 9px; }
+[data-map-style=cartoon] .map-hover-label { color: #74603e; }
+.map-hover-label img.country-flag {
+  display: block;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 18px;
+  max-width: none;
+  object-fit: cover;
+  border: 1px solid #77876342;
+  border-radius: 1px;
+  background: #fff;
+}
+.map-hover-label .country-flag-placeholder {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 18px;
+  border: 1px dashed #8b9979;
+  border-radius: 1px;
+  background: #e9eddf;
+  color: #78856a;
+  font: 11px/1 var(--sans);
+}
+.map-hover-label .country-flag-placeholder:empty::before { content: '–'; }
+.map-detail-status,
+.map-cartoon-hint {
+  position: absolute;
+  z-index: 2;
+  left: 15px;
+  max-width: calc(100% - 95px);
+  color: #687b53;
+  background: #f8faf0e8;
+  border: 1px solid #cdd8c0;
+  border-radius: 3px;
+  pointer-events: none;
+  font-size: 10px;
+  line-height: 1.65;
+  box-shadow: 0 1px 5px #4154350a;
+  overflow-wrap: anywhere;
+}
+.map-detail-status {
+  top: 14px;
+  padding: 5px 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.map-cartoon-hint {
+  display: none;
+  top: 50px;
+  padding: 5px 9px;
+  color: #8a744e;
+  background: #fff7e7e8;
+  border-color: #d9c9a7;
+}
+[data-map-style=cartoon] .map-cartoon-hint { display: block; }
+.map-detail-status:empty,
+.map-cartoon-hint:empty { display: none; }
+.map-zoom { z-index: 4; }
+.map-placement-hint { z-index: 5; }
+.is-placing .map-cartoon-hint,
+.is-placing .map-hover-label { visibility: hidden; }
+
+[data-theme=dark] .map-landmark > svg {
+  filter: drop-shadow(0 2px 3px #09130bc2);
+}
+[data-theme=dark] .map-landmark text {
+  fill: #f4eace;
+  stroke: #203128;
+  stroke-width: 2.9px;
+}
+[data-theme=dark] .map-landmark:hover > svg,
+[data-theme=dark] .map-landmark:focus-visible > svg {
+  filter: drop-shadow(0 0 4px #d5ba6cbd) drop-shadow(0 2px 3px #09130bc2);
+}
+[data-theme=dark] .map-landmark:hover text,
+[data-theme=dark] .map-landmark:focus-visible text { fill: #ffd29e; }
+[data-theme=dark] .map-hover-label img.country-flag { border-color: #f3efdb47; }
+[data-theme=dark] .map-hover-label .country-flag-placeholder {
+  border-color: #8a9d75;
+  background: #35452e;
+  color: #c5d5b2;
+}
+[data-theme=dark] .map-detail-status {
+  color: #c2d2ad;
+  background: #233224eb;
+  border-color: #546846;
+}
+[data-theme=dark] .map-cartoon-hint {
+  color: #e1c99d;
+  background: #353c29eb;
+  border-color: #7b7751;
+}
+@media(max-width:700px) {
+  .map-hover-label {
+    left: 10px;
+    bottom: 9px;
+    gap: 6px;
+    min-height: 31px;
+    max-width: calc(100% - 20px);
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+  .map-hover-label span { display: inline; }
+  .map-hover-label .country-flag-placeholder { display: inline-grid; }
+  .map-hover-label .map-hover-meta { display: none; }
+  .map-detail-status,
+  .map-cartoon-hint {
+    left: 10px;
+    max-width: calc(100% - 69px);
+    font-size: 9px;
+  }
+  .map-detail-status { top: 10px; padding: 4px 7px; }
+  .map-cartoon-hint { top: 43px; padding: 4px 7px; }
+}
+@media(max-width:460px) {
+  .map-gesture-hint { max-width: 98px; }
+  .map-detail-status,
+  .map-cartoon-hint { font-size: 8px; }
+  .map-hover-label { font-size: 9px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .map-landmark > svg { transition: none; }
+}

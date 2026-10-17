@@ -1,0 +1,29 @@
+旅游目的地坐标 / Destination coordinates
+
+城市坐标：GeoNames geographical database (https://www.geonames.org/),
+Creative Commons Attribution 4.0 International (CC BY 4.0).
+License: https://creativecommons.org/licenses/by/4.0/
+Official data: https://download.geonames.org/export/dump/cities5000.zip
+Official field definitions and license: https://download.geonames.org/export/dump/readme.txt
+Country-code metadata: https://download.geonames.org/export/dump/countryInfo.txt
+Downloaded and selected: 2026-10-17.
+
+This curated collection selects 214 cities from the GeoNames cities5000 export.
+Coordinates are unchanged WGS84 decimal-degree values from the matching city
+records. Chinese display names, a curated selection, stable IDs, priority values,
+and the website's country/continent identifiers were added. Hong Kong and Macau
+records are presented under the website's China route. The selection is a starting
+collection for personal travel planning, not a tourist-arrival or quality ranking.
+GeoNames does not endorse this website.
+
+城市坐标表示城市中心参考点，不是景区入口、住宿位置或精确导航目的地。
+City coordinates are representative city-centre points, not attraction entrances,
+accommodation locations or turn-by-turn navigation destinations.
+
+36 landmark/viewpoint locations are reused unchanged from this website's existing
+landmark-catalog.js. Those entries have kind: 'landmark'; GeoNames city attribution
+does not claim provenance for the pre-existing landmark coordinates. Landscape
+locations represent one viewpoint, not an entire natural region.
+
+The source data is provided by GeoNames "as is", without warranty or any
+representation of accuracy, timeliness or completeness.

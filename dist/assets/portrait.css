@@ -21,14 +21,14 @@
   display: block;
   left: 50%;
   top: 50%;
-  width: 614.4%;
+  width: 900%;
   max-width: none;
   height: auto;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
-  transform: translate(-52.27%, -59.375%);
+  transform: translate(-52.27%, -60%);
 }
 [data-theme="dark"] .profile-photo {
   border-color: #58654d;
@@ -39,4 +39,3 @@
   .profile-photo--small { --portrait-size: 56px; }
   .profile-photo--about { --portrait-size: 140px; }
 }
-

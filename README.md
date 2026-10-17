@@ -1,10 +1,12 @@
 # Tobias 个人网站
 
-首页由个人介绍、旅行地图预览两块组成；完整旅行地图、文章与视频收藏通过独立入口访问。网站使用纯 HTML、CSS 和原生 JavaScript，发布内容集中保存在 `dist/content/site.json`，没有构建依赖。
+首页由个人介绍、旅行地图预览两块组成；完整旅行地图、兴趣爱好、文章与视频收藏通过独立入口访问。网站使用纯 HTML、CSS 和原生 JavaScript，个人内容集中保存在 `dist/content/site.json`，地图与目的地目录保存在独立资源文件中，没有构建依赖。
 
-显示姓名暂用 GitHub handle 中的 **Tobias**，可随时修改。默认导航为首页、旅行地图、文章、视频与关于，作品栏目作为可启用的扩展入口保留。
+显示姓名为 **Tobias**，可随时修改。默认导航为首页、旅行地图、兴趣爱好、文章、收藏视频与关于我；项目栏目默认隐藏，可按需启用。
 
 右上角的白昼 / 黑夜按钮可切换主题，并会记住当前浏览器的选择。
+
+语言切换提供简体中文、繁體中文和 English，选择保存在当前浏览器。翻译在本地完成，覆盖界面和预置地名；文章、个人标记的名称与备注保留原文。新增界面文案时同步维护 `dist/assets/i18n.js`，不要将个人记录写进翻译字典。
 
 ## 本地运行与检查
 
@@ -28,7 +30,14 @@ node scripts/check.mjs
 | --- | --- |
 | `dist/` | 可直接部署的网站文件 |
 | `dist/content/site.json` | 个人资料、发布的旅行地点、链接、导航、文章、视频与作品 |
-| `dist/assets/world-map.svg` | Natural Earth 世界地图底图 |
+| `dist/assets/geography-data.js`、`geography-detail/` | 世界概览、区域与高清国界数据 |
+| `dist/assets/destination-catalog.js` | 250 个预置城市与地标坐标 |
+| `dist/assets/destinations-attribution.txt` | GeoNames 城市坐标来源与 CC BY 4.0 许可 |
+| `dist/assets/landmark-catalog.js`、`travel-landmarks-atlas-v2.png` | 36 幅卡通地标及位置、优先级 |
+| `dist/assets/country-flags.js`、`flags/` | 国家与地区旗帜映射、SVG 与许可 |
+| `dist/assets/i18n.js` | 三语言界面与预置地名翻译 |
+| `dist/assets/portrait.css` | 头像显示大小与脸部裁切位置 |
+| `dist/assets/world-map.svg` | 保留的旧静态兼容底图 |
 | `dist/assets/map-attribution.txt` | 地图数据来源与公共领域许可说明 |
 | `scripts/serve.mjs` | 本地预览服务 |
 | `scripts/check.mjs` | 项目检查 |
@@ -50,12 +59,15 @@ node scripts/check.mjs
     "eyebrow": "记录思考，持续创造",
     "description": "放在首页的简短介绍。",
     "bio": "更完整的个人介绍。",
-    "location": "你的城市"
+    "location": "你的城市",
+    "avatar": "assets/portrait.jpg"
   }
 }
 ```
 
 `name` 为显示名，`eyebrow` 为短句，`description` 为首页摘要，`bio` 为关于页介绍。可选的 `location` 显示在关于页。`handle` 保留为身份资料，目前不在页面显示。
+
+可选的 `avatar` 用于侧栏、首页和关于页。现有头像通过 CSS 将原照片放大至显示窗口宽度的 **900%**，并设置 `translate(-52.27%, -60%)` 对准脸部；原照片像素没有改写。更换照片后在 `portrait.css` 调整裁切位置；只想放大圆形头像时修改对应的 `--portrait-size`。
 
 `links` 保存个人外部链接：
 
@@ -72,11 +84,17 @@ node scripts/check.mjs
 
 ## 使用与编辑旅行地图
 
-首页第二块保留旅行地图预览；左侧“旅行地图”进入 `#/travel` 独立页面，查看和管理完整地图。初始地点为空，供你添加自己的旅行心愿与足迹。
+首页第二块保留地图预览；左侧“旅行地图”进入 `#/travel`。点击大洲进入 `#/travel/continent/asia` 等页面，再点击国家或地区进入 `#/travel/country/dnk` 等页面。各层地址支持直接打开、刷新和浏览器前进后退。
 
-在旅行地图页点击“添加地点”，再选择地图位置，填写名称、备注与“想去 / 去过”状态后保存；也可以输入经纬度确定位置。已有地点支持编辑和删除。地图支持缩放与重置视图，方便查看密集的标记。
+完整地图下方提供 **250 个预录目的地：214 座城市与 36 个地标，覆盖 79 个国家或地区标识**。候选按当前世界、大洲或国家筛选，支持地名搜索、城市／地标筛选与“再看看更多”。点击“加入心愿”即按已有坐标添加“想去”标记，之后可在地图上编辑备注与状态；重复地点会显示“已在地图中”。这些候选是参考目录，只有点击添加后才计入个人地点，初始个人清单仍为空。城市坐标来自 [GeoNames](https://www.geonames.org/)，表示中心参考点，并非景区入口；来源与许可见 `destinations-attribution.txt`。
+
+也可以点击“添加地点”后在地图上放置 📌，或使用“输入坐标”；已有地点支持编辑和删除。鼠标滚轮以光标为中心缩放，拖动可平移，`＋ / −` 与重置按钮提供同样的视图控制。
+
+预置目录在 `destination-catalog.js` 中维护，保留稳定的 `id`、`country`、`continent`、`lat`、`lon`、`kind` 与 `priority`。添加后的 ID 为 `destination-<目录 id>`；其位置仍在源点 150 米内时，区域归属沿用目录，避免小岛或海岸的概览轮廓误判。手工标记按坐标与地图多边形归属；海上位置可在世界页查看。新加坡和马尔代夫已有候选坐标，但当前底图没有独立国家入口，因此可在世界／亚洲页加入。不要为它们生成未注册的国家路由。
 
 地图最多保留 1000 个可见地点。通过页面添加的标记默认只保存在当前浏览器的 `localStorage`，不会云同步，也不会自动写回网站源码。换设备时先导出 JSON，再在另一台设备导入；导入文件上限为 5 MB。导出文件也保留已隐藏的发布地点记录，导入时与当前地图合并。清理浏览器数据可能移除这些标记，建议定期导出备份。
+
+浏览器不能保存时，页面会明确提示：本次修改暂存在当前页面，需导出地图备份；看到已添加状态不代表已成功写入持久存储。
 
 若要把地点发布给所有有权访问网站的访问者，在 `dist/content/site.json` 的 `travel.destinations` 中配置地点并重新发布网站。`travel.title` 与 `travel.description` 设置旅行内容的标题和介绍：
 
@@ -104,7 +122,19 @@ node scripts/check.mjs
 
 `id` 应唯一。`lat` 与 `lon` 可省略，但填写时必须成对出现，且必须为数字；纬度范围为 `-90` 至 `90`，经度范围为 `-180` 至 `180`。有坐标的地点才能在地图上定位，最多配置 1000 个；其 `name` 最长 80 个字符、`description` 最长 500 个字符、`id` 最长 93 个字符（地图内部会添加 `source-` 前缀）。可选的 `status` 为 `want`（想去）或 `visited`（去过），省略时默认想去。
 
-`url` 与 `image` 是可省略的保留元数据，目前地图只使用坐标、名称、说明和 `status`，不会显示目的地照片或链接。保留链接应使用完整的 http(s) 地址；保留本地图片应放入 `dist/` 内，并填写相对该目录的路径。配置文件中的地点属于发布内容；浏览器内保存的个人标记属于本地数据，两者无需服务器存储。地图底图使用公共领域 Natural Earth 数据，未接入订票或实时信息服务。
+`url` 与 `image` 是可省略的保留元数据，目前地图只使用坐标、名称、说明和 `status`。保留链接应使用完整的 http(s) 地址；保留本地图片应放入 `dist/` 内，并填写相对该目录的路径。配置文件中的地点属于发布内容；浏览器内保存的个人标记属于本地数据。
+
+### 地图样式、精度与旗帜
+
+地图采用 **Equal Earth 等面积投影**，参考[联合国关于等面积地图的倡议](https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map)；边界来自公共领域 [Natural Earth](https://www.naturalearthdata.com/)，并非联合国发布的官方边界地图。
+
+国界按缩放逐级加载 **110m 世界概览 → 50m 区域细节 → 10m 高清细节**。这里的 `m` 表示 million：对应约 1:1.1 亿、1:5000 万和 1:1000 万地图比例尺，**不是 110 米／50 米／10 米定位精度**。路径为矢量，放大时同时换用更细的轮廓；加载失败会保留可用轮廓并显示提示。177 个地理单元及其路由 ID 保持一致。
+
+“地理地图”与“插画地图”共用坐标和个人标记。插画模式使用 **36 幅新版 3D 卡通地标与风景**；布局会避让其他插画、文字和控件，空间不足时隐藏部分插画，放大后逐步显示更多。插画仅用于辨认和探索地点，不代表本人想去或去过；它们与候选目录、个人 📌 分开计数。增补插画时同时维护图集单元、`landmark-catalog.js` 的 `cell`、地理坐标和 `priority`，再检查各洲与手机视图是否重叠。
+
+旗帜来自本地保存的 [flag-icons](https://github.com/lipis/flag-icons) SVG，使用 MIT 许可；来源与原许可保存在 `flags/SOURCES.txt` 和 `flags/LICENSE.txt`。南极没有统一官方国旗，只作地理符号说明；北塞浦路斯（`cyn`）、索马里兰（`sol`）没有当前数据对应的 ISO2 旗帜资源，显示占位符，不借用其他国家旗帜。新增单元时先核对映射和许可。
+
+相关逻辑：`projection.js` 负责投影与逆投影，`geography.js` 负责地区路由和标记归属，`map-detail.js` 加载国界细节，`landmark-layout.js` 计算插画避让。更换投影或边界数据时保留个人标记的经纬度、名称、备注与状态；现有版本 1 的 JSON 备份无需转换。
 
 ## 添加作品（预留栏目）
 
@@ -203,10 +233,11 @@ node scripts/check.mjs
   "navigation": [
     { "id": "home", "label": "首页", "enabled": true },
     { "id": "travel", "label": "旅行地图", "enabled": true },
+    { "id": "interests", "label": "兴趣爱好", "enabled": true },
     { "id": "writing", "label": "文章", "enabled": true },
-    { "id": "videos", "label": "视频", "enabled": true },
-    { "id": "about", "label": "关于", "enabled": true },
-    { "id": "projects", "label": "作品", "enabled": false }
+    { "id": "videos", "label": "收藏视频", "enabled": true },
+    { "id": "about", "label": "关于我", "enabled": true },
+    { "id": "projects", "label": "项目", "enabled": false }
   ]
 }
 ```
@@ -221,13 +252,16 @@ node scripts/check.mjs
 | --- | --- |
 | `#/` | 首页 |
 | `#/travel` | 完整旅行地图与地点管理 |
+| `#/travel/continent/<id>` | 大洲地图与国家入口 |
+| `#/travel/country/<id>` | 国家或地区地图 |
+| `#/interests` | 兴趣爱好 |
 | `#/writing` | 文章列表 |
 | `#/videos` | 视频收藏 |
 | `#/about` | 关于 |
 | `#/post/<id>` | 文章详情 |
 | `#/projects` | 预留作品页，默认隐藏导航入口 |
 
-`app.js` 导出 `pageRenderers` 映射，现有键为 `home`、`travel`、`writing`、`videos`、`about` 与 `projects`。`renderRoute` 根据 hash 路径选择页面，`navigation` 中的 `id` 对应映射中的键。
+`app.js` 导出 `pageRenderers` 映射，现有键为 `home`、`travel`、`interests`、`writing`、`videos`、`about` 与 `projects`。`renderRoute` 根据 hash 路径选择页面，`navigation` 中的 `id` 对应映射中的键。大洲 ID 为 `asia`、`europe`、`africa`、`north-america`、`south-america`、`oceania`、`antarctica`；国家或地区 ID 沿用 Natural Earth 的 `ADM0_A3` 小写形式。
 
 例如未来增加“阅读”栏目，可以沿用现有结构：
 
@@ -239,7 +273,7 @@ node scripts/check.mjs
 
 `now`、`featured`、`accent` 为预留字段，当前页面不读取它们；修改这些值不会产生可见变化。保留现有默认值即可。`extensionNotes` 记录维护约定，也不直接生成页面功能。
 
-`profile.avatar` 现用于侧栏、首页和关于页头像。网站用原始照片加圆形显示窗口呈现面部，裁切位置在 `portrait.css` 中设置，照片像素未被改写。私人头像照片及该配置字段不包含在公开 GitHub 源码中；私有 Sites 源码和本人下载的交付包保留照片。
+私人头像照片及该配置字段不包含在公开 GitHub 源码中；私有 Sites 源码和本人下载的交付包保留照片。
 
 ## 未来接入 CMS 或更多功能
 
@@ -255,26 +289,6 @@ node scripts/check.mjs
 2. 本地预览涉及的页面，检查手机布局与外部链接。
 3. 运行 `node scripts/check.mjs`。
 4. 备份源码到 GitHub，并按托管方式更新 `dist/`。
-
-## 分层旅行地图与 Equal Earth 投影
-
-旅行地图现可从世界进入大洲，再点击国家或地区继续查看；地图与对应列表都提供入口。每层都有独立的 hash 地址，可以直接打开、刷新或使用浏览器前进后退：
-
-| 地址 | 范围 |
-| --- | --- |
-| `#/travel` | 世界与七大洲入口 |
-| `#/travel/continent/asia` | 亚洲；其他大洲使用各自稳定 ID |
-| `#/travel/country/chn` | 由数据中 `chn` 标识的国家页面；其他国家或地区同理 |
-
-大洲 ID 为 `asia`、`europe`、`africa`、`north-america`、`south-america`、`oceania`、`antarctica`。国家或地区 ID 沿用 Natural Earth 的 `ADM0_A3` 小写形式。当前数据保留 177 个地理单元及其多边形、岛屿和孔洞；地点根据经纬度归入相应国家或地区，再按大洲筛选显示。落在海洋的标记仍可在世界页查看。
-
-地图可切换**卡通导览**与**地理地图**两种样式。卡通样式中的著名地标用于导航和辨认区域，属于地图插图，不代表 Tobias 收藏过或去过，也不会加入个人地点数量。两种样式使用同一组地理坐标与个人标记。
-
-地图支持鼠标滚轮以光标位置为中心缩放、拖动平移、`＋ / −` 按钮缩放，以及重置视图。放大后点击大洲或国家可进入对应页面；添加地点模式用于放置个人 📌。
-
-地图采用 **Equal Earth 等面积投影**，参考联合国在 2026 年 9 月“Correct the Map”倡议中鼓励使用 Equal Earth 等投影的说明：[联合国非洲问题特别顾问办公室原文](https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map)。地理边界仍来自公共领域的 [Natural Earth 1:110m Admin 0 – Countries 数据](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson)；这不是联合国发布的官方边界地图。
-
-`dist/assets/projection.js` 负责投影与逆投影；`geography-data.js` 保存已经投影的地理数据与大洲视图；`geography.js` 负责地区路由、地理包含判断、标记筛选和视图计算。地图画面中的新位置由投影计算得到，**旧标记保存的纬度、经度、名称、状态与备注保持不变**，原有版本 1 的 JSON 备份仍使用同样的经纬度字段。
 
 ## 维护兴趣爱好页
 
