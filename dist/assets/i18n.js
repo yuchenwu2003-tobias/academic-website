@@ -1,10 +1,10 @@
-import {Converter} from './vendor/opencc/cn2t.js?v=20261018-linked-wiki-photos';
-import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-linked-wiki-photos';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-linked-wiki-photos';
-import {UI_EN} from './i18n-messages.js?v=20261018-linked-wiki-photos';
-import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-linked-wiki-photos';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-linked-wiki-photos';
-import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-linked-wiki-photos';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-trip-months';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-trip-months';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-trip-months';
+import {UI_EN} from './i18n-messages.js?v=20261018-trip-months';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-trip-months';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-trip-months';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-trip-months';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];

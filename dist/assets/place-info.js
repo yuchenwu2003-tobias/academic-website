@@ -1,10 +1,10 @@
-import {renderTripChips} from './trip-model.js?v=20261018-linked-wiki-photos';
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-linked-wiki-photos';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-linked-wiki-photos';
-import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-linked-wiki-photos';
-import {pinCountry} from './geography.js?v=20261018-linked-wiki-photos';
-import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-linked-wiki-photos';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-linked-wiki-photos';
+import {renderTripChips} from './trip-model.js?v=20261018-trip-months';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-trip-months';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-trip-months';
+import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-trip-months';
+import {pinCountry} from './geography.js?v=20261018-trip-months';
+import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-trip-months';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-trip-months';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
 const safeUrl = value => {try {const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';} catch {return '';}};

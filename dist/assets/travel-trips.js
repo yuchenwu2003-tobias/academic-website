@@ -1,12 +1,12 @@
-import {getTravelTrips,tripName,commitTravelTrip,createTripStop} from './trip-model.js?v=20261018-linked-wiki-photos';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-linked-wiki-photos';
-import {findDestinationPin} from './destination-picker.js?v=20261018-linked-wiki-photos';
-import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-linked-wiki-photos';
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-linked-wiki-photos';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-linked-wiki-photos';
-import {countryById,pinCountry} from './geography.js?v=20261018-linked-wiki-photos';
-import {pinStatusLabel,residencePeriod,residenceDuration,STORAGE_KEY} from './map-model.js?v=20261018-linked-wiki-photos';
-import {toTraditional,translateText} from './i18n.js?v=20261018-linked-wiki-photos';
+import {getTravelTrips,tripName,commitTravelTrip,createTripStop} from './trip-model.js?v=20261018-trip-months';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-trip-months';
+import {findDestinationPin} from './destination-picker.js?v=20261018-trip-months';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-trip-months';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-trip-months';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-trip-months';
+import {countryById,pinCountry} from './geography.js?v=20261018-trip-months';
+import {pinStatusLabel,residencePeriod,residenceDuration,STORAGE_KEY} from './map-model.js?v=20261018-trip-months';
+import {toTraditional,translateText} from './i18n.js?v=20261018-trip-months';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key=value=>toTraditional(String(value||'')).normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
 const safe=value=>{try{const u=new URL(value);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}};
@@ -32,7 +32,7 @@ export function tripCityOptions(records,{query='',country='all',selected=[]}={})
 export function renderTravelTrips({builder=false}={}){
   const html='<section class="travel-trips" data-travel-trips><div class="trip-section-heading"><div><span class="section-kicker mono">JOURNEYS & MEMORIES</span><h2>行程记录</h2></div><button type="button" class="map-add" data-trip-new>＋ 新建行程</button></div><p class="trip-help">按年份与地区命名，记录同一段旅途中的城市与评分。</p><div data-trip-list></div><p data-trip-message role="status"></p>'
   +'<dialog class="trip-dialog" data-trip-dialog aria-labelledby="trip-dialog-title"><form data-trip-form><div class="trip-dialog-top"><span class="mono">A JOURNEY TO REMEMBER</span><button type="button" data-trip-close aria-label="关闭行程编辑">×</button></div><h2 id="trip-dialog-title">新建行程</h2>'
-  +'<div class="trip-name-fields"><label>年份<input name="year" type="number" min="1900" max="9999" required></label><label>地区<input name="region" maxlength="80" placeholder="例如：台湾、瑞士、日本关西" required></label></div><p class="trip-name-preview" data-trip-name data-i18n-skip></p>'
+  +'<div class="trip-name-fields"><label>年份<input name="year" type="number" min="1900" max="9999" required></label><label>地区<input name="region" maxlength="80" placeholder="例如：台湾、瑞士、日本关西" required></label></div><fieldset class="trip-month-field"><legend>月份（选填）</legend><div role="group" aria-label="行程月份"><button type="button" data-trip-month="" aria-pressed="true">未填写月份</button><button type="button" data-trip-month="1" aria-pressed="false">1 月</button><button type="button" data-trip-month="2" aria-pressed="false">2 月</button><button type="button" data-trip-month="3" aria-pressed="false">3 月</button><button type="button" data-trip-month="4" aria-pressed="false">4 月</button><button type="button" data-trip-month="5" aria-pressed="false">5 月</button><button type="button" data-trip-month="6" aria-pressed="false">6 月</button><button type="button" data-trip-month="7" aria-pressed="false">7 月</button><button type="button" data-trip-month="8" aria-pressed="false">8 月</button><button type="button" data-trip-month="9" aria-pressed="false">9 月</button><button type="button" data-trip-month="10" aria-pressed="false">10 月</button><button type="button" data-trip-month="11" aria-pressed="false">11 月</button><button type="button" data-trip-month="12" aria-pressed="false">12 月</button></div></fieldset><p class="trip-name-preview" data-trip-name data-i18n-skip></p>'
   +'<div class="trip-editor-columns"><section class="trip-city-picker"><h3>选择城市</h3><div class="trip-picker-tabs" role="group" aria-label="城市来源"><button type="button" data-trip-scope="saved" aria-pressed="true">已标记城市</button><button type="button" data-trip-scope="other" aria-pressed="false">搜索其他地点</button></div>'
   +'<label class="trip-country-search">选择游玩的国家／地区<input type="search" data-trip-country-query placeholder="搜索国家／地区…" autocomplete="off"></label><div class="trip-country-filters" data-trip-countries role="group" aria-label="游玩的国家／地区"></div><button type="button" class="text-link" data-trip-countries-more hidden>更多国家／地区</button>'
   +'<label class="trip-city-search">添加城市<input type="search" data-trip-query placeholder="搜索城市或景点…" autocomplete="off"></label><button type="button" class="text-link" data-trip-search hidden>搜索更多城市</button><p class="trip-help" data-trip-choice-count role="status"></p><div class="trip-city-results" data-trip-results></div><button type="button" class="text-link" data-trip-more hidden>显示更多城市</button></section>'
@@ -51,13 +51,13 @@ export function mountTravelTrips(root,{getPins,onSave,onChanged=()=>{},loadMedia
   const isOpen=()=>builder||dialog.open;
   const latest=stop=>getPins().find(pin=>pin.id===stop.pin.id)||stop.pin;
   function drawList(){
-    const trips=getTravelTrips().slice().sort((a,b)=>b.year-a.year||a.region.localeCompare(b.region));
+    const trips=getTravelTrips().slice().sort((a,b)=>b.year-a.year||(b.month||0)-(a.month||0)||a.region.localeCompare(b.region));
     el('list').innerHTML=trips.length?trips.map(trip=>'<article class="trip-record"><div class="trip-record-heading"><h3 data-i18n-skip>'+esc(tripName(trip))+'</h3><button type="button" class="text-link" data-trip-edit="'+esc(trip.id)+'">编辑行程</button></div><div class="trip-record-stops">'+trip.stops.map(stop=>{
       const pin=getPins().find(pin=>pin.id===stop.pinId);
       return '<div>'+(pin?'<a href="'+esc(placeGuideHref(pin))+'" data-i18n-skip>'+esc(stop.title)+'</a>':'<strong data-i18n-skip>'+esc(stop.title)+'</strong>')+'<span class="trip-stop-score" aria-label="'+stop.rating+' / 5">'+'★'.repeat(stop.rating)+'<i>'+'☆'.repeat(5-stop.rating)+'</i></span></div>';
     }).join('')+'</div></article>').join(''):'<p class="trip-empty">还没有行程，记录下一段故事。</p>';
   }
-  function drawName(){el('name').textContent=(form.elements.year.value||translateText('年份'))+' · '+(form.elements.region.value||translateText('地区'));}
+  function drawName(){el('name').textContent=(form.elements.year.value||translateText('年份'))+(draft?.month?'.'+String(draft.month).padStart(2,'0'):'')+' · '+(form.elements.region.value||translateText('地区'));panel.querySelectorAll('[data-trip-month]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tripMonth===(draft?.month?String(draft.month):''))));}
   function mediaMarkup(pin){
     const entry=mediaSession?.cache.get(pin.id),media=entry?.value,image=safe(media?.imageUrl),wiki=safe(media?.wikipediaUrl||pin.wikipediaUrl);
     return '<div class="trip-place-picture">'+(image?'<img src="'+esc(image)+'" alt="'+esc(pin.title)+'" loading="lazy" referrerpolicy="no-referrer" data-trip-place-image data-i18n-skip>':'')+'<span data-trip-image-placeholder '+(image?'hidden':'')+'>'+(entry?.pending?'正在寻找地点图片…':'暂时没有可用图片')+'</span></div><div class="trip-place-links">'+(wiki?'<a href="'+esc(wiki)+'" target="_blank" rel="noopener noreferrer">维基百科 ↗</a>':'')+(safe(media?.imageCreditUrl)?'<a href="'+esc(media.imageCreditUrl)+'" target="_blank" rel="noopener noreferrer">图片及许可说明</a>':'')+'</div>';
@@ -120,7 +120,7 @@ export function mountTravelTrips(root,{getPins,onSave,onChanged=()=>{},loadMedia
     if(trip?.stops.some(stop=>!getPins().some(pin=>pin.id===stop.pinId))){message.textContent='有城市已取消标记，请先重新加入地图再编辑这段行程。';return;}
     controller?.abort();mediaSession?.controller.abort();revision++;remote=[];scope='saved';country='all';countryChosen=!builder;limit=12;countryLimit=12;
     mediaSession={controller:new AbortController(),cache:new Map(),queue:[],running:0};
-    draft={id:trip?.id||crypto.randomUUID(),stops:(trip?.stops||[]).map(stop=>createTripStop(getPins().find(pin=>pin.id===stop.pinId),{rating:stop.rating}))};
+    draft={id:trip?.id||crypto.randomUUID(),...(trip?.month===undefined?{}:{month:trip.month}),stops:(trip?.stops||[]).map(stop=>createTripStop(getPins().find(pin=>pin.id===stop.pinId),{rating:stop.rating}))};
     form.elements.year.value=trip?.year||new Date().getFullYear();form.elements.region.value=trip?.region||'';query.value='';countryQuery.value='';feedback.textContent='';panel.querySelector('#trip-dialog-title').textContent=trip?'编辑行程':'新建行程';
     drawName();drawStops();drawCountries();drawChoices();if(!builder)dialog.showModal();form.elements.region.focus({preventScroll:true});
   }
@@ -133,6 +133,7 @@ export function mountTravelTrips(root,{getPins,onSave,onChanged=()=>{},loadMedia
     const target=event.target;
     if(target.closest('[data-trip-new]')){window.location.hash='#/travel/trips/new';return;}const edit=target.closest('[data-trip-edit]');if(edit){window.location.hash='#/travel/trips/edit/'+encodeURIComponent(edit.dataset.tripEdit);return;}
     if(target.closest('[data-trip-close]')){close();return;}if(saving)return;
+    const monthButton=target.closest('[data-trip-month]');if(monthButton){const month=Number(monthButton.dataset.tripMonth);if(month>=1&&month<=12)draft.month=month;else delete draft.month;drawName();return;}
     const scopeButton=target.closest('[data-trip-scope]');if(scopeButton){scope=scopeButton.dataset.tripScope;controller?.abort();revision++;remote=[];limit=12;drawCountries();drawChoices();return;}
     const countryButton=target.closest('[data-trip-country]');if(countryButton){country=countryButton.dataset.tripCountry;countryChosen=true;controller?.abort();revision++;remote=[];limit=12;drawCountries();drawChoices();return;}
     if(target.closest('[data-trip-countries-more]')){countryLimit+=12;drawCountries();return;}if(target.closest('[data-trip-more]')){limit+=12;drawChoices();return;}if(target.closest('[data-trip-search]')){void search();return;}

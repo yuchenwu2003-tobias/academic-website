@@ -246,6 +246,8 @@ export const PLACE_SEARCH_UI_EN = {
   '自动：世界地图显示五星城市，大洲显示四星与五星，国家显示全部城市；国家图钉仅五星。居住星标保留显示。':'Auto: world maps show 5-star cities, continents show 4–5 stars, and country maps show all cities. Country pins require 5 stars. Residence stars remain visible.',
   '也可以逐个选择显示或隐藏，只影响地图，不改变收藏、评分和旅行状态。':'Show or hide individual places without changing saved places, ratings or travel status.',
   '评分页面':'Rating pages',
+  '月份（选填）':'Month (optional)','行程月份':'Trip month','未填写月份':'No month specified','行程月份请选择 1 至 12 月。':'Choose a trip month from 1 to 12.',
+  '1 月':'Jan','2 月':'Feb','3 月':'Mar','4 月':'Apr','5 月':'May','6 月':'Jun','7 月':'Jul','8 月':'Aug','9 月':'Sep','10 月':'Oct','11 月':'Nov','12 月':'Dec',
   '选择大洲':'Choose a continent','全部大洲':'All continents',
   '地图所示边界、名称及标注仅供参考，不代表对任何领土主权、边界划分或法律地位的立场。': 'Boundaries, names and labels on this map are for reference only and express no position on territorial sovereignty, boundary delimitation or legal status.',
   '这里还没有预置地点。你仍然可以搜索地名，或在地图上放置标记。': 'There are no preset places here yet. Search for a place, or drop a pin on the map.',

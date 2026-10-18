@@ -1,4 +1,4 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-linked-wiki-photos';
+import {COUNTRIES} from './geography-data.js?v=20261018-trip-months';
 
 export const ACADEMIC_STORAGE_KEY='tobias.academic-map.v1';
 export const ACADEMIC_BACKUP_TYPE='academic-map';

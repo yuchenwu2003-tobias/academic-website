@@ -1,5 +1,5 @@
-import {showTravelMapMarker,pinStatusLabel} from './map-model.js?v=20261018-linked-wiki-photos';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-linked-wiki-photos';
+import {showTravelMapMarker,pinStatusLabel} from './map-model.js?v=20261018-trip-months';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-trip-months';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const modes=[['auto','自动'],['show','显示'],['hide','隐藏']];
 export function renderMapVisibility(pin){
