@@ -61,14 +61,14 @@ function cards(rows){
     const guide=row.kind==='country'?`#/travel/guide/country/${encodeURIComponent(row.countryId)}`:row.saved?`#/travel/guide/place/${encodeURIComponent(row.pin.id)}`:null;
     const countryMap=!guide&&countryById.has(row.countryId)?`#/travel/country/${encodeURIComponent(row.countryId)}`:null;
     const stars=DESIRE_RATING_LABELS.slice(1).map((label,index)=>{const value=index+1;return `<button type="button" class="travel-rating-star ${value<=row.rating?'is-filled':''}" data-rating-key="${esc(row.key)}" data-rating-value="${value}" aria-pressed="${value===row.rating}" aria-label="${value} 分，${label}" title="${value} 分，${label}"><span aria-hidden="true">★</span></button>`;}).join('');
-    return `<article class="travel-rating-card ${row.saved?'is-saved':''}"><div class="travel-rating-meta"><span>${row.kind==='country'?'国家':esc(country?.name||'自定义地点')}</span><span>${row.saved?'已收藏':'未收藏'}</span></div><h2${row.saved?' data-i18n-skip':''}>${esc(row.title)}</h2>${row.english?`<p class="travel-rating-english">${esc(row.english)}</p>`:''}<div class="travel-rating-control"><div class="travel-rating-control-heading"><span>有多想去</span><span class="travel-rating-value">${row.rating?`${row.rating} / 5`:'未评分'}</span></div><div class="travel-rating-actions"><div class="travel-rating-stars" role="group" aria-label="${esc(row.title)}，有多想去" data-rating-group>${stars}</div><button type="button" class="travel-rating-clear" data-rating-clear="${esc(row.key)}" aria-label="清除评分" ${row.rating?'':'hidden'}>清除</button></div></div><div class="travel-rating-card-bottom">${guide?`<a href="${guide}">查看攻略 <span>↗</span></a>`:countryMap?`<a href="${countryMap}">查看国家地图 <span>↗</span></a>`:`<button type="button" data-rating-add="${esc(row.key)}">加入心愿 <span>＋</span></button>`}</div></article>`;
+    return `<article class="travel-rating-card ${row.saved?'is-saved':''}"><div class="travel-rating-meta"><span>${row.kind==='country'?'国家':esc(country?.name||'自定义地点')}</span><span>${row.saved?'已收藏':'未收藏'}</span></div><h2${row.saved?' data-i18n-skip':''}>${esc(row.title)}</h2>${row.english?`<p class="travel-rating-english">${esc(row.english)}</p>`:''}<div class="travel-rating-control"><div class="travel-rating-control-heading"><span>有多想去</span><span class="travel-rating-value">${row.rating?`${row.rating} / 5`:'未评分'}</span></div><div class="travel-rating-actions"><div class="travel-rating-stars" role="group" aria-label="${esc(row.title)}，有多想去" data-rating-group>${stars}</div></div></div><div class="travel-rating-card-bottom">${guide?`<a href="${guide}">查看攻略 <span>↗</span></a>`:countryMap?`<a href="${countryMap}">查看国家地图 <span>↗</span></a>`:`<button type="button" data-rating-add="${esc(row.key)}">加入心愿 <span>＋</span></button>`}</div></article>`;
   }).join('');
 }
 
 export function renderTravelRatings(pins=[]){
   const rows=travelRatingRows(pins);
   const initial=selectTravelRatingRows(rows.country).slice(0,24);
-  return `<section class="travel-ratings-page" data-travel-ratings><header class="page-heading"><span class="section-kicker mono">PLACES ON MY MIND</span><h1>有多想去<span>。</span></h1><p>国家是一份向往，城市与景点是另一份。分别打分，慢慢排出下一程。</p></header><div class="travel-ratings-tabs" role="tablist" aria-label="评分对象"><button type="button" role="tab" data-ratings-tab="country" aria-selected="true" aria-controls="travel-rating-results">国家</button><button type="button" role="tab" data-ratings-tab="city" aria-selected="false" aria-controls="travel-rating-results">城市与景点</button></div><div class="travel-ratings-tools"><div class="travel-ratings-scope" role="group" aria-label="目录范围"><button type="button" data-ratings-scope="saved" aria-pressed="true">已收藏</button><button type="button" data-ratings-scope="all" aria-pressed="false">全部目录</button></div><label class="travel-ratings-search"><span class="sr-only">搜索国家、城市或景点</span><input type="search" data-ratings-search placeholder="搜索国家、城市或景点…" autocomplete="off"></label><label class="travel-ratings-sort"><span class="sr-only">评分排序</span><select data-ratings-sort aria-label="评分排序"><option value="desc">想去程度：高到低</option><option value="asc">想去程度：低到高</option></select></label></div><p class="travel-ratings-help">1 分随缘，5 分非去不可；0 为未评分。为目录地点评分时，会将它加入心愿。</p><div class="travel-ratings-status"><span data-ratings-count role="status"></span><p data-ratings-feedback role="status"></p></div><div class="travel-ratings-grid" id="travel-rating-results" data-ratings-results role="tabpanel" aria-label="国家评分">${cards(initial)}</div><button type="button" class="text-link travel-ratings-more" data-ratings-more hidden>显示更多 <span>↓</span></button></section>`;
+  return `<section class="travel-ratings-page" data-travel-ratings><header class="page-heading"><span class="section-kicker mono">PLACES ON MY MIND</span><h1>有多想去<span>。</span></h1><p>国家是一份向往，城市与景点是另一份。分别打分，慢慢排出下一程。</p></header><div class="travel-ratings-tabs" role="tablist" aria-label="评分对象"><button type="button" role="tab" data-ratings-tab="country" aria-selected="true" aria-controls="travel-rating-results">国家</button><button type="button" role="tab" data-ratings-tab="city" aria-selected="false" aria-controls="travel-rating-results">城市与景点</button></div><div class="travel-ratings-tools"><div class="travel-ratings-scope" role="group" aria-label="目录范围"><button type="button" data-ratings-scope="saved" aria-pressed="true">已收藏</button><button type="button" data-ratings-scope="all" aria-pressed="false">全部目录</button></div><label class="travel-ratings-search"><span class="sr-only">搜索国家、城市或景点</span><input type="search" data-ratings-search placeholder="搜索国家、城市或景点…" autocomplete="off"></label><label class="travel-ratings-sort"><span class="sr-only">评分排序</span><select data-ratings-sort aria-label="评分排序"><option value="desc">想去程度：高到低</option><option value="asc">想去程度：低到高</option></select></label></div><p class="travel-ratings-help"><span>单击评分，双击清除。</span><span class="sr-only">键盘按 Enter 或空格评分，按 Delete 或退格清除。</span>1 分随缘，5 分非去不可；0 为未评分。为目录地点评分时，会将它加入心愿。</p><div class="travel-ratings-status"><span data-ratings-count role="status"></span><p data-ratings-feedback role="status"></p></div><div class="travel-ratings-grid" id="travel-rating-results" data-ratings-results role="tabpanel" aria-label="国家评分">${cards(initial)}</div><button type="button" class="text-link travel-ratings-more" data-ratings-more hidden>显示更多 <span>↓</span></button></section>`;
 }
 
 export function mountTravelRatings(root,{getPins,onSave}){
@@ -82,6 +82,13 @@ export function mountTravelRatings(root,{getPins,onSave}){
   const more=panel.querySelector('[data-ratings-more]');
   const states={country:{scope:'saved',query:'',sort:'desc',limit:24},city:{scope:'saved',query:'',sort:'desc',limit:24}};
   let kind='country',saving=false,stopped=false;
+  const pendingClicks=new Map();
+  const clickDelay=400;
+  let lastDouble={key:null,time:0};
+  function cancelPending(key){
+    const entries=key===undefined?[...pendingClicks]:[[key,pendingClicks.get(key)]];
+    for(const [id,pending]of entries){if(!pending)continue;clearTimeout(pending.timer);preview(pending.group);pendingClicks.delete(id);}
+  }
   function update(){
     if(stopped)return;
     const state=states[kind];
@@ -94,7 +101,7 @@ export function mountTravelRatings(root,{getPins,onSave}){
     grid.setAttribute('aria-label',kind==='country'?'国家评分':'城市与景点评分');
     count.textContent=`${matches.length} 个结果 · ${all.filter(row=>row.saved&&row.rating>0).length} 个已评分`;
     grid.innerHTML=visible.length?cards(visible):`<div class="travel-ratings-empty"><span aria-hidden="true">✳</span><p>${state.scope==='saved'?'这里还没有收藏的地点。切换到“全部目录”，选一个开始评分。':'没有匹配的地点，试试其他名字。'}</p></div>`;
-    grid.querySelectorAll('[data-rating-key],[data-rating-clear],[data-rating-add]').forEach(control=>{control.disabled=saving;});
+    grid.querySelectorAll('[data-rating-key],[data-rating-add]').forEach(control=>{control.disabled=saving;});
     more.hidden=visible.length>=matches.length;
   }
   async function save(key,value,explicitAdd=false){
@@ -105,7 +112,7 @@ export function mountTravelRatings(root,{getPins,onSave}){
     if(!pin&&explicitAdd)pin={...row.pin,kind:row.kind,desireRating:0};
     if(!pin){feedback.textContent='选择 1 至 5 分，会将这个地点加入心愿。';update();return;}
     saving=true;feedback.textContent='正在保存…';
-    grid.querySelectorAll('[data-rating-key],[data-rating-clear],[data-rating-add]').forEach(control=>{control.disabled=true;});
+    grid.querySelectorAll('[data-rating-key],[data-rating-add]').forEach(control=>{control.disabled=true;});
     try{
       const result=await onSave(pin);
       if(result===false||result?.ok===false||result?.success===false||result?.error)throw new Error(result?.error?.message||result?.error||result?.message||'评分未保存，请重试。');
@@ -117,25 +124,45 @@ export function mountTravelRatings(root,{getPins,onSave}){
       saving=false;update();
       // Updating the sorted cards replaces their controls. Keep keyboard focus
       // on the chosen star (or the first star after clearing) after the save.
-      if(!stopped)[...grid.querySelectorAll('[data-rating-key]')].find(button=>button.dataset.ratingKey===key&&Number(button.dataset.ratingValue)===(value||1))?.focus({preventScroll:true});
+      if(!stopped){const focused=[...grid.querySelectorAll('[data-rating-key]')].find(button=>button.dataset.ratingKey===key&&Number(button.dataset.ratingValue)===(value||1));focused?.focus({preventScroll:true});preview(focused?.closest('[data-rating-group]'));}
     }
+  }
+  function clearDouble(key){
+    if(lastDouble.key===key&&Date.now()-lastDouble.time<500)return;
+    cancelPending(key);lastDouble={key,time:Date.now()};void save(key,0);
+  }
+  function scheduleRating(star,event){
+    const key=star.dataset.ratingKey,value=Number(star.dataset.ratingValue);
+    if(event.detail===0){cancelPending(key);void save(key,value);return;}
+    const previous=pendingClicks.get(key);
+    // Detect two taps ourselves as touch browsers need not emit dblclick. No
+    // write or card replacement happens between the two taps.
+    if(event.detail>1||(previous&&previous.value===value&&Date.now()-previous.time<=clickDelay)){clearDouble(key);return;}
+    cancelPending(key);
+    const pending={value,time:Date.now(),group:star.closest('[data-rating-group]')};
+    preview(pending.group,value);
+    function commit(){
+      if(stopped||pendingClicks.get(key)!==pending)return;
+      if(saving){pending.timer=setTimeout(commit,30);return;}
+      pendingClicks.delete(key);void save(key,value);
+    }
+    pending.timer=setTimeout(commit,clickDelay);pendingClicks.set(key,pending);
   }
   function onClick(event){
     const star=event.target.closest('[data-rating-value]');
-    if(star){if(!star.disabled)void save(star.dataset.ratingKey,Number(star.dataset.ratingValue));return;}
-    const clear=event.target.closest('[data-rating-clear]');
-    if(clear){if(!clear.disabled)void save(clear.dataset.ratingClear,0);return;}
+    if(star){if(!star.disabled)scheduleRating(star,event);return;}
     const tab=event.target.closest('[data-ratings-tab]');
-    if(tab){kind=tab.dataset.ratingsTab;feedback.textContent='';update();return;}
+    if(tab){cancelPending();kind=tab.dataset.ratingsTab;feedback.textContent='';update();return;}
     const scope=event.target.closest('[data-ratings-scope]');
-    if(scope){states[kind].scope=scope.dataset.ratingsScope;states[kind].limit=24;update();return;}
-    if(event.target.closest('[data-ratings-more]')){states[kind].limit+=24;update();return;}
+    if(scope){cancelPending();states[kind].scope=scope.dataset.ratingsScope;states[kind].limit=24;update();return;}
+    if(event.target.closest('[data-ratings-more]')){cancelPending();states[kind].limit+=24;update();return;}
     const add=event.target.closest('[data-rating-add]');
     if(add)void save(add.dataset.ratingAdd,0,true);
   }
   function onChange(event){
-    if(event.target===sort){states[kind].sort=sort.value;states[kind].limit=24;update();}
+    if(event.target===sort){cancelPending();states[kind].sort=sort.value;states[kind].limit=24;update();}
   }
+  function onDoubleClick(event){const star=event.target.closest('[data-rating-value]');if(star&&!star.disabled){event.preventDefault();clearDouble(star.dataset.ratingKey);}}
   function preview(group,value=0){
     if(!group)return;
     group.classList.toggle('is-previewing',value>0);
@@ -147,19 +174,25 @@ export function mountTravelRatings(root,{getPins,onSave}){
   }
   function onPreviewEnd(event){
     const group=event.target.closest('[data-rating-group]');
-    if(group&&event.relatedTarget?.closest?.('[data-rating-group]')!==group)preview(group);
+    if(group&&event.relatedTarget?.closest?.('[data-rating-group]')!==group){const key=group.querySelector('[data-rating-key]')?.dataset.ratingKey;preview(group,pendingClicks.get(key)?.value||0);}
   }
   function onKeyDown(event){
     const star=event.target.closest('[data-rating-value]');
-    if(!star||star.disabled||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+    if(!star||star.disabled)return;
+    if(['Enter',' ','Delete','Backspace'].includes(event.key)){
+      event.preventDefault();cancelPending(star.dataset.ratingKey);
+      if(!event.repeat)void save(star.dataset.ratingKey,['Delete','Backspace'].includes(event.key)?0:Number(star.dataset.ratingValue));
+      return;
+    }
+    if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
     event.preventDefault();
     const current=Number(star.dataset.ratingValue);
     const value=event.key==='Home'?1:event.key==='End'?5:Math.max(1,Math.min(5,current+(['ArrowRight','ArrowUp'].includes(event.key)?1:-1)));
     star.closest('[data-rating-group]')?.querySelector(`[data-rating-value="${value}"]`)?.focus();
   }
-  function onInput(){states[kind].query=search.value;states[kind].limit=24;update();}
-  const events={click:onClick,change:onChange,pointerover:onPreview,pointerout:onPreviewEnd,focusin:onPreview,focusout:onPreviewEnd,keydown:onKeyDown};
+  function onInput(){cancelPending();states[kind].query=search.value;states[kind].limit=24;update();}
+  const events={click:onClick,dblclick:onDoubleClick,change:onChange,pointerover:onPreview,pointerout:onPreviewEnd,focusin:onPreview,focusout:onPreviewEnd,keydown:onKeyDown};
   Object.entries(events).forEach(([type,listener])=>panel.addEventListener(type,listener));search.addEventListener('input',onInput);
   update();
-  return ()=>{stopped=true;Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
+  return ()=>{cancelPending();stopped=true;Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
 }

@@ -1,6 +1,8 @@
 // Search interface copy only. Provider result names/addresses and query values stay original.
 export const PLACE_SEARCH_UI_EN = {
   '清除':'Clear','清除评分':'Clear rating',
+  '单击评分，双击清除。':'Click to rate. Double-click to clear.',
+  '键盘按 Enter 或空格评分，按 Delete 或退格清除。':'Use Enter or Space to rate, and Delete or Backspace to clear.',
   '更换图片':'Change image','图片自动加载，也可以手动更换。':'Images load automatically. You can also choose your own.',
   '留空时自动从维基百科获取图片；填写 HTTPS 图片链接可替换，清空并保存可恢复自动图片。':'Leave blank for an automatic Wikipedia image. Enter an HTTPS image URL to replace it, or clear the field and save to restore the automatic image.',
   '输入国家、城市、景点或地名，找到后即可加入旅行心愿。':'Search for a country, city, sight, or place, then add it to your travel wishlist.',

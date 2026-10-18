@@ -2,7 +2,7 @@ import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGro
 import {project} from './projection.js';
 import {fitRegion,pinsInRegion,countryAt} from './geography.js';
 import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-hd';
 import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js';
 import {toTraditional} from './i18n.js';
 

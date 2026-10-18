@@ -69,13 +69,15 @@ function preparedCountry(country){
     // Natural Earth closes the Antarctic mainland along the South Pole. That
     // closing edge must span the atlas, rather than take the shortest seam arc.
     const polar=country.id==='ata'&&points.some(point=>point.lat < -89.9);
-    const packed=new Float32Array(points.length*2);let previous=null,min=Infinity,max=-Infinity;
+    const packed=new Float32Array(points.length*2),vectors=new Float32Array(points.length*3);let previous=null,min=Infinity,max=-Infinity;
     points.forEach((point,index)=>{
       let longitude=point.lon;
       if(!polar&&previous!==null){while(longitude-previous>180)longitude-=360;while(longitude-previous<-180)longitude+=360;}
       previous=longitude;const x=(longitude+180)/360;
       packed[index*2]=x;packed[index*2+1]=(90-point.lat)/180;min=Math.min(min,x);max=Math.max(max,x);
-    });return {points:packed,min,max};
+      const latitude=point.lat*RAD,radians=point.lon*RAD,cosine=Math.cos(latitude);
+      vectors[index*3]=cosine*Math.cos(radians);vectors[index*3+1]=Math.sin(latitude);vectors[index*3+2]=cosine*Math.sin(radians);
+    });return {points:packed,vectors,min,max};
   }).filter(ring=>ring.points.length>=6);
   preparedShapes.set(country.id,{source,rings});return rings;
 }
@@ -99,7 +101,9 @@ function geographicTexture(document,dark) {
       }
     }
     ctx.fillStyle=dark?'#7c9587':'#c4cdb2';ctx.fill('evenodd');
-    ctx.strokeStyle=dark?'#263e39':'#83947e';ctx.lineWidth=1.25;ctx.stroke();
+    // Fine boundary strokes are projected directly onto the final framebuffer.
+    // A faint atlas line only supplies context during the fast drag preview.
+    ctx.strokeStyle=dark?'#5c7265':'#a8b49e';ctx.lineWidth=.4;ctx.stroke();
   }
   const texture={width,height,data:ctx.getImageData(0,0,width,height).data};
   // One theme at a time bounds the CPU texture to 32 MiB rather than retaining
@@ -109,8 +113,47 @@ function geographicTexture(document,dark) {
 
 export function globeFramebufferSize(width,height,dpr=1,interactive=false){
   const longest=Math.max(width,height),density=clamp(Number(dpr)||1,1,2);
-  const ratio=interactive?Math.min(720/longest,density):Math.min(2048/longest,density);
+  const ratio=interactive?Math.min(720/longest,density):Math.min(3072/longest,density*1.5);
   return {width:Math.max(1,Math.round(width*ratio)),height:Math.max(1,Math.round(height*ratio)),ratio};
+}
+function clipBoundarySegment(vectors,a,b,fx,fy,fz,output){
+  let ax=vectors[a],ay=vectors[a+1],az=vectors[a+2],bx=vectors[b],by=vectors[b+1],bz=vectors[b+2];
+  const dot=ax*bx+ay*by+az*bz;
+  // Degenerate and antipodal edges have no unique finite shortest arc.
+  if(dot < -1+1e-10||(ax-bx)**2+(ay-by)**2+(az-bz)**2<1e-20)return false;
+  let da=ax*fx+ay*fy+az*fz,db=bx*fx+by*fy+bz*fz;
+  if(Math.abs(da)<1e-9)da=0;if(Math.abs(db)<1e-9)db=0;
+  if(da<0&&db<0)return false;
+  if(da<0||db<0){
+    const t=da/(da-db),hx=ax+(bx-ax)*t,hy=ay+(by-ay)*t,hz=az+(bz-az)*t,norm=Math.hypot(hx,hy,hz);
+    if(norm<1e-10)return false;
+    if(da<0){ax=hx/norm;ay=hy/norm;az=hz/norm;}else{bx=hx/norm;by=hy/norm;bz=hz/norm;}
+  }
+  output[0]=ax;output[1]=ay;output[2]=az;output[3]=bx;output[4]=by;output[5]=bz;return true;
+}
+// Unit-vector great-circle edge clipped against the camera's front hemisphere.
+// The renderer uses the allocation-free internal version for every coast edge.
+export function clipGlobeSegment(a,b,normal){
+  if(!a||!b||!normal||a.length!==3||b.length!==3||normal.length!==3)return null;
+  if(![...a,...b,...normal].every(Number.isFinite))return null;
+  const output=new Float64Array(6),vectors=new Float64Array([...a,...b]);
+  return clipBoundarySegment(vectors,0,3,...normal,output)?[Array.from(output.subarray(0,3)),Array.from(output.subarray(3,6))]:null;
+}
+function drawGeographicBoundaries(ctx,camera,raster,ratio,dark){
+  const latitude=camera.lat*RAD,longitude=camera.lon*RAD,slat=Math.sin(latitude),clat=Math.cos(latitude),slon=Math.sin(longitude),clon=Math.cos(longitude);
+  const fx=clat*clon,fy=slat,fz=clat*slon,output=new Float64Array(6);
+  const {r,centerX,centerY}=raster;
+  ctx.save();ctx.beginPath();ctx.arc(centerX,centerY,r,0,Math.PI*2);ctx.clip();ctx.beginPath();
+  for(const country of COUNTRIES)for(const ring of preparedCountry(country)){
+    const vectors=ring.vectors;
+    for(let next=0,previous=vectors.length-3;next<vectors.length;previous=next,next+=3){
+      if(!clipBoundarySegment(vectors,previous,next,fx,fy,fz,output))continue;
+      const ax=output[0],ay=output[1],az=output[2],bx=output[3],by=output[4],bz=output[5];
+      ctx.moveTo(centerX+r*(-slon*ax+clon*az),centerY-r*(-slat*clon*ax+clat*ay-slat*slon*az));
+      ctx.lineTo(centerX+r*(-slon*bx+clon*bz),centerY-r*(-slat*clon*bx+clat*by-slat*slon*bz));
+    }
+  }
+  ctx.strokeStyle=dark?'#29473f':'#718772';ctx.lineWidth=.72*ratio;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();ctx.restore();
 }
 function sphereRaster(width,height,ratio,radius){
   const centerX=width/2,centerY=height/2,r=radius*ratio;
@@ -259,6 +302,7 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
       }
     }
     ctx.putImageData(image,0,0);
+    if(!low&&!satellite)drawGeographicBoundaries(ctx,camera,raster,ratio,dark);
     ctx.beginPath();ctx.arc(centerX,centerY,r,0,Math.PI*2);ctx.strokeStyle=dark?'#8dbbc640':'#547e8b45';ctx.lineWidth=1;ctx.stroke();
     updateMarkers();syncAdding();if(!low)queueDetail();
   }
@@ -266,7 +310,9 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
     const image=new window.Image();pendingImages.add(image);image.decoding='async';
     image.onload=()=>{pendingImages.delete(image);if(stopped){resolve(null);return;}
       try{
-        const temporary=document.createElement('canvas'),scale=Math.min(1,4096/image.naturalWidth);
+        const screenWidth=stage.getBoundingClientRect().width||width||window.innerWidth||1000;
+        const textureLimit=screenWidth>=700?8192:clamp(Math.ceil(screenWidth*6/1024)*1024,2048,4096);
+        const temporary=document.createElement('canvas'),scale=Math.min(1,textureLimit/image.naturalWidth);
         temporary.width=Math.max(1,Math.round(image.naturalWidth*scale));temporary.height=Math.max(1,Math.round(image.naturalHeight*scale));
         const context=temporary.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0,temporary.width,temporary.height);
         resolve({width:temporary.width,height:temporary.height,data:context.getImageData(0,0,temporary.width,temporary.height).data});
@@ -283,11 +329,11 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
   function ensureTextures(){
     if(textures||textureFailure||host.dataset.textureLoading)return;
     host.dataset.textureLoading='true';
-    Promise.all([loadTexture('./earth-day.jpg'),loadTexture('./earth-night.jpg')]).then(([day,night])=>{
+    Promise.all([loadTexture('./earth-day.jpg?v=5400-bmng-200412'),loadTexture('./earth-night.jpg?v=3600-viirs-2012')]).then(([day,night])=>{
       if(stopped)return;if(day&&night)textures={day,night};else textureFailure=true;updateModeUI();schedule();
     }).catch(()=>{if(stopped)return;textureFailure=true;updateModeUI();schedule();}).finally(()=>{if(!stopped)delete host.dataset.textureLoading;});
   }
-  function setMode(value){if(stopped)return;mode=value==='satellite'?'satellite':'geographic';updateModeUI();if(mode==='satellite')ensureTextures();resize();}
+  function setMode(value){if(stopped)return;mode=value==='satellite'?'satellite':'geographic';updateModeUI();resize();if(mode==='satellite')ensureTextures();}
   function setGroups(next){
     if(stopped)return;
     groups=Array.isArray(next)?next.filter(group=>validPoint(group)&&typeof group.id==='string'):[];
