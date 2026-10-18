@@ -56,4 +56,4 @@
 
 .legend-want-resident{font-style:normal;color:#be7a50;font-size:13px}.map-pin-marker.is-want-resident .marker-shape{fill:#be7a50}.map-pin-marker.is-want-resident .marker-resident-label,.map-pin-marker.is-want-resident .marker-resident-period{fill:#985f3d}[data-theme=dark] .map-pin-marker.is-want-resident .marker-resident-label,[data-theme=dark] .map-pin-marker.is-want-resident .marker-resident-period{fill:#e0b08c}
 
-.map-pin-marker.is-resident>.marker-visual{transform:scale(.414)}.map-pin-marker.is-resident:focus-visible>.marker-visual,.map-pin-marker.is-resident:active>.marker-visual{transform:scale(.72)}@media(hover:hover){.map-pin-marker.is-resident:hover>.marker-visual{transform:scale(.72)}}
+.map-pin-marker.is-resident>.marker-visual{transform:scale(.4554)}.map-pin-marker.is-resident:focus-visible>.marker-visual,.map-pin-marker.is-resident:active>.marker-visual{transform:scale(.792)}@media(hover:hover){.map-pin-marker.is-resident:hover>.marker-visual{transform:scale(.792)}}
