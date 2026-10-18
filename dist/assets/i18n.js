@@ -44,6 +44,7 @@ function englishText(source, depth = 0) {
   if (depth > 5 || !/[\u3400-\u9fff]/.test(source)) return source;
   const tr = value => englishText(value, depth + 1);
   const patterns = [
+    [/^([1-5]) 分，(.+)$/,(_,n,label)=>`${n}/5, ${tr(label)}`],
     [/^(\d+) 个研究组$/,(_,n)=>`${n} research ${n==='1'?'group':'groups'}`],
     [/^已导入 (\d+) 个研究组，并与学术地图合并。$/,(_,n)=>`Imported ${n} research groups and merged them with your academic map.`],
     [/^研究组导入失败：(.+)$/,(_,error)=>`Research group import failed: ${tr(error)}`],
@@ -137,8 +138,9 @@ function translateAttributes(element) {
     const source = previous && current === previous.last ? previous.source : current;
     // Keep saved titles intact in both Chinese writing systems.
     const pinKindLabel=element.matches('.map-pin-marker')&&source.match(/^(.+)，(城市／景点|国家／地区)，(去过|想去)，点击查看资料$/);
+    const ratingLabel=source.match(/^(.+)，有多想去$/);
     const pinLabel = element.matches('.map-pin-marker') && source.match(/^(.+)，(去过|想去)，点击编辑$/);
-    const next=pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
+    const next=ratingLabel&&language==='zh-TW'?`${ratingLabel[1]}，有多想去`:pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
     records[attribute] = {source, last: next};
     if (current !== next) element.setAttribute(attribute, next);
   }

@@ -116,23 +116,24 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
     const preferred=scope?.value!=='world'?region:{kind:'world'};
     const isCountry=kind==='country';
     const localResults=isCountry?countryPlaceMatches(input.value,preferred):localPlaceMatches(input.value,preferred);
+    const matchingCountries=!isCountry&&input.value.trim()?countryPlaceMatches(input.value,preferred).slice(0,8):[];
     source.hidden=isCountry;online.hidden=isCountry;input.required=!isCountry;
-    intro.textContent=isCountry?'搜索国家或地区，为整个国家留下一枚标记。':'输入城市、景点或地名，找到后即可加入旅行心愿。';
+    intro.textContent=isCountry?'搜索国家或地区，为整个国家留下一枚标记。':'输入国家、城市、景点或地名，找到后即可加入旅行心愿。';
     inputLabel.textContent=isCountry?'搜索国家或地区':'搜索地点名称';
-    input.setAttribute('placeholder',isCountry?'例如：中国、丹麦、Japan…':'例如：哥本哈根、故宫、Mount Fuji…');
+    input.setAttribute('placeholder',isCountry?'例如：中国、丹麦、Japan…':'例如：丹麦、哥本哈根、故宫…');
     dialog.querySelectorAll('[data-place-search-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.placeSearchKind===kind)));
     const pins=getPins();available=new Map();
     const section=(items,label,prefix)=>items.length?`<section class="place-search-group"><h3>${label} <span>${items.length}</span></h3><div class="place-search-results">${items.map(place=>{
       const key=`${prefix}-${place.id}`,added=findDestinationPin({...place,id:place.pinId},pins);available.set(key,place);
       return `<button type="button" class="place-search-result" data-place-search-result="${esc(key)}" ${added?'disabled':''}><span class="place-search-result-copy"><strong ${place.source==='online'?'data-i18n-skip':''}>${esc(place.name)}</strong>${place.subtitle?`<small ${place.source==='online'?'data-i18n-skip':''}>${esc(place.subtitle)}</small>`:''}</span><span class="place-search-result-action">${added?'已在地图中':'加入心愿'} <span aria-hidden="true">${added?'✓':'＋'}</span></span></button>`;
     }).join('')}</div></section>`:'';
-    local.innerHTML=section(localResults,isCountry?'国家与地区':'已收录的地点',isCountry?'country':'local');
+    local.innerHTML=section(matchingCountries,'国家／地区','country')+section(localResults,isCountry?'国家与地区':'已收录的地点',isCountry?'country':'local');
     const distinctOnline=onlineResults.filter(place=>!localResults.some(localPlace=>findDestinationPin(place,[{id:localPlace.pinId,lat:localPlace.lat,lon:localPlace.lon}])));
     online.innerHTML=isCountry?'':section(distinctOnline,'更多搜索结果','online');
     submit.disabled=phase==='loading';dialog.setAttribute('aria-busy',String(phase==='loading'));
     status.classList.toggle('is-error',phase==='error');
     status.textContent=isCountry?(localResults.length?'选择一个国家或地区，加入旅行心愿。':'没有找到国家或地区，试试中文或英文名称。'):phase==='loading'?'正在寻找这个地方…':phase==='error'?errorMessage:phase==='done'?(onlineResults.length?'找到后点击“加入心愿”，稍后可编辑旅行记录。':'没有找到更多地点。试试加上城市名，或使用英文名。'):'输入地名后，点击“搜索”查看更多地点。';
-    if(!isCountry&&!localResults.length&&phase!=='loading'&&phase!=='done')local.innerHTML='<p class="place-search-empty">已收录的地点暂时没有匹配，点击“搜索”继续查找。</p>';
+    if(!isCountry&&!localResults.length&&!matchingCountries.length&&phase!=='loading'&&phase!=='done')local.innerHTML='<p class="place-search-empty">已收录的地点暂时没有匹配，点击“搜索”继续查找。</p>';
   }
   function clearFeedback(){feedback.textContent='';feedback.classList.remove('is-warning');editWrap.hidden=true;selectedPinId=null;}
   function onInput(){stop();onlineResults=[];phase='idle';errorMessage='';clearFeedback();update();}

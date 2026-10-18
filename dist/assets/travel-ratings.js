@@ -60,8 +60,8 @@ function cards(rows){
     const country=countryPlaceById.get(row.countryId);
     const guide=row.kind==='country'?`#/travel/guide/country/${encodeURIComponent(row.countryId)}`:row.saved?`#/travel/guide/place/${encodeURIComponent(row.pin.id)}`:null;
     const countryMap=!guide&&countryById.has(row.countryId)?`#/travel/country/${encodeURIComponent(row.countryId)}`:null;
-    const options=DESIRE_RATING_LABELS.map((label,value)=>`<option value="${value}" ${value===row.rating?'selected':''}>${value} · ${label}</option>`).join('');
-    return `<article class="travel-rating-card ${row.saved?'is-saved':''}"><div class="travel-rating-meta"><span>${row.kind==='country'?'国家':esc(country?.name||'自定义地点')}</span><span>${row.saved?'已收藏':'未收藏'}</span></div><h2${row.saved?' data-i18n-skip':''}>${esc(row.title)}</h2>${row.english?`<p class="travel-rating-english">${esc(row.english)}</p>`:''}<div class="travel-rating-stars" aria-hidden="true">${'★'.repeat(row.rating)}<span>${'☆'.repeat(5-row.rating)}</span></div><label class="travel-rating-control"><span>有多想去</span><select data-rating-key="${esc(row.key)}" aria-label="${esc(row.title)}，有多想去">${options}</select></label><div class="travel-rating-card-bottom">${guide?`<a href="${guide}">查看攻略 <span>↗</span></a>`:countryMap?`<a href="${countryMap}">查看国家地图 <span>↗</span></a>`:`<button type="button" data-rating-add="${esc(row.key)}">加入心愿 <span>＋</span></button>`}<span>${row.rating?`${row.rating} / 5`:'未评分'}</span></div></article>`;
+    const stars=DESIRE_RATING_LABELS.slice(1).map((label,index)=>{const value=index+1;return `<button type="button" class="travel-rating-star ${value<=row.rating?'is-filled':''}" data-rating-key="${esc(row.key)}" data-rating-value="${value}" aria-pressed="${value===row.rating}" aria-label="${value} 分，${label}" title="${value} 分，${label}"><span aria-hidden="true">★</span></button>`;}).join('');
+    return `<article class="travel-rating-card ${row.saved?'is-saved':''}"><div class="travel-rating-meta"><span>${row.kind==='country'?'国家':esc(country?.name||'自定义地点')}</span><span>${row.saved?'已收藏':'未收藏'}</span></div><h2${row.saved?' data-i18n-skip':''}>${esc(row.title)}</h2>${row.english?`<p class="travel-rating-english">${esc(row.english)}</p>`:''}<div class="travel-rating-control"><div class="travel-rating-control-heading"><span>有多想去</span><span class="travel-rating-value">${row.rating?`${row.rating} / 5`:'未评分'}</span></div><div class="travel-rating-actions"><div class="travel-rating-stars" role="group" aria-label="${esc(row.title)}，有多想去" data-rating-group>${stars}</div><button type="button" class="travel-rating-clear" data-rating-clear="${esc(row.key)}" aria-label="清除评分" ${row.rating?'':'hidden'}>清除</button></div></div><div class="travel-rating-card-bottom">${guide?`<a href="${guide}">查看攻略 <span>↗</span></a>`:countryMap?`<a href="${countryMap}">查看国家地图 <span>↗</span></a>`:`<button type="button" data-rating-add="${esc(row.key)}">加入心愿 <span>＋</span></button>`}</div></article>`;
   }).join('');
 }
 
@@ -94,7 +94,7 @@ export function mountTravelRatings(root,{getPins,onSave}){
     grid.setAttribute('aria-label',kind==='country'?'国家评分':'城市与景点评分');
     count.textContent=`${matches.length} 个结果 · ${all.filter(row=>row.saved&&row.rating>0).length} 个已评分`;
     grid.innerHTML=visible.length?cards(visible):`<div class="travel-ratings-empty"><span aria-hidden="true">✳</span><p>${state.scope==='saved'?'这里还没有收藏的地点。切换到“全部目录”，选一个开始评分。':'没有匹配的地点，试试其他名字。'}</p></div>`;
-    grid.querySelectorAll('[data-rating-key],[data-rating-add]').forEach(control=>{control.disabled=saving;});
+    grid.querySelectorAll('[data-rating-key],[data-rating-clear],[data-rating-add]').forEach(control=>{control.disabled=saving;});
     more.hidden=visible.length>=matches.length;
   }
   async function save(key,value,explicitAdd=false){
@@ -104,7 +104,8 @@ export function mountTravelRatings(root,{getPins,onSave}){
     let pin=ratedTravelPin(row,value);
     if(!pin&&explicitAdd)pin={...row.pin,kind:row.kind,desireRating:0};
     if(!pin){feedback.textContent='选择 1 至 5 分，会将这个地点加入心愿。';update();return;}
-    saving=true;feedback.textContent='正在保存…';update();
+    saving=true;feedback.textContent='正在保存…';
+    grid.querySelectorAll('[data-rating-key],[data-rating-clear],[data-rating-add]').forEach(control=>{control.disabled=true;});
     try{
       const result=await onSave(pin);
       if(result===false||result?.ok===false||result?.success===false||result?.error)throw new Error(result?.error?.message||result?.error||result?.message||'评分未保存，请重试。');
@@ -112,9 +113,18 @@ export function mountTravelRatings(root,{getPins,onSave}){
       feedback.textContent=result?.saved===false?'评分暂存在本页，浏览器未能保存。请导出地图备份。':explicitAdd?'已加入心愿，可以查看地点攻略。':value?`已将「${row.title}」设为 ${value} 分。`:`已清除「${row.title}」的评分，地点仍保留在地图中。`;
       feedback.classList.toggle('is-warning',result?.saved===false);
     }catch(error){if(!stopped){feedback.textContent=error.message||'评分未保存，请重试。';feedback.classList.add('is-warning');}}
-    finally{saving=false;update();}
+    finally{
+      saving=false;update();
+      // Updating the sorted cards replaces their controls. Keep keyboard focus
+      // on the chosen star (or the first star after clearing) after the save.
+      if(!stopped)[...grid.querySelectorAll('[data-rating-key]')].find(button=>button.dataset.ratingKey===key&&Number(button.dataset.ratingValue)===(value||1))?.focus({preventScroll:true});
+    }
   }
   function onClick(event){
+    const star=event.target.closest('[data-rating-value]');
+    if(star){if(!star.disabled)void save(star.dataset.ratingKey,Number(star.dataset.ratingValue));return;}
+    const clear=event.target.closest('[data-rating-clear]');
+    if(clear){if(!clear.disabled)void save(clear.dataset.ratingClear,0);return;}
     const tab=event.target.closest('[data-ratings-tab]');
     if(tab){kind=tab.dataset.ratingsTab;feedback.textContent='';update();return;}
     const scope=event.target.closest('[data-ratings-scope]');
@@ -124,11 +134,32 @@ export function mountTravelRatings(root,{getPins,onSave}){
     if(add)void save(add.dataset.ratingAdd,0,true);
   }
   function onChange(event){
-    if(event.target.matches('[data-rating-key]')){void save(event.target.dataset.ratingKey,Number(event.target.value));return;}
     if(event.target===sort){states[kind].sort=sort.value;states[kind].limit=24;update();}
   }
+  function preview(group,value=0){
+    if(!group)return;
+    group.classList.toggle('is-previewing',value>0);
+    group.querySelectorAll('[data-rating-value]').forEach(button=>button.classList.toggle('is-preview-active',Number(button.dataset.ratingValue)<=value));
+  }
+  function onPreview(event){
+    const star=event.target.closest('[data-rating-value]');
+    if(star&&!star.disabled)preview(star.closest('[data-rating-group]'),Number(star.dataset.ratingValue));
+  }
+  function onPreviewEnd(event){
+    const group=event.target.closest('[data-rating-group]');
+    if(group&&event.relatedTarget?.closest?.('[data-rating-group]')!==group)preview(group);
+  }
+  function onKeyDown(event){
+    const star=event.target.closest('[data-rating-value]');
+    if(!star||star.disabled||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const current=Number(star.dataset.ratingValue);
+    const value=event.key==='Home'?1:event.key==='End'?5:Math.max(1,Math.min(5,current+(['ArrowRight','ArrowUp'].includes(event.key)?1:-1)));
+    star.closest('[data-rating-group]')?.querySelector(`[data-rating-value="${value}"]`)?.focus();
+  }
   function onInput(){states[kind].query=search.value;states[kind].limit=24;update();}
-  panel.addEventListener('click',onClick);panel.addEventListener('change',onChange);search.addEventListener('input',onInput);
+  const events={click:onClick,change:onChange,pointerover:onPreview,pointerout:onPreviewEnd,focusin:onPreview,focusout:onPreviewEnd,keydown:onKeyDown};
+  Object.entries(events).forEach(([type,listener])=>panel.addEventListener(type,listener));search.addEventListener('input',onInput);
   update();
-  return ()=>{stopped=true;panel.removeEventListener('click',onClick);panel.removeEventListener('change',onChange);search.removeEventListener('input',onInput);};
+  return ()=>{stopped=true;Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
 }

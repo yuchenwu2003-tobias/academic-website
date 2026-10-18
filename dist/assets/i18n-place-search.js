@@ -1,5 +1,10 @@
 // Search interface copy only. Provider result names/addresses and query values stay original.
 export const PLACE_SEARCH_UI_EN = {
+  '清除':'Clear','清除评分':'Clear rating',
+  '更换图片':'Change image','图片自动加载，也可以手动更换。':'Images load automatically. You can also choose your own.',
+  '留空时自动从维基百科获取图片；填写 HTTPS 图片链接可替换，清空并保存可恢复自动图片。':'Leave blank for an automatic Wikipedia image. Enter an HTTPS image URL to replace it, or clear the field and save to restore the automatic image.',
+  '输入国家、城市、景点或地名，找到后即可加入旅行心愿。':'Search for a country, city, sight, or place, then add it to your travel wishlist.',
+  '例如：丹麦、哥本哈根、故宫…':'For example: Denmark, Copenhagen, Forbidden City…',
   '标记类型':'Pin type', '城市／景点':'Cities / sights', '国家／地区':'Countries / regions',
   '国家':'Countries', '城市与景点':'Cities & sights', '有多想去':'How much I want to go',
   '国家是一份向往，城市与景点是另一份。分别打分，慢慢排出下一程。':'Rate countries and individual places separately, and find your next journey.',

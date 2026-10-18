@@ -28,7 +28,7 @@ function wikipediaUrl(value) {
 function wikiImageUrl(value) {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && url.hostname === 'upload.wikimedia.org' && !url.username && !url.password ? url.href : '';
+    return url.protocol === 'https:' && ['upload.wikimedia.org','thumb.wikimedia.org'].includes(url.hostname) && !url.username && !url.password ? url.href : '';
   } catch {return '';}
 }
 function lookupIdentity(pin) {

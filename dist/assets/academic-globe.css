@@ -1,7 +1,7 @@
 .academic-globe{position:relative;isolation:isolate;overflow:hidden;min-height:440px;border:1px solid #c9d8da;background:radial-gradient(ellipse at 50% 43%,#edf3ef 0,#e8eff0 55%,#e0e9eb 100%);color:#315d6c;--globe-ink:#315d6c;--globe-control:#f6f8f3ed}
 .academic-globe-stage{position:relative;height:clamp(440px,48vw,610px);overflow:hidden;outline:none;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .academic-globe-stage:focus-visible{box-shadow:inset 0 0 0 3px #658e9b}.academic-globe.is-dragging .academic-globe-stage{cursor:grabbing}.academic-globe.is-adding .academic-globe-stage{cursor:crosshair}
-.academic-globe canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;filter:drop-shadow(0 15px 23px #294b5625)}
+.academic-globe canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;image-rendering:auto;filter:drop-shadow(0 15px 23px #294b5625)}
 .academic-globe-markers{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .academic-globe-marker{position:absolute;top:0;left:0;display:grid;place-items:center;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:transparent;pointer-events:auto;cursor:pointer;touch-action:manipulation;outline-offset:-1px}
 .academic-globe-marker svg{width:30px;height:30px;overflow:visible;filter:drop-shadow(0 1px 3px #163e4265);transform:scale(.88);transition:transform .18s ease;pointer-events:none}
