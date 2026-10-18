@@ -1,14 +1,14 @@
-import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-wiki-details';
-import {renderTravelTrips,mountTravelTrips} from './travel-trips.js?v=20261018-wiki-details';
-import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-wiki-details';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-wiki-details';
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-wiki-details';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
-import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-wiki-details';
-import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-wiki-details';
-import {toTraditional,countrySearchAliases,placeNameSearchText} from './i18n.js?v=20261018-wiki-details';
-import {getTravelTrips} from './trip-model.js?v=20261018-wiki-details';
-import {getPlaceMedia} from './place-media.js?v=20261018-wiki-details';
+import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-wiki-details-final';
+import {renderTravelTrips,mountTravelTrips} from './travel-trips.js?v=20261018-wiki-details-final';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-wiki-details-final';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-wiki-details-final';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-wiki-details-final';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details-final';
+import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-wiki-details-final';
+import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-wiki-details-final';
+import {toTraditional,countrySearchAliases,placeNameSearchText} from './i18n.js?v=20261018-wiki-details-final';
+import {getTravelTrips} from './trip-model.js?v=20261018-wiki-details-final';
+import {getPlaceMedia} from './place-media.js?v=20261018-wiki-details-final';
 
 export const DESIRE_RATING_LABELS=['未评分','随缘','有点想去','值得计划','很想去','非去不可'];
 export const RECOMMENDATION_RATING_LABELS=['未评分','不太推荐','一般','值得一去','很推荐','强烈推荐'];

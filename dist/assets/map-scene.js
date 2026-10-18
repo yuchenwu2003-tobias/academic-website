@@ -1,14 +1,14 @@
-import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-wiki-details';
-import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-wiki-details';
-import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-wiki-details';
-import {layoutLandmarks} from './landmark-layout.js?v=20261018-wiki-details';
-import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-wiki-details';
-import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-wiki-details';
-import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-wiki-details';
-import {mountMapDetail} from './map-detail.js?v=20261018-wiki-details';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-wiki-details';
-import {translateText} from './i18n.js?v=20261018-wiki-details';
-import {renderMapDisclaimer} from './map-disclaimer.js?v=20261018-wiki-details';
+import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-wiki-details-final';
+import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-wiki-details-final';
+import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-wiki-details-final';
+import {layoutLandmarks} from './landmark-layout.js?v=20261018-wiki-details-final';
+import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-wiki-details-final';
+import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-wiki-details-final';
+import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-wiki-details-final';
+import {mountMapDetail} from './map-detail.js?v=20261018-wiki-details-final';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-wiki-details-final';
+import {translateText} from './i18n.js?v=20261018-wiki-details-final';
+import {renderMapDisclaimer} from './map-disclaimer.js?v=20261018-wiki-details-final';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mapRouteBase=value=>typeof value==='string'&&/^#\/[a-z0-9/_-]+$/i.test(value)?value.replace(/\/+$/,''):'#/travel';
 function countryShapes(region,routeBase) {

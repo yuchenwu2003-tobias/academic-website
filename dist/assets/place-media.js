@@ -1,9 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
-import {countryPlaceById} from './country-destinations.js?v=20261018-wiki-details';
-import {pinCountry} from './geography.js?v=20261018-wiki-details';
-import {normalizeCountryId} from './map-model.js?v=20261018-wiki-details';
-import {translatePlaceName} from './i18n.js?v=20261018-wiki-details';
-import {preferredWikipediaTitle,wikipediaArticleReference,nearbyWikipediaPage} from './wikipedia-places.js?v=20261018-wiki-details';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details-final';
+import {countryPlaceById} from './country-destinations.js?v=20261018-wiki-details-final';
+import {pinCountry} from './geography.js?v=20261018-wiki-details-final';
+import {normalizeCountryId} from './map-model.js?v=20261018-wiki-details-final';
+import {translatePlaceName} from './i18n.js?v=20261018-wiki-details-final';
+import {preferredWikipediaTitle,wikipediaArticleReference,nearbyWikipediaPage} from './wikipedia-places.js?v=20261018-wiki-details-final';
 
 // API reference: https://www.mediawiki.org/wiki/API:Pageimages and API:Search.
 // Only public place/country names are queried. Personal notes and guides are never read here.

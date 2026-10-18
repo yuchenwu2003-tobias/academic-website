@@ -1,6 +1,6 @@
-import {showTravelMapMarker,pinStatusLabel} from './map-model.js?v=20261018-wiki-details';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-wiki-details';
-import {placeNameSearchText,toTraditional} from './i18n.js?v=20261018-wiki-details';
+import {showTravelMapMarker,pinStatusLabel} from './map-model.js?v=20261018-wiki-details-final';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-wiki-details-final';
+import {placeNameSearchText,toTraditional} from './i18n.js?v=20261018-wiki-details-final';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const modes=[['auto','自动'],['show','显示'],['hide','隐藏']];
 export function renderMapVisibility(pin){

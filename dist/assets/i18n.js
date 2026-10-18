@@ -1,11 +1,11 @@
-import {Converter} from './vendor/opencc/cn2t.js?v=20261018-wiki-details';
-import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-wiki-details';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
-import {UI_EN} from './i18n-messages.js?v=20261018-wiki-details';
-import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-wiki-details';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-wiki-details';
-import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-wiki-details';
-import {EXTRA_PLACE_NAMES} from './place-name-data.js?v=20261018-wiki-details';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-wiki-details-final';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-wiki-details-final';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details-final';
+import {UI_EN} from './i18n-messages.js?v=20261018-wiki-details-final';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-wiki-details-final';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-wiki-details-final';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-wiki-details-final';
+import {EXTRA_PLACE_NAMES} from './place-name-data.js?v=20261018-wiki-details-final';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
@@ -139,7 +139,7 @@ const attributeRecords = new WeakMap();
 const ATTRIBUTES = ['aria-label', 'title', 'placeholder', 'alt'];
 const SKIP_TEXT = 'script,style,textarea,[contenteditable="true"],[data-i18n-skip],[data-language-control],.post-body,.post-header h1,.post-header .category,.article-card h3,.article-card>p,.article-meta>.category,.video-caption,.video-platform,.poster-mark,.map-place-card strong,.map-place-card p,.map-pin-marker,.map-landmark,.interest-notes,.place-search-result-name,.place-search-result-address,.filter-tab[data-category]:not([data-category="全部"])';
 const SKIP_ATTRIBUTES = '[data-i18n-skip],.post-body';
-const PLACE_NAME_TEXT='.place-info-heading h2,.place-info-city strong,.guide-heading h1,.guide-country-place h3>a,.travel-rating-title-block>h4,.travel-rating-title-block>h5,.trip-place-top h4,.trip-choice-caption strong,.trip-record-stops a,.trip-record-stops strong,.map-place-card strong,.map-pin-marker>title,.marker-resident-label,.map-display-place strong,.academic-residence-link strong,.academic-residence-label,.academic-globe-residence-label,.place-search-result-name,[data-editable-field="title"]>[data-field-value]';
+const PLACE_NAME_TEXT='.place-info-heading h2,.place-info-city strong,.guide-heading h1,.guide-country-place h3>a,.travel-rating-title-block>h4,.travel-rating-title-block>h5,.trip-place-top h4,.trip-choice-caption strong,.trip-record-stops a,.trip-record-stops strong,.map-place-card strong,.map-pin-marker>title,.marker-resident-label,.map-display-place strong,.academic-residence-link strong,.academic-residence-label,.academic-globe-residence-label,.place-search-result-name,.place-search-result-copy strong,[data-editable-field="title"]>[data-field-value]';
 const PLACE_NAME_MEDIA='.guide-image img,.place-info-media img,.trip-place-picture img,.travel-rating-photo img';
 let observer;
 let framePending = false;

@@ -1,5 +1,5 @@
-import {COUNTRIES,countryAt,fitRegion} from './geography.js?v=20261018-wiki-details';
-import {unproject} from './projection.js?v=20261018-wiki-details';
+import {COUNTRIES,countryAt,fitRegion} from './geography.js?v=20261018-wiki-details-final';
+import {unproject} from './projection.js?v=20261018-wiki-details-final';
 
 // Equal Earth widths are shared by world, continent and country routes. A
 // country at the viewport centre adjusts the threshold for larger countries.

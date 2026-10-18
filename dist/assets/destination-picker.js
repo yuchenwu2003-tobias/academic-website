@@ -1,6 +1,6 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
-import {countryById} from './geography.js?v=20261018-wiki-details';
-import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-wiki-details';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details-final';
+import {countryById} from './geography.js?v=20261018-wiki-details-final';
+import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-wiki-details-final';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const textKey=value=>String(value).normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/[’']/g,'');

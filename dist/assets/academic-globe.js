@@ -1,7 +1,7 @@
-import {renderPinDrawing} from './pin-icons.js?v=20261018-wiki-details';
-import {renderMapDisclaimer} from './map-disclaimer.js?v=20261018-wiki-details';
-import {COUNTRIES,CONTINENTS} from './geography-data.js?v=20261018-wiki-details';
-import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-wiki-details';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-wiki-details-final';
+import {renderMapDisclaimer} from './map-disclaimer.js?v=20261018-wiki-details-final';
+import {COUNTRIES,CONTINENTS} from './geography-data.js?v=20261018-wiki-details-final';
+import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-wiki-details-final';
 
 const RAD=Math.PI/180,DEG=180/Math.PI;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
