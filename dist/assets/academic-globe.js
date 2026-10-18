@@ -192,8 +192,10 @@ export function renderAcademicGlobe() {
 }
 
 function initialCamera(region) {
+  if(region?.kind==='continent'&&region.id==='antarctica')return {lat:-75,lon:0};
   if(region?.kind!=='world'){
     let point;if(Array.isArray(region?.center))point=unprojectEqualEarth(...region.center);
+    else if(region?.kind==='continent'&&region.view)point=unprojectEqualEarth(region.view.x+region.view.width/2,region.view.y+region.view.height/2);
     else if(Array.isArray(region?.label))point=unprojectEqualEarth(...region.label);
     else if(region?.view)point=unprojectEqualEarth(region.view.x+region.view.width/2,region.view.y+region.view.height/2);
     if(point)return {lat:clamp(point.lat,-80,80),lon:point.lon};
