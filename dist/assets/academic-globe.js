@@ -112,8 +112,10 @@ function geographicTexture(document,dark) {
 }
 
 export function globeFramebufferSize(width,height,dpr=1,interactive=false){
-  const longest=Math.max(width,height),density=clamp(Number(dpr)||1,1,2);
-  const ratio=interactive?Math.min(720/longest,density):Math.min(3072/longest,density*1.5);
+  const longest=Math.max(1,width,height),density=clamp(Number(dpr)||1,1,2);
+  const limit=width<700?2048:4096;
+  const sampling=width<700?density*2:Math.max(4,density*2);
+  const ratio=interactive?Math.min(720/longest,density):Math.min(limit/longest,sampling);
   return {width:Math.max(1,Math.round(width*ratio)),height:Math.max(1,Math.round(height*ratio)),ratio};
 }
 function clipBoundarySegment(vectors,a,b,fx,fy,fz,output){
@@ -252,10 +254,10 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
         }catch(error){if(error.name!=='AbortError')mediumFailed=true;}
       }
       if(stopped||hidden()||mode!=='geographic')return;
-      if(zoom>=2.2||region.kind==='country'){
+      if(zoom>=1.6||region.kind==='country'){
         const candidates=COUNTRIES.map(country=>({country,point:unprojectEqualEarth(...country.center)})).filter(item=>item.point).map(item=>({...item,p:projectGlobe(item.point,camera)})).filter(item=>item.p.visible&&item.p.depth>.35).sort((a,b)=>{
           if(a.country.id===region.id)return -1;if(b.country.id===region.id)return 1;return b.p.depth-a.p.depth;
-        }).slice(0,4).filter(item=>!failedFine.has(item.country.id)&&(detailedShapes.get(item.country.id)?.level||0)<3);
+        }).slice(0,8).filter(item=>!failedFine.has(item.country.id)&&(detailedShapes.get(item.country.id)?.level||0)<3);
         let cursor=0;
         async function worker(){
           while(!stopped&&cursor<candidates.length){
