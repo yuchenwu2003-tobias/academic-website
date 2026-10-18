@@ -1,9 +1,13 @@
-import {renderTravelMap,mountTravelMap} from './travel-map.js';
+import {renderTravelMap,mountTravelMap,getTravelPins,saveTravelPin} from './travel-map.js';
+import {renderTravelGuide,mountTravelGuide} from './travel-guides.js';
+import {renderTravelRatings,mountTravelRatings} from './travel-ratings.js';
+import {renderAcademicMap,mountAcademicMap} from './academic-map.js';
 import {resolveRegion,continentById,regionHref} from './geography.js';
 import {renderInterests} from './interests.js';
 import {renderPortrait} from './portrait.js';
 import {refreshTranslations} from './i18n.js';
 const icons = {
+  academic:'<path d="M3 4h5a3 3 0 0 1 2 1 3 3 0 0 1 2-1h5v12h-5a3 3 0 0 0-2 1 3 3 0 0 0-2-1H3V4Zm7 1v12M5 7h2M13 7h2"/>',
   interests:'<path d="M10 17S2 12 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 5-8 10-8 10Z"/>',
   travel:'<circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3a14 14 0 0 1 0 14 14 14 0 0 1 0-14Z"/>',
   home:'<path d="m3 9 7-6 7 6v8H6V9m2 8v-6h4v6"/>',
@@ -41,6 +45,13 @@ function travel(region={kind:'world',name:'世界'}) {
   return `<section class="map-page">${crumbs}<div class="page-heading"><span class="section-kicker mono">${e(region.english?.toUpperCase()||'PLACES, PLANS & MEMORIES')}</span><h1>${title}<span>。</span></h1><p>${description}</p></div>${renderTravelMap({region})}</section>`;
 }
 
+function academic(region={kind:'world',name:'世界'}) {
+  if(!region)return notFound();
+  const parent=region.kind==='country'?continentById.get(region.continent):null;
+  const crumbs=`<nav class="map-breadcrumbs" aria-label="地图层级"><a href="#/academic">学术地图</a>${parent?`<span>/</span><a href="#/academic/continent/${parent.id}">${e(parent.name)}</a>`:''}${region.kind!=='world'?`<span>/</span><span aria-current="page">${e(region.name)}</span>`:''}</nav>`;
+  return `<section class="map-page academic-page">${crumbs}<div class="page-heading"><span class="section-kicker mono">RESEARCH GROUPS & IDEAS</span><h1>${region.kind==='world'?'把好奇，<br>连到世界上':e(region.name)}<span>。</span></h1><p>收藏感兴趣的研究小组，记录机构、研究方向和想继续追问的问题。</p></div>${renderAcademicMap({region})}</section>`;
+}
+
 function home() {
   return `<section class="intro-section" aria-labelledby="intro-title"><div class="hero"><div class="hero-copy"><span class="section-kicker mono">01 / A LITTLE ABOUT ME</span><p class="eyebrow">${data.profile.avatar?renderPortrait(data.profile.avatar,data.profile.name,"small"):'<span class="status-dot"></span>'}${e(data.profile.eyebrow)}</p><h1 id="intro-title">你好，我是<br><em>${e(data.profile.name)}<span>。</span></em></h1><p class="hero-description">${e(data.profile.description)}</p><a class="primary-link" href="#/about">多认识我一点 <span>↗</span></a></div><div class="hero-art"><span class="art-label mono">A PERSONAL GARDEN</span><img src="assets/garden.svg" alt="书本、植物与一扇字母 t 的拱门，象征慢慢生长的个人空间" width="520" height="500"><div class="art-caption"><span class="handwritten">保持好奇，慢慢生长。</span><span class="mono">FIG. 01</span></div></div></div><div class="intro-links"><span class="intro-links-title">也可以在这里找到我<span aria-hidden="true">⤵</span></span><a href="#/writing">${icon('writing')}<span>读我的文章</span><span class="link-count mono">${String(data.posts.length).padStart(2,'0')}</span><span>↗</span></a><a href="#/videos">${icon('videos')}<span>看我的视频收藏</span><span class="link-count mono">${String(data.videos.length).padStart(2,'0')}</span><span>↗</span></a></div></section>${travelSection()}`;
 }
@@ -60,7 +71,7 @@ function projects() {
 }
 
 // Register a renderer here and enable its matching navigation entry to add a page.
-export const pageRenderers = {home,travel,interests,writing,videos,about,projects};
+export const pageRenderers = {home,travel,academic,interests,writing,videos,about,projects};
 
 function article(id) {
   const post = data.posts.find(post=>post.id===id);
@@ -92,19 +103,28 @@ export function renderRoute() {
   try { id=decodeURIComponent(segments[1] || ''); } catch { id=''; }
   const route = segments[0] || 'home';
   const active = route==='post'?'writing':route;
-  const region=route==='travel'?resolveRegion(segments.slice(1)):null;
+  const ratings=route==='travel'&&segments[1]==='ratings'&&segments.length===2;
+  let guide=null;
+  if(route==='travel'&&segments[1]==='guide'&&['country','place'].includes(segments[2])&&segments.length===4){try{guide={kind:segments[2],id:decodeURIComponent(segments[3])};}catch{}}
+  const region=['travel','academic'].includes(route)&&!ratings&&!guide?resolveRegion(segments.slice(1)):null;
+  const getPins=()=>getTravelPins(data.travel?.destinations||[]);
+  const onSave=pin=>saveTravelPin(pin,data.travel?.destinations||[]);
   mapCleanup();
-  main.innerHTML = route==='post' ? article(id) : route==='travel' ? travel(region) : Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
+  mapCleanup=()=>{};
+  main.innerHTML = ratings?renderTravelRatings(getPins()):guide?renderTravelGuide(guide,getPins()):route==='post' ? article(id) : route==='travel' ? travel(region) : route==='academic'?academic(region):Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
   main.dataset.page = route;
-  document.querySelectorAll('.nav-link').forEach(link=>{const selected=link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
+  document.querySelectorAll('.nav-link').forEach(link=>{const selected=ratings?link.dataset.page==='travel-ratings':link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
   const label = data.navigation.find(item=>item.id===active)?.label || '页面';
   const postTitle = route==='post'?data.posts.find(post=>post.id===id)?.title:undefined;
-  document.title = `${postTitle || (route==='travel'&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
+  document.title = `${ratings?'心愿评分':guide?'旅行攻略':postTitle || (['travel','academic'].includes(route)&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
   document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');
   document.querySelector('.menu-toggle').setAttribute('aria-label','展开导航');
   document.querySelector('.sidebar').classList.remove('menu-open');
   if (['writing','videos'].includes(route)) bindCollection(route);
-  if (['home','travel'].includes(route)) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[],route==='travel'?region:{kind:'world',name:'世界'});
+  if(ratings)mapCleanup=mountTravelRatings(main,{getPins,onSave});
+  else if(guide)mapCleanup=mountTravelGuide(main,{spec:guide,getPins,onSave});
+  else if(route==='academic'&&region)mapCleanup=mountAcademicMap(main,{region});
+  else if (['home','travel'].includes(route)&&main.querySelector('[data-travel-map]')) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[],route==='travel'?region:{kind:'world',name:'世界'});
   if (currentRoute) { window.scrollTo({top:0,behavior:'instant'}); main.focus({preventScroll:true}); }
   currentRoute=route;
   refreshTranslations();
@@ -116,7 +136,7 @@ async function start() {
     if(!response.ok) throw new Error('Content unavailable');
     data=await response.json();
     ['posts','videos','projects','links','navigation'].forEach(key=>{data[key] ||= [];});
-    document.querySelector('#navigation').innerHTML=data.navigation.filter(item=>item.enabled).map(item=>`<a class="nav-link" data-page="${e(item.id)}" href="#/${item.id==='home'?'':e(item.id)}">${icon(item.id)}<span>${e(item.label)}</span><span class="nav-indicator">↗</span></a>`).join('');
+    document.querySelector('#navigation').innerHTML=data.navigation.filter(item=>item.enabled).map(item=>`<a class="nav-link" data-page="${e(item.id)}" href="#/${item.id==='home'?'':e(item.id)}">${icon(item.id)}<span>${e(item.label)}</span><span class="nav-indicator">↗</span></a>${item.id==='travel'?'<a class="nav-link nav-sub-link" data-page="travel-ratings" href="#/travel/ratings"><span aria-hidden="true">↳</span><span>心愿评分</span><span class="nav-indicator">↗</span></a>':''}`).join('');
     document.querySelector('.brand-name').innerHTML=`${e(data.profile.name)}<small>一小块互联网</small>`;
     if(data.profile.avatar) document.querySelector('.brand-mark')?.replaceWith(document.createRange().createContextualFragment(renderPortrait(data.profile.avatar,data.profile.name,'nav')));
     document.querySelector('.brand').setAttribute('aria-label',`${data.profile.name} 首页`);

@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = path.join(root, 'dist');
 const errors = [];
-const registeredPages = new Set(['home', 'travel', 'interests', 'writing', 'videos', 'about', 'projects']);
+const registeredPages = new Set(['home', 'travel', 'academic', 'interests', 'writing', 'videos', 'about', 'projects']);
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function expect(condition, message) {

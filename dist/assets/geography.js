@@ -1,7 +1,7 @@
 import {CONTINENTS,COUNTRIES} from './geography-data.js';
 import {project} from './projection.js';
 import {DESTINATIONS} from './destination-catalog.js';
-import {normalizeCountryHint} from './map-model.js';
+import {normalizeCountryHint,normalizeCountryId} from './map-model.js';
 export {CONTINENTS,COUNTRIES};
 export const continentById=new Map(CONTINENTS.map(item=>[item.id,item]));
 export const countryById=new Map(COUNTRIES.map(item=>[item.id,item]));
@@ -51,8 +51,14 @@ function destinationCountry(pin) {
 function pinCountryInfo(pin) {
   if(!pin||typeof pin!=='object')return null;
   const hint=normalizeCountryHint(pin.countryHint);
-  const key=`${pin.id||''}|${pin.lat},${pin.lon}|${hint?`${hint.id}@${hint.lat},${hint.lon}`:''}`;
-  if(!pinCache.has(key)){if(pinCache.size>3000)pinCache.clear();pinCache.set(key,(hint?hintedCountry(pin,hint):destinationCountry(pin))||countryAt(pin.lat,pin.lon));}
+  const countryId=normalizeCountryId(pin.countryId);
+  const kind=pin.kind==='country'&&countryId?'country':'city';
+  const key=`${pin.id||''}|${kind}:${countryId||''}|${pin.lat},${pin.lon}|${hint?`${hint.id}@${hint.lat},${hint.lon}`:''}`;
+  if(!pinCache.has(key)){
+    if(pinCache.size>3000)pinCache.clear();
+    const selected=kind==='country'?(countryById.get(countryId)||{id:countryId,continent:'asia'}):null;
+    pinCache.set(key,selected||(hint?hintedCountry(pin,hint):destinationCountry(pin))||countryAt(pin.lat,pin.lon));
+  }
   return pinCache.get(key);
 }
 export function pinCountry(pin) {return pinCountryInfo(pin)?.id||null;}

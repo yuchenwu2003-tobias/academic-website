@@ -24,6 +24,11 @@
       "enabled": true
     },
     {
+      "id": "academic",
+      "label": "学术地图",
+      "enabled": true
+    },
+    {
       "id": "interests",
       "label": "兴趣爱好",
       "enabled": true

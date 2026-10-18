@@ -4,6 +4,7 @@ import {DESTINATIONS} from './destination-catalog.js';
 import {UI_EN} from './i18n-messages.js';
 import {DESTINATION_UI_EN} from './i18n-destinations.js';
 import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js';
+import {ACADEMIC_UI_EN} from './i18n-academic.js';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
@@ -17,6 +18,7 @@ const english = {
   ...DESTINATION_UI_EN,
   ...UI_EN,
   ...PLACE_SEARCH_UI_EN,
+  ...ACADEMIC_UI_EN,
 };
 let language = 'zh-CN';
 try {
@@ -42,6 +44,17 @@ function englishText(source, depth = 0) {
   if (depth > 5 || !/[\u3400-\u9fff]/.test(source)) return source;
   const tr = value => englishText(value, depth + 1);
   const patterns = [
+    [/^(\d+) 个研究组$/,(_,n)=>`${n} research ${n==='1'?'group':'groups'}`],
+    [/^已导入 (\d+) 个研究组，并与学术地图合并。$/,(_,n)=>`Imported ${n} research groups and merged them with your academic map.`],
+    [/^研究组导入失败：(.+)$/,(_,error)=>`Research group import failed: ${tr(error)}`],
+    [/^(.+)需要填写文字。$/,(_,field)=>`${tr(field)} must be text.`],
+    [/^(.+?)(不能为空，且)?最多 (\d+) 个字符。$/,(_,field,required,n)=>`${tr(field)} ${required?'is required and ':''}must have at most ${n} characters.`],
+    [/^(\d+) 个结果 · (\d+) 个已评分$/,(_,n,rated)=>`${n} results · ${rated} rated`],
+    [/^心愿评分：(.+)$/,(_,score)=>`Desire rating: ${tr(score)}`],
+    [/^(.+)，有多想去$/,(_,title)=>`${title}, desire rating`],
+    [/^已将「(.+)」设为 ([1-5]) 分。$/,(_,title,n)=>`Set “${title}” to ${n}/5.`],
+    [/^已清除「(.+)」的评分，地点仍保留在地图中。$/,(_,title)=>`Cleared the rating for “${title}”. The place stays on your map.`],
+    [/^([0-5]) · (.+)$/,(_,n,label)=>`${n} · ${tr(label)}`],
     [/^(\d+) 个地点$/, (_, n) => `${n} ${n === '1' ? 'place' : 'places'}`],
     [/^(\d+) 条记录$/, (_, n) => `${n} ${n === '1' ? 'note' : 'notes'}`],
     [/^(\d+) 分钟阅读$/, (_, n) => `${n} min read`],
@@ -61,6 +74,7 @@ function englishText(source, depth = 0) {
     [/^(.+)旗帜$/, (_, name) => `${tr(name)} flag`],
     [/^(.+)，(已在地图中|加入旅行心愿)$/, (_, name, action) => `${tr(name)}, ${action === '已在地图中' ? 'already on your map' : 'add to travel wishlist'}`],
     // Saved pin titles are user content; only their action/status suffix changes.
+    [/^(.+)，(城市／景点|国家／地区)，(去过|想去)，点击查看资料$/, (_,title,kind,status)=>`${title}, ${tr(kind)}, ${tr(status)}, view details`],
     [/^(.+)，(去过|想去)，点击编辑$/, (_, title, status) => `${title}, ${tr(status)}, select to edit`],
     [/^(.+)，进入大洲页面$/, (_, name) => `${tr(name)}, explore continent`],
     [/^(.+)，查看国家或地区页面$/, (_, name) => `${tr(name)}, explore country or region`],
@@ -122,8 +136,9 @@ function translateAttributes(element) {
     const previous = records[attribute];
     const source = previous && current === previous.last ? previous.source : current;
     // Keep saved titles intact in both Chinese writing systems.
+    const pinKindLabel=element.matches('.map-pin-marker')&&source.match(/^(.+)，(城市／景点|国家／地区)，(去过|想去)，点击查看资料$/);
     const pinLabel = element.matches('.map-pin-marker') && source.match(/^(.+)，(去过|想去)，点击编辑$/);
-    const next = pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
+    const next=pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
     records[attribute] = {source, last: next};
     if (current !== next) element.setAttribute(attribute, next);
   }

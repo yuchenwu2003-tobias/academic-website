@@ -1,0 +1,21 @@
+Satellite Earth imagery
+
+Day: NASA Blue Marble (land, ocean and ice), 2048 x 1024.
+File: earth-day.jpg
+Source: https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57730/land_ocean_ice_2048.jpg
+Background and credits: https://svs.gsfc.nasa.gov/2915
+NASA / Goddard Space Flight Center Scientific Visualization Studio; Blue Marble by Reto Stockli (NASA/GSFC).
+
+Night: Earth at Night 2012, 1024 x 512; Suomi NPP VIIRS composite, released 2013.
+File: earth-night.jpg
+Source: https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030028/earthatnight2012_print.jpg
+Background and credits: https://svs.gsfc.nasa.gov/30028
+NASA Earth Observatory image by Robert Simmon, using Suomi NPP VIIRS data provided courtesy of Chris Elvidge (NOAA National Geophysical Data Center).
+Suomi NPP is a partnership between NASA, NOAA, and the Department of Defense.
+The source composite uses observations from April and October 2012 over existing MODIS Blue Marble imagery.
+
+Images are locally served static composites, not live satellite captures.
+The interactive globe blends these textures according to the current UTC solar position; the day/night terminator updates with time.
+Solar equations reference: NOAA Global Monitoring Laboratory, General Solar Position Calculations
+https://gml.noaa.gov/grad/solcalc/solareqns.PDF
+This visualization is for exploration and approximate illumination, not navigation.

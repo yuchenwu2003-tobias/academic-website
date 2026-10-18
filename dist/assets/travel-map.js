@@ -1,42 +1,66 @@
 import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js';
 import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js';
-import {fitRegion,pinsInRegion} from './geography.js';
+import {fitRegion,pinsInRegion,pinCountry} from './geography.js';
+import {countryPlaces,anchorCountryPin} from './country-destinations.js';
+import {renderPinDrawing} from './pin-icons.js';
+import {renderPlaceInfo,mountPlaceInfo} from './place-info.js';
 import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js';
 import {renderPlaceSearch,mountPlaceSearch} from './place-search.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kindName=pin=>pin.kind==='country'?'国家／地区':'城市／景点';
+const countryPlacesById=new Map(countryPlaces.map(place=>[place.countryId,place]));
+const samePinIdentity=(a,b)=>(a.kind||'city')===(b.kind||'city')&&(a.kind!=='country'||a.countryId===b.countryId);
 let memoryState;
 function readState() {
   if(memoryState) return memoryState;
-  try {const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"pins":[],"hidden":[]}');memoryState={pins:Array.isArray(value.pins)?value.pins.map(normalizePin):[],hidden:Array.isArray(value.hidden)?value.hidden.filter(id=>typeof id==='string'):[]};}
+  try {const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"pins":[],"hidden":[]}');memoryState={pins:Array.isArray(value.pins)?value.pins.map(normalizePin).map(anchorCountryPin):[],hidden:Array.isArray(value.hidden)?value.hidden.filter(id=>typeof id==='string'):[]};}
   catch {memoryState={pins:[],hidden:[]};}
   return memoryState;
 }
+const sourcePins=destinations=>destinations.filter(place=>Number.isFinite(place.lat)&&Number.isFinite(place.lon)).map(place=>normalizePin({id:`source-${place.id}`,title:place.name,note:place.description,lat:place.lat,lon:place.lon,status:place.status||'want',kind:place.kind==='country'?'country':'city',countryId:place.countryId||place.country,photoUrl:place.photoUrl,wikipediaUrl:place.wikipediaUrl,guides:place.guides,desireRating:place.desireRating}));
+export function getTravelPins(destinations=[]){return combinePins(sourcePins(destinations),readState()).map(anchorCountryPin);}
+export function saveTravelPin(value,destinations=[]){
+  let pin=anchorCountryPin(normalizePin(value));const state=readState(),pins=getTravelPins(destinations);
+  const previous=pins.find(item=>item.id===pin.id);
+  if(previous&&!samePinIdentity(previous,pin))pin={...pin,id:crypto.randomUUID()};
+  if(!pins.some(item=>item.id===pin.id)&&pins.length>=1000)throw new Error('地图最多保存 1000 个地点。请先整理已有地点。');
+  if(findDestinationPin(pin,pins.filter(item=>item.id!==pin.id)))throw new Error('这个地点已在地图中，可以点击标记编辑。');
+  memoryState={pins:[...state.pins.filter(item=>item.id!==pin.id),pin],hidden:state.hidden.filter(id=>id!==pin.id)};
+  let saved=true;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(memoryState));}catch{saved=false;}
+  return {saved,pin};
+}
+if(typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY)memoryState=undefined;});
+function guideInput(value){return String(value||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{const split=line.indexOf('|');return split<0?{title:line,url:line}:{title:line.slice(0,split).trim(),url:line.slice(split+1).trim()};});}
 
 export function renderTravelMap({compact=false,region={kind:"world",name:"世界"}}={}) {
   return `<div class="travel-map ${compact?'map-compact':''}" data-travel-map>
     <div class="map-toolbar"><div class="map-toolbar-start"><button class="map-add" data-map-add aria-haspopup="dialog"><span aria-hidden="true">＋</span> 添加地点</button><button class="map-tool" data-map-pick aria-pressed="false">在地图上选位置</button></div><div class="map-file-tools"><button class="map-tool" data-map-export>导出地图 ↗</button><button class="map-tool" data-map-import>导入</button><input type="file" accept="application/json,.json" data-map-file hidden></div></div>
     ${renderMapScene(region,compact)}
     <div class="map-bottom"><div class="map-legend"><span><i class="legend-dot"></i> 想去</span><span><i class="legend-dot visited"></i> 去过</span><strong data-pin-count>0 个地点</strong></div><span class="map-data-credit">投影：<a href="https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map" target="_blank" rel="noopener noreferrer">Equal Earth</a> · 边界：<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a></span></div>
+    <div class="map-kind-legend" aria-label="标记类型"><span><svg viewBox="-20 -38 50 44" aria-hidden="true">${renderPinDrawing('city')}</svg>城市／景点</span><span><svg viewBox="-20 -38 50 44" aria-hidden="true">${renderPinDrawing('country')}</svg>国家／地区</span><a class="map-ratings-link" href="#/travel/ratings">心愿评分 ↗</a></div>
     <p class="map-storage-note" data-map-message role="status">标记保存在当前浏览器；导出后可备份或在其他设备导入。</p>
     ${renderDestinationPicker(region,compact)}
     ${renderRegionDirectory(region,compact)}
     <div class="map-place-list" data-map-list></div>
-    <dialog class="pin-dialog" data-pin-dialog aria-labelledby="pin-dialog-title"><form data-pin-form><div class="pin-dialog-top"><span class="mono">A PLACE TO REMEMBER</span><button type="button" class="pin-close" data-dialog-close aria-label="关闭地点窗口">×</button></div><h2 id="pin-dialog-title">放下一枚 📌</h2><p class="pin-form-intro">每一个地方，都有自己的故事。</p><label>地点名称<input name="title" maxlength="80" placeholder="例如：京都、冰岛、马赛马拉…" required autocomplete="off"></label><input name="lat" type="hidden"><input name="lon" type="hidden"><label>状态<select name="status"><option value="want">想去 · 旅行心愿</option><option value="visited">去过 · 我的足迹</option></select></label><label>留一点备注 <span class="optional">选填</span><textarea name="note" maxlength="500" rows="3" placeholder="想在这里做什么，或一段旅行回忆…"></textarea></label><p class="pin-form-error" data-pin-error role="alert"></p><div class="pin-dialog-actions"><button type="button" class="pin-delete" data-pin-delete hidden>删除地点</button><button type="button" class="map-tool" data-dialog-cancel>取消</button><button type="submit" class="map-add">保存地点 ↗</button></div></form></dialog>
+    <dialog class="pin-dialog" data-pin-dialog aria-labelledby="pin-dialog-title"><form data-pin-form><div class="pin-dialog-top"><span class="mono">A PLACE TO REMEMBER</span><button type="button" class="pin-close" data-dialog-close aria-label="关闭地点窗口">×</button></div><h2 id="pin-dialog-title">放下一枚 📌</h2><p class="pin-form-intro">每一个地方，都有自己的故事。</p><label>标记类型<select name="kind"><option value="city">城市／景点</option><option value="country">国家／地区</option></select></label><label data-country-field hidden>国家或地区<select name="countryId"><option value="">选择国家／地区…</option>${countryPlaces.map(place=>`<option value="${place.countryId}">${esc(place.name)}</option>`).join('')}</select></label><label>地点名称<input name="title" maxlength="80" placeholder="例如：京都、冰岛、马赛马拉…" required autocomplete="off"></label><input name="lat" type="hidden"><input name="lon" type="hidden"><label>状态<select name="status"><option value="want">想去 · 旅行心愿</option><option value="visited">去过 · 我的足迹</option></select></label><label>我的介绍 <span class="optional">选填</span><textarea name="note" maxlength="5000" rows="5" placeholder="想在这里做什么，或一段旅行回忆…"></textarea></label><label>地点图片链接 <span class="optional">选填</span><input name="photoUrl" type="url" maxlength="2000" placeholder="https://…"></label><label>维基百科链接 <span class="optional">选填</span><input name="wikipediaUrl" type="url" maxlength="2000" placeholder="https://en.wikipedia.org/wiki/…"></label><label>收藏的旅行攻略 <span class="optional">每行：标题 | 链接</span><textarea name="guides" rows="4" placeholder="例如：三日旅行路线 | https://…"></textarea></label><p class="pin-form-error" data-pin-error role="alert"></p><div class="pin-dialog-actions"><button type="button" class="pin-delete" data-pin-delete hidden>删除地点</button><button type="button" class="map-tool" data-dialog-cancel>取消</button><button type="submit" class="map-add">保存地点 ↗</button></div></form></dialog>
     ${renderPlaceSearch(region)}
+    ${renderPlaceInfo()}
   </div>`;
 }
 
 export function mountTravelMap(root,destinations=[],region={kind:"world",name:"世界"}) {
   if(!root) return ()=>{};
-  const presets=destinations.filter(place=>Number.isFinite(place.lat)&&Number.isFinite(place.lon)).map(place=>normalizePin({id:`source-${place.id}`,title:place.name,note:place.description,lat:place.lat,lon:place.lon,status:place.status||'want'}));
+  const presets=sourcePins(destinations);
   let state=readState();
   let selectedId=null;
   let selectedCountryHint;
+  let selectedRecord;
   let adding=false;
   let view=fitRegion(region);
   let picker;
   let placeSearch;
+  let placeInfo;
   const svg=root.querySelector('[data-world-map]');
   const markers=root.querySelector('[data-map-markers]');
   const dialog=root.querySelector('[data-pin-dialog]');
@@ -44,7 +68,7 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   const error=root.querySelector('[data-pin-error]');
   const message=root.querySelector('[data-map-message]');
   const fields=form.elements;
-  const allPins=()=>combinePins(presets,state);
+  const allPins=()=>combinePins(presets,state).map(anchorCountryPin);
   const announce=text=>{message.textContent=text;};
   function store() {
     memoryState=state;
@@ -65,11 +89,11 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   function draw() {
     const pins=pinsInRegion(allPins(),region);
     const scale=view.width/1000;
-    markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon);return `<g class="map-pin-marker ${pin.status==='visited'?'is-visited':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" aria-label="${esc(pin.title)}，${pin.status==='visited'?'去过':'想去'}，点击编辑"><title>${esc(pin.title)}</title><circle cy="-12" r="16" class="marker-hit-area"/><g class="marker-visual"><circle cy="-12" r="16" class="marker-halo"/><path class="marker-shape" d="M0 0C-3-5-10-10-10-17a10 10 0 0 1 20 0C10-10 3-5 0 0Z"/><circle cy="-17" r="3.2" class="marker-center"/></g></g>`;}).join('');
+    markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon),country=pin.kind==='country';return `<g class="map-pin-marker ${country?'is-country':'is-city'} ${pin.status==='visited'?'is-visited':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" data-pin-kind="${country?'country':'city'}" aria-label="${esc(pin.title)}，${kindName(pin)}，${pin.status==='visited'?'去过':'想去'}，点击查看资料"><title>${esc(pin.title)}</title><circle cx="${country?6:0}" cy="${country?-15:-12}" r="${country?20:16}" class="marker-hit-area"/><g class="marker-visual">${renderPinDrawing(pin.kind)}</g></g>`;}).join('');
     root.querySelector('[data-pin-count]').textContent=`${pins.length} 个地点`;
     document.querySelector('.travel-count')?.replaceChildren(document.createTextNode(`${String(pins.length).padStart(2,'0')} PLACES TO GO`));
     const list=root.querySelector('[data-map-list]');
-    list.innerHTML=pins.length ? `<div class="map-list-heading"><h2>心愿与足迹 <span>${pins.length}</span></h2><span>点击地点，编辑你的旅行记录</span></div><div class="map-place-grid">${pins.map(pin=>`<button class="map-place-card" data-place-id="${esc(pin.id)}"><span class="place-status ${pin.status==='visited'?'visited':''}">${pin.status==='visited'?'已去过':'想去'}</span><strong>${esc(pin.title)}</strong>${pin.note?`<p>${esc(pin.note)}</p>`:''}<span class="place-edit-link">编辑记录 ↗</span></button>`).join('')}</div>` : `<div class="map-no-places"><span aria-hidden="true">✳</span><p>${region.kind==='world'?'世界很大，先从一个想去的地方开始。':esc(region.name)+'的旅行记录，还在等第一枚标记。'}</p><button class="text-link" data-first-pin>添加第一个地点 <span>↗</span></button></div>`;
+    list.innerHTML=pins.length ? `<div class="map-list-heading"><h2>心愿与足迹 <span>${pins.length}</span></h2><span>点击地点，编辑你的旅行记录</span></div><div class="map-place-grid">${pins.map(pin=>`<button class="map-place-card" data-place-id="${esc(pin.id)}"><span class="place-card-meta"><span class="place-status ${pin.status==='visited'?'visited':''}">${pin.status==='visited'?'已去过':'想去'}</span><span class="place-kind">${kindName(pin)}</span></span><strong>${esc(pin.title)}</strong>${pin.note?`<p>${esc(pin.note)}</p>`:''}<span class="place-edit-link">编辑记录 ↗</span></button>`).join('')}</div>` : `<div class="map-no-places"><span aria-hidden="true">✳</span><p>${region.kind==='world'?'世界很大，先从一个想去的地方开始。':esc(region.name)+'的旅行记录，还在等第一枚标记。'}</p><button class="text-link" data-first-pin>添加第一个地点 <span>↗</span></button></div>`;
     picker?.update();
     placeSearch?.update();
   }
@@ -77,12 +101,14 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
     const id=place.pinId||destinationPinId(place);
     if(findDestinationPin({...place,id},allPins()))throw new Error('这个地点已在地图中，可以点击标记编辑。');
     if(allPins().length>=1000)throw new Error('地图最多保存 1000 个地点。请先整理已有地点。');
-    const pin=normalizePin({id,title:place.name,lat:place.lat,lon:place.lon,note:'',status:'want',countryHint:place.countryHint});
+    const safeId=allPins().some(item=>item.id===id)?crypto.randomUUID():id;
+    const pin=normalizePin({id:safeId,title:place.name,lat:place.lat,lon:place.lon,note:'',status:'want',kind:place.kind==='country'?'country':'city',countryId:place.kind==='country'?(place.countryId||place.country):undefined,countryHint:place.countryHint});
     state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);
     return {saved:store(),pin,inRegion:Boolean(pinsInRegion([pin],region).length)};
   }
   const addDestination=place=>addPlace({...place,pinId:destinationPinId(place)});
   function showEditor(pin) {
+    selectedRecord=pin;
     selectedId=pin?.id||null;
     selectedCountryHint=pin?.countryHint;
     fields.title.value=pin?.title||'';
@@ -90,6 +116,12 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
     fields.lon.value=pin?.lon===undefined?'':String(pin.lon);
     fields.status.value=pin?.status||'want';
     fields.note.value=pin?.note||'';
+    fields.photoUrl.value=pin?.photoUrl||'';
+    fields.wikipediaUrl.value=pin?.wikipediaUrl||'';
+    fields.guides.value=(pin?.guides||[]).map(guide=>`${guide.title} | ${guide.url}`).join('\n');
+    fields.kind.value=pin?.kind==='country'?'country':'city';
+    fields.countryId.value=pin?.countryId||pinCountry(pin)||((region.kind==='country'&&countryPlacesById.has(region.id))?region.id:'');
+    updateKindFields();
     error.textContent='';
     root.querySelector('#pin-dialog-title').textContent=selectedId?'编辑这个地点':'放下一枚 📌';
     root.querySelector('[data-pin-delete]').hidden=!selectedId;
@@ -97,7 +129,12 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
     fields.title.focus();
     setAdding(false);
   }
-  function selectPin(id) {const pin=allPins().find(pin=>pin.id===id);if(pin)showEditor(pin);}
+  function editPin(id) {const pin=allPins().find(pin=>pin.id===id);if(pin)showEditor(pin);}
+  function selectPin(id) {const pin=allPins().find(pin=>pin.id===id);if(pin)placeInfo?.open(pin);}
+  function updateKindFields(){const country=fields.kind.value==='country';root.querySelector('[data-country-field]').hidden=!country;fields.countryId.required=country;}
+  function chooseCountry(){const place=countryPlacesById.get(fields.countryId.value);if(!place)return;fields.title.value=place.name;fields.lat.value=String(place.lat);fields.lon.value=String(place.lon);}
+  fields.kind.addEventListener('change',()=>{updateKindFields();if(fields.kind.value==='country')chooseCountry();});
+  fields.countryId.addEventListener('change',chooseCountry);
   root.querySelector('[data-map-add]').addEventListener('click',()=>{setAdding(false);placeSearch.open();});
   root.querySelector('[data-map-pick]').addEventListener('click',()=>setAdding(!adding));
   root.querySelector('[data-map-cancel]').addEventListener('click',()=>setAdding(false));
@@ -109,10 +146,13 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
     if(!form.reportValidity())return;
     try{
       if(!fields.lat.value.trim()||!fields.lon.value.trim())throw new Error('请先搜索并选择一个地点，或在地图上选择位置。');
-      const pin=normalizePin({id:selectedId||crypto.randomUUID(),title:fields.title.value,note:fields.note.value,lat:Number(fields.lat.value),lon:Number(fields.lon.value),status:fields.status.value,countryHint:selectedCountryHint});
+      const country=fields.kind.value==='country'?countryPlacesById.get(fields.countryId.value):null;
+      if(fields.kind.value==='country'&&!country)throw new Error('请选择要标记的国家或地区。');
+      const changedKind=(selectedRecord?.kind||'city')!==fields.kind.value||(country&&selectedRecord?.countryId!==country.countryId);
+      const pin=normalizePin({...selectedRecord,id:changedKind?crypto.randomUUID():selectedId||crypto.randomUUID(),title:fields.title.value,note:fields.note.value,lat:country?.lat??Number(fields.lat.value),lon:country?.lon??Number(fields.lon.value),status:fields.status.value,kind:fields.kind.value,countryId:country?.countryId,countryHint:country?undefined:selectedCountryHint,desireRating:changedKind?0:selectedRecord?.desireRating,photoUrl:fields.photoUrl.value,wikipediaUrl:fields.wikipediaUrl.value,guides:guideInput(fields.guides.value)});
       if(!selectedId&&allPins().length>=1000)throw new Error('地图最多保存 1000 个地点。请先整理已有地点。');
-      if(!selectedId&&findDestinationPin(pin,allPins()))throw new Error('这个地点已在地图中，可以点击标记编辑。');
-      state.pins=state.pins.filter(item=>item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);const saved=store();dialog.close();if(saved&&!pinsInRegion([pin],region).length)announce('地点已保存到世界地图；它不在当前区域内。');
+      if(findDestinationPin(pin,allPins().filter(item=>item.id!==selectedId)))throw new Error('这个地点已在地图中，可以点击标记编辑。');
+      state.pins=state.pins.filter(item=>item.id!==selectedId&&item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);if(changedKind&&presets.some(item=>item.id===selectedId))state.hidden=[...new Set([...state.hidden,selectedId])];const saved=store();dialog.close();if(saved&&!pinsInRegion([pin],region).length)announce('地点已保存到世界地图；它不在当前区域内。');
     }catch(err){error.textContent=err.message;}
   });
   root.querySelector('[data-pin-delete]').addEventListener('click',()=>{if(!selectedId)return;state.pins=state.pins.filter(pin=>pin.id!==selectedId);if(presets.some(pin=>pin.id===selectedId))state.hidden=[...new Set([...state.hidden,selectedId])];const saved=store();dialog.close();if(saved)announce('地点已删除，当前浏览器中的地图已更新。');});
@@ -132,7 +172,8 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   window.addEventListener('storage',onStorage);document.addEventListener('keydown',onEscape);
   const scene=mountMapScene(root,{region,isAdding:()=>adding,onMarkerClick:selectPin,onChoosePoint:showEditor,announce,onViewChange:next=>{view=next;markers.querySelectorAll('[data-pin-id]').forEach(marker=>{const pin=allPins().find(pin=>pin.id===marker.dataset.pinId);if(pin){const p=project(pin.lat,pin.lon);marker.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${view.width/1000})`);}});}});
   picker=mountDestinationPicker(root,{region,getPins:allPins,onAdd:addDestination});
-  placeSearch=mountPlaceSearch(root,{region,getPins:allPins,onAdd:addPlace,onEdit:selectPin});
+  placeSearch=mountPlaceSearch(root,{region,getPins:allPins,onAdd:addPlace,onEdit:editPin});
+  placeInfo=mountPlaceInfo(root,{getPins:allPins,onEdit:editPin});
   draw();
-  return ()=>{placeSearch.destroy();picker.destroy();scene.destroy();window.removeEventListener('storage',onStorage);document.removeEventListener('keydown',onEscape);if(dialog.open)dialog.close();};
+  return ()=>{placeInfo.destroy();placeSearch.destroy();picker.destroy();scene.destroy();window.removeEventListener('storage',onStorage);document.removeEventListener('keydown',onEscape);if(dialog.open)dialog.close();};
 }

@@ -2,17 +2,51 @@ import {COUNTRIES} from './geography-data.js';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
 export {project,unproject} from './projection.js';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
+export function normalizeCountryId(value) {
+  if(typeof value!=='string')return null;
+  const id=value.toLowerCase();
+  return /^[a-z]{3}$/.test(id)&&countryHintIds.has(id)?id:null;
+}
 export function normalizeCountryHint(hint) {
   if(!hint||typeof hint!=='object'||typeof hint.id!=='string')return null;
-  const id=hint.id.toLowerCase();
-  if(!/^[a-z]{3}$/.test(id)||!countryHintIds.has(id)||typeof hint.lat!=='number'||!Number.isFinite(hint.lat)||Math.abs(hint.lat)>90||typeof hint.lon!=='number'||!Number.isFinite(hint.lon)||Math.abs(hint.lon)>180)return null;
+  const id=normalizeCountryId(hint.id);
+  if(!id||typeof hint.lat!=='number'||!Number.isFinite(hint.lat)||Math.abs(hint.lat)>90||typeof hint.lon!=='number'||!Number.isFinite(hint.lon)||Math.abs(hint.lon)>180)return null;
   return {id,lat:hint.lat,lon:hint.lon};
 }
+function normalizeLink(value,label,{httpsOnly=false,wikipediaOnly=false}={}) {
+  if(typeof value!=='string'||!value.trim()||value.trim().length>2000)throw new Error(`${label}需要有效链接，且不能超过 2000 个字符。`);
+  let url;
+  try{url=new URL(value.trim());}catch{throw new Error(`${label}需要填写完整的有效链接。`);}
+  if(!(httpsOnly?['https:']:['https:','http:']).includes(url.protocol))throw new Error(`${label}仅支持 ${httpsOnly?'HTTPS':'HTTP 或 HTTPS'} 链接。`);
+  if(url.username||url.password)throw new Error(`${label}不能包含账号或密码。`);
+  if(wikipediaOnly&&url.hostname!=='wikipedia.org'&&!url.hostname.endsWith('.wikipedia.org'))throw new Error('百科链接必须来自 wikipedia.org 或其子域。');
+  if(url.href.length>2000)throw new Error(`${label}不能超过 2000 个字符。`);
+  return url.href;
+}
+export function normalizeGuideLinks(guides=[]) {
+  if(!Array.isArray(guides)||guides.length>30)throw new Error('攻略链接需要是列表，最多保存 30 条。');
+  return guides.map((guide,index)=>{
+    const label=`第 ${index+1} 条攻略`;
+    if(!guide||typeof guide!=='object'||typeof guide.title!=='string'||!guide.title.trim()||guide.title.trim().length>120)throw new Error(`${label}需要标题，且标题不能超过 120 个字符。`);
+    return {title:guide.title.trim(),url:normalizeLink(guide.url,`${label}链接`)};
+  });
+}
 export function normalizePin(pin) {
-  if (!pin || typeof pin !== 'object' || typeof pin.title !== 'string' || !pin.title.trim() || pin.title.length>80 || typeof pin.lat!=='number' || !Number.isFinite(pin.lat) || Math.abs(pin.lat)>90 || typeof pin.lon!=='number' || !Number.isFinite(pin.lon) || Math.abs(pin.lon)>180 || (pin.note!==undefined && (typeof pin.note!=='string'||pin.note.length>500)) || !['want','visited'].includes(pin.status ?? 'want')) throw new Error('地点需要名称、有效经纬度，以及“想去”或“去过”状态。');
+  if (!pin || typeof pin !== 'object' || typeof pin.title !== 'string' || !pin.title.trim() || pin.title.length>80 || typeof pin.lat!=='number' || !Number.isFinite(pin.lat) || Math.abs(pin.lat)>90 || typeof pin.lon!=='number' || !Number.isFinite(pin.lon) || Math.abs(pin.lon)>180 || (pin.note!==undefined && (typeof pin.note!=='string'||pin.note.length>5000)) || !['want','visited'].includes(pin.status ?? 'want')) throw new Error('地点需要名称、有效经纬度、“想去”或“去过”状态，介绍最多 5000 个字符。');
   const result={id:typeof pin.id==='string'&&/^[\w-]{1,100}$/.test(pin.id)?pin.id:crypto.randomUUID(),title:pin.title.trim(),note:pin.note || '',lat:pin.lat,lon:pin.lon,status:pin.status || 'want'};
+  const countryId=normalizeCountryId(pin.countryId);
+  // Unknown future kinds and malformed country metadata remain recoverable as
+  // ordinary city pins, instead of invalidating an entire legacy backup.
+  result.kind=pin.kind==='country'&&countryId?'country':'city';
+  if(countryId)result.countryId=countryId;
+  result.desireRating=Number.isInteger(pin.desireRating)&&pin.desireRating>=0&&pin.desireRating<=5?pin.desireRating:0;
   const countryHint=normalizeCountryHint(pin.countryHint);
   if(countryHint)result.countryHint=countryHint;
+  result.guides=normalizeGuideLinks(pin.guides);
+  for(const [field,label,wikipediaOnly]of [['photoUrl','图片链接',false],['wikipediaUrl','百科链接',true]]){
+    if(pin[field]===undefined||(typeof pin[field]==='string'&&!pin[field].trim()))continue;
+    result[field]=normalizeLink(pin[field],label,{httpsOnly:true,wikipediaOnly});
+  }
   return result;
 }
 export function parseImport(text) {

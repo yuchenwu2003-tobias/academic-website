@@ -24,10 +24,15 @@ export function searchDestinations(candidates,query='',kind='all') {
 }
 
 export function findDestinationPin(place,pins) {
-  // Repeated clicks/imports share an ID; existing hand-placed pins within 150 m
-  // also count as the same point. Nearby but distinct sights remain separate.
+  // Country wishes use country identity. City/sight pins keep their own identity
+  // and nearby-point matching, including older pins without a kind field.
+  if(place.kind==='country') {
+    const countryId=place.countryId||place.country;
+    return countryId?pins.find(pin=>pin.kind==='country'&&pin.countryId===countryId):undefined;
+  }
   return pins.find(pin=>{
-    if([place.id,destinationPinId(place),`source-${place.id}`].includes(pin.id))return true;
+    if(pin.kind==='country')return false;
+    if([place.id,place.pinId,destinationPinId(place),`source-${place.id}`].filter(Boolean).includes(pin.id))return true;
     const radians=Math.PI/180;
     const deltaLat=(pin.lat-place.lat)*radians;
     const deltaLon=(pin.lon-place.lon)*radians;
@@ -79,7 +84,7 @@ export function mountDestinationPicker(root,{region,getPins,onAdd}) {
     const place=byId.get(button.dataset.destinationAdd);
     if(!place)return;
     try {
-      const result=onAdd(place);
+      const result=onAdd({...place,kind:'city'});
       feedback.textContent=result.saved?`已把「${place.name}」加入心愿，可在地图上点击标记编辑。`:`「${place.name}」暂存在本页，浏览器未能保存。请导出地图备份。`;
       feedback.classList.toggle('is-warning',!result.saved);
       update();
