@@ -1,14 +1,14 @@
-import {getTravelResidences} from './travel-map.js?v=20261018-etretat';
-import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-etretat';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-etretat';
-import {placeGuideHref} from './place-media.js?v=20261018-etretat';
-import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-etretat';
-import {project} from './projection.js?v=20261018-etretat';
-import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-etretat';
-import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-etretat';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-etretat';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-etretat';
-import {toTraditional} from './i18n.js?v=20261018-etretat';
+import {getTravelResidences} from './travel-map.js?v=20261018-ratings-final';
+import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-ratings-final';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-ratings-final';
+import {placeGuideHref} from './place-media.js?v=20261018-ratings-final';
+import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-ratings-final';
+import {project} from './projection.js?v=20261018-ratings-final';
+import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-ratings-final';
+import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-ratings-final';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-ratings-final';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-ratings-final';
+import {toTraditional} from './i18n.js?v=20261018-ratings-final';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external='target="_blank" rel="noopener noreferrer"';

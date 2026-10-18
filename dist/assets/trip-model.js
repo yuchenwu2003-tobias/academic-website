@@ -1,5 +1,5 @@
-import {normalizePin} from './map-model.js?v=20261018-etretat';
-import {pinCountry} from './geography.js?v=20261018-etretat';
+import {normalizePin} from './map-model.js?v=20261018-ratings-final';
+import {pinCountry} from './geography.js?v=20261018-ratings-final';
 export const TRIP_STORAGE_KEY='tobias.travel-trips.v1';
 let memory;
 export const tripName=trip=>`${trip.year} · ${trip.region}`;
@@ -25,18 +25,29 @@ export function tripsForPin(pin,pins=[]){
   const country=pin.kind==='country'?pin.countryId:null;
   return getTravelTrips().filter(trip=>trip.stops.some(stop=>{const saved=country?pins.find(place=>place.id===stop.pinId):null;return country?(stop.countryId||(saved?pinCountry(saved):null))===country:stop.pinId===pin.id;})).sort((a,b)=>b.year-a.year||a.region.localeCompare(b.region));
 }
+export function createTripStop(pin,{existing=true,rating}={}){
+  return {pin,existing,rating:rating??pin.recommendationRating??0,updateRecommendation:!existing,...(existing?{}:{status:'visited'})};
+}
 export async function commitTravelTrip(draft,{getPins,savePin}){
-  // Validate all stops before any city or rating is written.
-  const pins=draft.stops.map(stop=>{
-    const source=getPins().find(pin=>pin.id===stop.pin?.id)||stop.pin;
+  // Validate every requested change before writing; unmodified saved places are
+  // linked to the journey without replacing their current profile or labels.
+  if(!Array.isArray(draft.stops))throw new Error('每段行程需要 1 至 100 个城市。');
+  const changes=draft.stops.map(stop=>{
+    const current=getPins().find(pin=>pin.id===stop.pin?.id),source=current||stop.pin;
     if(!source||source.kind==='country')throw new Error('请选择城市或景点，而不是国家。');
-    return normalizePin({...source,status:source.status==='resident'?'resident':'visited',recommendationRating:stop.rating});
+    if(stop.existing&&!current)throw new Error('有城市已取消标记，请重新选择。');
+    if(stop.status!==undefined&&!['want','visited','resident','want-resident'].includes(stop.status))throw new Error('请选择有效的地点标签。');
+    if(stop.updateRecommendation!==undefined&&typeof stop.updateRecommendation!=='boolean')throw new Error('请选择是否更新地点推荐评分。');
+    const pin=normalizePin({...source,...(stop.status===undefined?{}:{status:stop.status}),...(stop.updateRecommendation?{recommendationRating:stop.rating}:{})});
+    return {pin,write:!current||pin.status!==current.status||pin.recommendationRating!==(current.recommendationRating||0)};
   });
+  const pins=changes.map(change=>change.pin);
   const trip=normalizeTrip({id:draft.id,year:draft.year,region:draft.region,stops:pins.map((pin,index)=>({pinId:pin.id,title:pin.title,rating:draft.stops[index].rating,countryId:pinCountry(pin)}))});
   const existing=getTravelTrips();if(!existing.some(item=>item.id===trip.id)&&existing.length>=200)throw new Error('最多保存 200 段行程。');
   let saved=true;
   for(let index=0;index<pins.length;index++){
-    const result=await savePin(pins[index]);if(result===false||result?.error||result?.success===false)throw new Error('城市未能保存，行程尚未保存，请重试。');
+    if(!changes[index].write)continue;
+    const result=await savePin(pins[index]);if(result===false||result?.ok===false||result?.error||result?.success===false)throw new Error('城市未能保存，行程尚未保存，请重试。');
     if(result?.saved===false)saved=false;
     if(result?.pin){trip.stops[index].pinId=result.pin.id;trip.stops[index].title=result.pin.title;}
   }

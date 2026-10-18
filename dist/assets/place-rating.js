@@ -1,5 +1,6 @@
-import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-etretat';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-etretat';
+import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-ratings-final';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-ratings-final';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-ratings-final';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const desireLabels=['随缘','有点想去','值得计划','很想去','非去不可'];
 const recommendationLabels=['不太推荐','一般','值得一去','很推荐','强烈推荐'];
@@ -11,7 +12,7 @@ const visitMarkup=pin=>`<div class="place-rating-visit" role="group" aria-label=
 
 export function renderPlaceRating(pin){
   const rating=ratingOf(pin),context=contextOf(pin);
-  return `<div class="place-rating" data-place-rating><div class="place-rating-heading"><span data-place-rating-heading>${context.title}</span><span class="place-rating-value" data-place-rating-label>${rating?`${rating} / 5`:'未评分'}</span></div><div class="place-rating-stars" data-place-rating-stars role="group" aria-label="${esc(pin?.title||'这个地点')}，${context.title}">${context.labels.map((label,index)=>`<button type="button" class="place-rating-star${index<rating?' is-filled':''}" data-place-rating-value="${index+1}" aria-pressed="${index+1===rating}" aria-label="${index+1} 分，${label}" title="${index+1} 分，${label}"><span aria-hidden="true">★</span></button>`).join('')}</div>${visitMarkup(pin)}${renderResidenceEditor(pin)}<p class="place-rating-help" data-place-rating-help>${helpMarkup(context)}</p><p class="place-rating-status" data-place-rating-status role="status"></p></div>`;
+  return `<div class="place-rating" data-place-rating><div class="place-rating-heading"><span data-place-rating-heading>${context.title}</span><span class="place-rating-value" data-place-rating-label>${rating?`${rating} / 5`:'未评分'}</span></div><div class="place-rating-stars" data-place-rating-stars role="group" aria-label="${esc(pin?.title||'这个地点')}，${context.title}">${context.labels.map((label,index)=>`<button type="button" class="place-rating-star${index<rating?' is-filled':''}" data-place-rating-value="${index+1}" aria-pressed="${index+1===rating}" aria-label="${index+1} 分，${label}" title="${index+1} 分，${label}"><span aria-hidden="true">★</span></button>`).join('')}</div>${visitMarkup(pin)}${renderResidenceEditor(pin)}${renderMapVisibility(pin)}<p class="place-rating-help" data-place-rating-help>${helpMarkup(context)}</p><p class="place-rating-status" data-place-rating-status role="status"></p></div>`;
 }
 
 export function mountPlaceRating(root,{getPin,onSave}){
@@ -21,7 +22,7 @@ export function mountPlaceRating(root,{getPin,onSave}){
   const label=panel.querySelector('[data-place-rating-label]'),status=panel.querySelector('[data-place-rating-status]');
   const visitButtons=[...panel.querySelectorAll('[data-place-visit]')].filter(button=>['want','visited','resident','want-resident'].includes(button.dataset.placeVisit));
   const heading=panel.querySelector('[data-place-rating-heading]'),help=panel.querySelector('[data-place-rating-help]');
-  let residenceEditor;
+  let residenceEditor,visibilityEditor;
   let stopped=false,saving=false,pending=null,lastDouble=0,activeField=fieldOf(getPin());
   const clickDelay=400;
   function preview(value=0){
@@ -37,7 +38,7 @@ export function mountPlaceRating(root,{getPin,onSave}){
     if(label)label.textContent=value?`${value} / 5`:'未评分';
     stars.forEach(star=>{const own=Number(star.dataset.placeRatingValue);star.disabled=saving||!pin;star.setAttribute('aria-pressed',String(own===value));star.setAttribute('aria-label',`${own} 分，${context.labels[own-1]}`);star.setAttribute('title',`${own} 分，${context.labels[own-1]}`);star.classList.toggle('is-filled',own<=value);});
     visitButtons.forEach(button=>{button.disabled=saving||!pin;button.setAttribute('aria-pressed',String(button.dataset.placeVisit===(pin?.status||'want')));});
-    residenceEditor?.refresh();
+    residenceEditor?.refresh();visibilityEditor?.refresh();
     preview(pending?.value||0);
   }
   function cancelPending(){if(pending)clearTimeout(pending.timer);pending=null;preview();}
@@ -97,8 +98,8 @@ export function mountPlaceRating(root,{getPin,onSave}){
   function onPreview(event){const star=starFrom(event);if(star)preview(Number(star.dataset.placeRatingValue));}
   function onPreviewEnd(event){if(!group?.contains?.(event.relatedTarget))preview(pending?.value||0);}
   const events={click:onClick,dblclick:onDouble,keydown:onKey,pointerover:onPreview,pointerout:onPreviewEnd,focusin:onPreview,focusout:onPreviewEnd};
-  Object.entries(events).forEach(([name,listener])=>panel.addEventListener(name,listener));residenceEditor=mountResidenceEditor(panel,{getPin,onSave});refresh();
-  const cleanup=()=>{cancelPending();stopped=true;residenceEditor?.destroy();Object.entries(events).forEach(([name,listener])=>panel.removeEventListener(name,listener));};
+  Object.entries(events).forEach(([name,listener])=>panel.addEventListener(name,listener));residenceEditor=mountResidenceEditor(panel,{getPin,onSave});if([...panel.querySelectorAll('[data-map-visibility-value]')].some(button=>button.dataset?.mapVisibilityValue))visibilityEditor=mountMapVisibility(panel,{getPin,onSave});refresh();
+  const cleanup=()=>{cancelPending();stopped=true;visibilityEditor?.destroy();residenceEditor?.destroy();Object.entries(events).forEach(([name,listener])=>panel.removeEventListener(name,listener));};
   cleanup.refresh=refresh;
   return cleanup;
 }

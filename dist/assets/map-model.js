@@ -1,6 +1,14 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-etretat';
+import {COUNTRIES} from './geography-data.js?v=20261018-ratings-final';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
 export const isExperienced=pin=>['visited','resident'].includes(pin?.status);
+export function showTravelMapMarker(pin,region={kind:'world'}){
+  if(pin?.mapVisibility==='show')return true;
+  if(pin?.mapVisibility==='hide')return false;
+  const rating=pin?.[isExperienced(pin)?'recommendationRating':'desireRating']||0;
+  if(pin?.kind==='country')return rating===5;
+  if(isResidenceStatus(pin))return true;
+  return region.kind==='country'||rating>=(region.kind==='continent'?4:5);
+}
 export const isResidenceStatus=pin=>['resident','want-resident'].includes(pin?.status);
 export const pinStatusLabel=pin=>pin?.status==='want-resident'?'想要居住':pin?.status==='resident'?'居住':pin?.status==='visited'?'去过':'想去';
 export function residencePeriod(pin){return pin?.residenceStart?`${pin.residenceStart.replace('-','.')} — ${pin.residenceEnd?pin.residenceEnd.replace('-','.'):'至今'}`:'';}
@@ -15,7 +23,7 @@ export function residenceDuration(pin,now=new Date()){
   const months=Math.max(0,end-begin-removed),years=Math.floor(months/12),rest=months%12;
   return years?`${years}yr${rest?` ${rest}mo`:''}`:`${months}mo`;
 }
-export {project,unproject} from './projection.js?v=20261018-etretat';
+export {project,unproject} from './projection.js?v=20261018-ratings-final';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
 export function normalizeCountryId(value) {
   if(typeof value!=='string')return null;
@@ -56,6 +64,8 @@ export function normalizePin(pin) {
   if(countryId)result.countryId=countryId;
   result.desireRating=Number.isInteger(pin.desireRating)&&pin.desireRating>=0&&pin.desireRating<=5?pin.desireRating:0;
   result.recommendationRating=Number.isInteger(pin.recommendationRating)&&pin.recommendationRating>=0&&pin.recommendationRating<=5?pin.recommendationRating:0;
+  if(pin.mapVisibility!==undefined&&!['auto','show','hide'].includes(pin.mapVisibility))throw new Error('请选择有效的地图显示方式。');
+  if(pin.mapVisibility&&pin.mapVisibility!=='auto')result.mapVisibility=pin.mapVisibility;
   for(const field of ['residenceStart','residenceEnd']){
     const value=pin[field];if(value===undefined||value==='')continue;
     if(typeof value!=='string'||!(/^[1-9]\d{3}-(0[1-9]|1[0-2])$/).test(value))throw new Error('居住时间请使用有效的年和月。');result[field]=value;

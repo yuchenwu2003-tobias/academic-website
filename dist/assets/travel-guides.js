@@ -1,11 +1,11 @@
-import {renderTripChips} from './trip-model.js?v=20261018-etretat';
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-etretat';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-etretat';
-import {countryById,pinCountry} from './geography.js?v=20261018-etretat';
-import {countryPlaces} from './country-destinations.js?v=20261018-etretat';
-import {normalizeGuideLinks} from './map-model.js?v=20261018-etretat';
-import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-etretat';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-etretat';
+import {renderTripChips} from './trip-model.js?v=20261018-ratings-final';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-ratings-final';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-ratings-final';
+import {countryById,pinCountry} from './geography.js?v=20261018-ratings-final';
+import {countryPlaces} from './country-destinations.js?v=20261018-ratings-final';
+import {normalizeGuideLinks} from './map-model.js?v=20261018-ratings-final';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-ratings-final';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-ratings-final';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const countryPlaceById=new Map(countryPlaces.map(place=>[place.id,place]));

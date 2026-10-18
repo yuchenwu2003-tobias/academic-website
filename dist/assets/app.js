@@ -1,11 +1,12 @@
-import {renderTravelMap,mountTravelMap,getTravelPins,saveTravelPin} from './travel-map.js?v=20261018-etretat';
-import {renderTravelGuide,mountTravelGuide} from './travel-guides.js?v=20261018-etretat';
-import {renderTravelRatings,mountTravelRatings} from './travel-ratings.js?v=20261018-etretat';
-import {renderAcademicMap,mountAcademicMap} from './academic-map.js?v=20261018-etretat';
-import {resolveRegion,continentById,regionHref} from './geography.js?v=20261018-etretat';
-import {renderInterests} from './interests.js?v=20261018-etretat';
-import {renderPortrait} from './portrait.js?v=20261018-etretat';
-import {refreshTranslations} from './i18n.js?v=20261018-etretat';
+import {renderTripBuilder,mountTravelTrips} from './travel-trips.js?v=20261018-ratings-final';
+import {renderTravelMap,mountTravelMap,getTravelPins,saveTravelPin} from './travel-map.js?v=20261018-ratings-final';
+import {renderTravelGuide,mountTravelGuide} from './travel-guides.js?v=20261018-ratings-final';
+import {renderTravelRatings,mountTravelRatings} from './travel-ratings.js?v=20261018-ratings-final';
+import {renderAcademicMap,mountAcademicMap} from './academic-map.js?v=20261018-ratings-final';
+import {resolveRegion,continentById,regionHref} from './geography.js?v=20261018-ratings-final';
+import {renderInterests} from './interests.js?v=20261018-ratings-final';
+import {renderPortrait} from './portrait.js?v=20261018-ratings-final';
+import {refreshTranslations} from './i18n.js?v=20261018-ratings-final';
 const icons = {
   academic:'<path d="M3 4h5a3 3 0 0 1 2 1 3 3 0 0 1 2-1h5v12h-5a3 3 0 0 0-2 1 3 3 0 0 0-2-1H3V4Zm7 1v12M5 7h2M13 7h2"/>',
   interests:'<path d="M10 17S2 12 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 5-8 10-8 10Z"/>',
@@ -103,25 +104,28 @@ export function renderRoute() {
   try { id=decodeURIComponent(segments[1] || ''); } catch { id=''; }
   const route = segments[0] || 'home';
   const active = route==='post'?'writing':route;
-  const ratings=route==='travel'&&segments[1]==='ratings'&&segments.length===2;
+  const tripBuilder=route==='travel'&&segments[1]==='trips'&&((segments[2]==='new'&&segments.length===3)||(segments[2]==='edit'&&segments.length===4));
+  const ratings=route==='travel'&&segments[1]==='ratings'&&(segments.length===2||(segments.length===3&&['countries','places'].includes(segments[2])));
+  const ratingsKind=segments[2]==='places'?'city':'country';
   let guide=null;
   if(route==='travel'&&segments[1]==='guide'&&['country','place'].includes(segments[2])&&segments.length===4){try{guide={kind:segments[2],id:decodeURIComponent(segments[3])};}catch{}}
-  const region=['travel','academic'].includes(route)&&!ratings&&!guide?resolveRegion(segments.slice(1)):null;
+  const region=['travel','academic'].includes(route)&&!ratings&&!guide&&!tripBuilder?resolveRegion(segments.slice(1)):null;
   const getPins=()=>getTravelPins(data.travel?.destinations||[]);
   const onSave=pin=>saveTravelPin(pin,data.travel?.destinations||[]);
   mapCleanup();
   mapCleanup=()=>{};
-  main.innerHTML = ratings?renderTravelRatings(getPins()):guide?renderTravelGuide(guide,getPins()):route==='post' ? article(id) : route==='travel' ? travel(region) : route==='academic'?academic(region):Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
+  main.innerHTML = tripBuilder?renderTripBuilder():ratings?renderTravelRatings(getPins(),{kind:ratingsKind}):guide?renderTravelGuide(guide,getPins()):route==='post' ? article(id) : route==='travel' ? travel(region) : route==='academic'?academic(region):Object.hasOwn(pageRenderers,route) ? pageRenderers[route]() : notFound();
   main.dataset.page = route;
-  document.querySelectorAll('.nav-link').forEach(link=>{const selected=ratings?link.dataset.page==='travel-ratings':link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
+  document.querySelectorAll('.nav-link').forEach(link=>{const selected=(ratings||tripBuilder)?link.dataset.page==='travel-ratings':link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
   const label = data.navigation.find(item=>item.id===active)?.label || '页面';
   const postTitle = route==='post'?data.posts.find(post=>post.id===id)?.title:undefined;
-  document.title = `${ratings?'旅行评分':guide?'旅行攻略':postTitle || (['travel','academic'].includes(route)&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
+  document.title = `${tripBuilder?'行程编辑':ratings?'旅行评分':guide?'旅行攻略':postTitle || (['travel','academic'].includes(route)&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
   document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');
   document.querySelector('.menu-toggle').setAttribute('aria-label','展开导航');
   document.querySelector('.sidebar').classList.remove('menu-open');
   if (['writing','videos'].includes(route)) bindCollection(route);
-  if(ratings)mapCleanup=mountTravelRatings(main,{getPins,onSave});
+  if(tripBuilder)mapCleanup=mountTravelTrips(main,{getPins,onSave,builder:true,tripId:segments[2]==='edit'?decodeURIComponent(segments[3]):null});
+  else if(ratings)mapCleanup=mountTravelRatings(main,{getPins,onSave,kind:ratingsKind});
   else if(guide)mapCleanup=mountTravelGuide(main,{spec:guide,getPins,onSave});
   else if(route==='academic'&&region)mapCleanup=mountAcademicMap(main,{region});
   else if (['home','travel'].includes(route)&&main.querySelector('[data-travel-map]')) mapCleanup=mountTravelMap(main.querySelector('[data-travel-map]'),data.travel?.destinations||[],route==='travel'?region:{kind:'world',name:'世界'});

@@ -57,3 +57,6 @@
 .legend-want-resident{font-style:normal;color:#be7a50;font-size:13px}.map-pin-marker.is-want-resident .marker-shape{fill:#be7a50}.map-pin-marker.is-want-resident .marker-resident-label,.map-pin-marker.is-want-resident .marker-resident-period{fill:#985f3d}[data-theme=dark] .map-pin-marker.is-want-resident .marker-resident-label,[data-theme=dark] .map-pin-marker.is-want-resident .marker-resident-period{fill:#e0b08c}
 
 .map-pin-marker.is-resident>.marker-visual{transform:scale(.4554)}.map-pin-marker.is-resident:focus-visible>.marker-visual,.map-pin-marker.is-resident:active>.marker-visual{transform:scale(.792)}@media(hover:hover){.map-pin-marker.is-resident:hover>.marker-visual{transform:scale(.792)}}
+
+.map-disclaimer{position:absolute;right:12px;bottom:12px;z-index:3;max-width:min(360px,48%);margin:0;padding:5px 7px;border-radius:3px;background:var(--paper,#f8f8f1);color:var(--muted,#68735f);font:9px/1.65 var(--sans,sans-serif);text-align:right;pointer-events:none;overflow-wrap:break-word}
+@media(max-width:700px){.map-disclaimer{right:8px;bottom:8px;max-width:48%;padding:4px 5px;font-size:8px}}

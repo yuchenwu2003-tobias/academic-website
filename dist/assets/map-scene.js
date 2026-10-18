@@ -1,13 +1,14 @@
-import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-etretat';
-import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-etretat';
-import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-etretat';
-import {layoutLandmarks} from './landmark-layout.js?v=20261018-etretat';
-import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-etretat';
-import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-etretat';
-import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-etretat';
-import {mountMapDetail} from './map-detail.js?v=20261018-etretat';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-etretat';
-import {translateText} from './i18n.js?v=20261018-etretat';
+import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-ratings-final';
+import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-ratings-final';
+import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-ratings-final';
+import {layoutLandmarks} from './landmark-layout.js?v=20261018-ratings-final';
+import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-ratings-final';
+import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-ratings-final';
+import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-ratings-final';
+import {mountMapDetail} from './map-detail.js?v=20261018-ratings-final';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-ratings-final';
+import {translateText} from './i18n.js?v=20261018-ratings-final';
+import {renderMapDisclaimer} from './map-disclaimer.js?v=20261018-ratings-final';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mapRouteBase=value=>typeof value==='string'&&/^#\/[a-z0-9/_-]+$/i.test(value)?value.replace(/\/+$/,''):'#/travel';
 function countryShapes(region,routeBase) {
@@ -47,7 +48,7 @@ export function renderMapScene(region={kind:'world'},compact=false,{geographicOn
   <div class="map-stage"><svg class="world-map" data-world-map viewBox="${v.x} ${v.y} ${v.width} ${v.height}" role="group" aria-label="Equal Earth 互动地图，支持滚轮缩放、拖拽、点击大洲和国家">
   <defs><clipPath id="earth-clip"><path d="${WORLD_OUTLINE}"/></clipPath></defs><rect width="1000" height="500" class="map-canvas"/><path class="map-ocean" d="${WORLD_OUTLINE}"/><g clip-path="url(#earth-clip)"><path class="map-graticule" d="${GRATICULE}"/>${countryShapes(region,base)}${renderLakeLayer(v)}</g><g class="continent-labels">${geographicOnly?'':continentLabels(region,base)}</g><g class="cartoon-landmarks" data-cartoon-layer></g><g class="map-markers" data-map-markers></g></svg>
   <div class="map-detail-status" data-border-detail>国界 · 世界概览</div>${geographicOnly?'':'<div class="map-cartoon-hint">放大地图，发现更多地标</div>'}<div class="map-hover-label" data-map-hover>${countryLabel(region.kind==='country'?region:null,region.name||'世界')}</div>
-  <div class="map-zoom" role="group" aria-label="地图缩放"><button data-map-zoom="in" aria-label="放大地图">＋</button><output class="map-scale" data-map-scale aria-label="缩放比例">100%</output><button data-map-zoom="out" aria-label="缩小地图">−</button><a href="${base}" data-map-world aria-label="返回世界地图" title="返回世界地图">🌐</a></div><div class="map-placement-hint" data-map-hint hidden>点击地图，放下你的 📌 <button data-map-cancel>取消</button></div></div>`;
+  <div class="map-zoom" role="group" aria-label="地图缩放"><button data-map-zoom="in" aria-label="放大地图">＋</button><output class="map-scale" data-map-scale aria-label="缩放比例">100%</output><button data-map-zoom="out" aria-label="缩小地图">−</button><a href="${base}" data-map-world aria-label="返回世界地图" title="返回世界地图">🌐</a></div><div class="map-placement-hint" data-map-hint hidden>点击地图，放下你的 📌 <button data-map-cancel>取消</button></div>${renderMapDisclaimer()}</div>`;
 }
 export function renderRegionDirectory(region,compact=false,{routeBase='#/travel'}={}) {
   const base=mapRouteBase(routeBase);
@@ -71,7 +72,7 @@ export function mountMapScene(root,{region,onViewChange,onMarkerClick,onChoosePo
     const layer=root.querySelector('[data-cartoon-layer]');
     if(geographicOnly||style!=='cartoon'){layer.replaceChildren();return;}
     const bounds=svg.getBoundingClientRect();
-    const obstacles=[...root.querySelectorAll('.map-hover-label,.map-zoom,.map-detail-status,.map-cartoon-hint')].filter(el=>!el.hidden&&el.getBoundingClientRect().width).map(el=>{const b=el.getBoundingClientRect();return{x:b.x-bounds.x,y:b.y-bounds.y,width:b.width,height:b.height};});
+    const obstacles=[...root.querySelectorAll('.map-hover-label,.map-zoom,.map-detail-status,.map-cartoon-hint,.map-disclaimer')].filter(el=>!el.hidden&&el.getBoundingClientRect().width).map(el=>{const b=el.getBoundingClientRect();return{x:b.x-bounds.x,y:b.y-bounds.y,width:b.width,height:b.height};});
     const presentation=landmarkPresentation(selectLandmarks(LANDMARK_CATALOG,region,view),region,view,bounds);
     layer.innerHTML=landmarks(presentation.items.map(item=>({...item,title:translateText(item.title),...(item.caption?{caption:translateText(item.caption)}:{})})),view,bounds,obstacles,presentation.options,base);
   }
@@ -115,7 +116,7 @@ export function mountMapScene(root,{region,onViewChange,onMarkerClick,onChoosePo
   svg.addEventListener('pointerleave',()=>{if(!pointers.size)showCountry(region.kind==='country'?region:null);});
   root.querySelector('[data-country-search]')?.addEventListener('input',event=>{const query=event.target.value.trim().toLowerCase();let found=0;root.querySelectorAll('[data-country-entry]').forEach(link=>{link.hidden=!link.dataset.countryKey.includes(query);if(!link.hidden)found++;});root.querySelector('[data-country-empty]').hidden=found>0;});
   const observer=new ResizeObserver(drawLandmarks);observer.observe(svg);
-  root.querySelectorAll('.map-hover-label,.map-zoom,.map-detail-status,.map-cartoon-hint').forEach(element=>observer.observe(element));
+  root.querySelectorAll('.map-hover-label,.map-zoom,.map-detail-status,.map-cartoon-hint,.map-disclaimer').forEach(element=>observer.observe(element));
   window.addEventListener('site-language-change',drawLandmarks);
   showCountry(region.kind==='country'?region:null);applyStyle(style);applyView(view);
   return {getView:()=>({...view}),destroy:()=>{pointers.clear();observer.disconnect();detail.destroy();lakes.destroy();window.removeEventListener('site-language-change',drawLandmarks);}};
