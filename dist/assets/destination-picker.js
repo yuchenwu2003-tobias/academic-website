@@ -1,6 +1,6 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-duration';
-import {countryById} from './geography.js?v=20261018-duration';
-import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-duration';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-journeys';
+import {countryById} from './geography.js?v=20261018-journeys';
+import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-journeys';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const textKey=value=>String(value).normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/[’']/g,'');

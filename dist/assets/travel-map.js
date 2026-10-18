@@ -1,14 +1,15 @@
-import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus} from './map-model.js?v=20261018-duration';
-import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-duration';
-import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-duration';
-import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-duration';
-import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-duration';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-duration';
-import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-duration';
-import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-duration';
-import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-duration';
-import {mountClickChoices} from './click-choices.js?v=20261018-duration';
-import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-duration';
+import {getTravelTrips,normalizeTrips,mergeTravelTrips} from './trip-model.js?v=20261018-journeys';
+import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus} from './map-model.js?v=20261018-journeys';
+import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-journeys';
+import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-journeys';
+import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-journeys';
+import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-journeys';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-journeys';
+import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-journeys';
+import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-journeys';
+import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-journeys';
+import {mountClickChoices} from './click-choices.js?v=20261018-journeys';
+import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-journeys';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kindName=pin=>pin.kind==='country'?'国家／地区':'城市／景点';
@@ -21,7 +22,7 @@ function readState() {
   catch {memoryState={pins:[],hidden:[]};}
   return memoryState;
 }
-const sourcePins=destinations=>destinations.filter(place=>Number.isFinite(place.lat)&&Number.isFinite(place.lon)).map(place=>normalizePin({id:`source-${place.id}`,title:place.name,note:place.description,lat:place.lat,lon:place.lon,status:place.status||'want',kind:place.kind==='country'?'country':'city',countryId:place.countryId||place.country,photoUrl:place.photoUrl,wikipediaUrl:place.wikipediaUrl,guides:place.guides,desireRating:place.desireRating,recommendationRating:place.recommendationRating,residenceStart:place.residenceStart,residenceEnd:place.residenceEnd}));
+const sourcePins=destinations=>destinations.filter(place=>Number.isFinite(place.lat)&&Number.isFinite(place.lon)).map(place=>normalizePin({id:`source-${place.id}`,title:place.name,note:place.description,lat:place.lat,lon:place.lon,status:place.status||'want',kind:place.kind==='country'?'country':'city',countryId:place.countryId||place.country,photoUrl:place.photoUrl,wikipediaUrl:place.wikipediaUrl,guides:place.guides,desireRating:place.desireRating,recommendationRating:place.recommendationRating,residenceStart:place.residenceStart,residenceEnd:place.residenceEnd,residenceBreaks:place.residenceBreaks}));
 export function getTravelResidences(){try{const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(Array.isArray(stored?.pins))return stored.pins.map(normalizePin).map(anchorCountryPin).filter(isResidenceStatus);}catch{}return getTravelPins().filter(isResidenceStatus);}
 export function getTravelPins(destinations=[]){return combinePins(sourcePins(destinations),readState()).map(anchorCountryPin);}
 export function saveTravelPin(value,destinations=[]){
@@ -171,14 +172,14 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   });
   root.querySelector('[data-pin-delete]').addEventListener('click',()=>{if(!selectedId)return;state.pins=state.pins.filter(pin=>pin.id!==selectedId);if(presets.some(pin=>pin.id===selectedId))state.hidden=[...new Set([...state.hidden,selectedId])];const saved=store();dialog.close();if(saved)announce('地点已删除，当前浏览器中的地图已更新。');});
   root.querySelector('[data-map-export]').addEventListener('click',()=>{
-    const blob=new Blob([JSON.stringify({version:1,pins:allPins(),hidden:state.hidden},null,2)],{type:'application/json'});
+    const blob=new Blob([JSON.stringify({version:1,pins:allPins(),hidden:state.hidden,trips:getTravelTrips()},null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='my-travel-map.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('地图已导出。可在其他设备使用“导入”恢复这些地点。');
   });
   const fileInput=root.querySelector('[data-map-file]');
   root.querySelector('[data-map-import]').addEventListener('click',()=>fileInput.click());
   fileInput.addEventListener('change',async()=>{
     const file=fileInput.files[0];if(!file)return;
-    try{if(file.size>5000000)throw new Error('文件太大，请选择小于 5 MB 的地图备份。');const imported=parseImportState(await file.text());const merged=new Map(state.pins.map(pin=>[pin.id,pin]));imported.pins.forEach(pin=>merged.set(pin.id,pin));const hidden=[...new Set([...state.hidden,...imported.hidden])].filter(id=>!imported.pins.some(pin=>pin.id===id));const next={pins:[...merged.values()].filter(pin=>!hidden.includes(pin.id)),hidden};if(combinePins(presets,next).length>1000||next.hidden.length>1000)throw new Error('合并后超过 1000 个地点，请先整理地图。');state=next;const saved=store();if(saved)announce(`已导入 ${imported.pins.length} 个地点，并与当前地图合并。`);}
+    try{if(file.size>5000000)throw new Error('文件太大，请选择小于 5 MB 的地图备份。');const text=await file.text(),payload=JSON.parse(text),incomingTrips=payload.trips===undefined?null:normalizeTrips(payload.trips);const imported=parseImportState(text);const merged=new Map(state.pins.map(pin=>[pin.id,pin]));imported.pins.forEach(pin=>merged.set(pin.id,pin));const hidden=[...new Set([...state.hidden,...imported.hidden])].filter(id=>!imported.pins.some(pin=>pin.id===id));const next={pins:[...merged.values()].filter(pin=>!hidden.includes(pin.id)),hidden};if(combinePins(presets,next).length>1000||next.hidden.length>1000)throw new Error('合并后超过 1000 个地点，请先整理地图。');state=next;const tripResult=incomingTrips?mergeTravelTrips(incomingTrips):null;const saved=store()&&tripResult?.saved!==false;if(saved)announce(`已导入 ${imported.pins.length} 个地点，并与当前地图合并。`);}
     catch(err){announce(`导入失败：${err.message}`);}finally{fileInput.value='';}
   });
   function onStorage(event){if(event.key===STORAGE_KEY){memoryState=undefined;state=readState();draw();announce('地图已与此浏览器中的另一个标签页同步。');}}

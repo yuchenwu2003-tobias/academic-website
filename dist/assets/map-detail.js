@@ -1,4 +1,4 @@
-import {COUNTRIES} from './geography.js?v=20261018-duration';
+import {COUNTRIES} from './geography.js?v=20261018-journeys';
 
 // Natural Earth's 110m/50m/10m denote map scales, not metre-level accuracy.
 // Keep these identifiers internal; visible copy describes the detail level.

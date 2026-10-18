@@ -1,13 +1,13 @@
-import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-duration';
-import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-duration';
-import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-duration';
-import {layoutLandmarks} from './landmark-layout.js?v=20261018-duration';
-import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-duration';
-import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-duration';
-import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-duration';
-import {mountMapDetail} from './map-detail.js?v=20261018-duration';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-duration';
-import {translateText} from './i18n.js?v=20261018-duration';
+import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-journeys';
+import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-journeys';
+import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-journeys';
+import {layoutLandmarks} from './landmark-layout.js?v=20261018-journeys';
+import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-journeys';
+import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-journeys';
+import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-journeys';
+import {mountMapDetail} from './map-detail.js?v=20261018-journeys';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-journeys';
+import {translateText} from './i18n.js?v=20261018-journeys';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mapRouteBase=value=>typeof value==='string'&&/^#\/[a-z0-9/_-]+$/i.test(value)?value.replace(/\/+$/,''):'#/travel';
 function countryShapes(region,routeBase) {
@@ -31,12 +31,13 @@ function countryLabel(country,name='世界') {
 function landmarks(items,view,viewport,obstacles,options={},routeBase='#/travel') {
   return layoutLandmarks(items,view,viewport,{...options,obstacles,ignoreLevels:true}).map(item=>{
     const sprite=SPRITES[item.id];if(!sprite)return '';
+    const imageSrc=sprite.src||ATLAS_SRC,imageWidth=sprite.sourceWidth||ATLAS_SIZE.width,imageHeight=sprite.sourceHeight||ATLAS_SIZE.height;
     const clip=`landmark-crop-${item.id}`,fit=Math.min((item.size-12)/sprite.width,(item.size-12)/sprite.height);
     const left=-sprite.width*fit/2,top=item.size-sprite.height*fit;
     return `<a href="${routeBase}/country/${item.country}" data-geo-route class="map-landmark" data-landmark-id="${esc(item.id)}" data-landmark-anchor-x="${item.anchorX}" data-landmark-anchor-y="${item.anchorY}" transform="translate(${item.x} ${item.y}) scale(${item.scale})" aria-label="${esc(translateText(`${item.title}，查看${countryById.get(item.country)?.name||'目的地'}页面`))}">
     <title>${esc(item.title)}</title><defs><clipPath id="${clip}" clipPathUnits="userSpaceOnUse"><rect x="${left}" y="${top}" width="${sprite.width*fit}" height="${sprite.height*fit}"/></clipPath>
     <radialGradient id="${clip}-fade"><stop offset="86%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></radialGradient><mask id="${clip}-soft" maskUnits="userSpaceOnUse" x="${-item.size/2}" y="0" width="${item.size}" height="${item.size}"><rect x="${-item.size/2}" y="0" width="${item.size}" height="${item.size}" fill="url(#${clip}-fade)"/></mask></defs>
-    <g class="map-landmark-icon" clip-path="url(#${clip})" mask="url(#${clip}-soft)" aria-hidden="true"><rect x="${left}" y="${top}" width="${sprite.width*fit}" height="${sprite.height*fit}" fill="transparent" stroke="none"/><image href="${esc(ATLAS_SRC)}" x="${left-sprite.x*fit}" y="${top-sprite.y*fit}" width="${ATLAS_SIZE.width*fit}" height="${ATLAS_SIZE.height*fit}" pointer-events="none"/></g><circle class="map-landmark-anchor" cx="0" cy="${item.size}" r="2.4" aria-hidden="true"/>${item.showLabel?`<text text-anchor="middle" y="${item.size+12}">${esc(item.caption??item.title)}</text>`:''}</a>`;
+    <g class="map-landmark-icon" clip-path="url(#${clip})" mask="url(#${clip}-soft)" aria-hidden="true"><rect x="${left}" y="${top}" width="${sprite.width*fit}" height="${sprite.height*fit}" fill="transparent" stroke="none"/><image href="${esc(imageSrc)}" x="${left-sprite.x*fit}" y="${top-sprite.y*fit}" width="${imageWidth*fit}" height="${imageHeight*fit}" pointer-events="none"/></g><circle class="map-landmark-anchor" cx="0" cy="${item.size}" r="2.4" aria-hidden="true"/>${item.showLabel?`<text text-anchor="middle" y="${item.size+12}">${esc(item.caption??item.title)}</text>`:''}</a>`;
   }).join('');
 }
 export function renderMapScene(region={kind:'world'},compact=false,{geographicOnly=false,routeBase='#/travel'}={}) {

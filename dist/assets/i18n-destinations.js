@@ -1,4 +1,6 @@
 export const DESTINATION_UI_EN = {
+  '玉山':'Yushan · Jade Mountain',
+  '马特洪峰':'Matterhorn','多洛米蒂':'Dolomites','多洛米蒂 · 三峰山':'Dolomites · Tre Cime di Lavaredo',
   "一键添加旅行目的地": "Add travel destinations in one click",
   "挑一个地方，放进心愿。": "Find a place for your wishlist.",
   "从世界各地的城市与地标开始。": "Explore cities and landmarks around the world.",

@@ -1,10 +1,11 @@
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-duration';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-duration';
-import {countryById,pinCountry} from './geography.js?v=20261018-duration';
-import {countryPlaces} from './country-destinations.js?v=20261018-duration';
-import {normalizeGuideLinks} from './map-model.js?v=20261018-duration';
-import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-duration';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-duration';
+import {renderTripChips} from './trip-model.js?v=20261018-journeys';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-journeys';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-journeys';
+import {countryById,pinCountry} from './geography.js?v=20261018-journeys';
+import {countryPlaces} from './country-destinations.js?v=20261018-journeys';
+import {normalizeGuideLinks} from './map-model.js?v=20261018-journeys';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-journeys';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-journeys';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const countryPlaceById=new Map(countryPlaces.map(place=>[place.id,place]));
@@ -67,7 +68,7 @@ export function renderTravelGuide(spec,pins=[]) {
   const wikipedia=safeUrl(pin.wikipediaUrl,{httpsOnly:true,wikipediaOnly:true});
   return `<section class="travel-guide" data-travel-guide>
     <nav class="guide-breadcrumbs" aria-label="旅行资料导航"><a href="#/travel">旅行地图</a><span aria-hidden="true">/</span><span>${spec.kind==='country'?'国家／地区':'城市／景点'}</span></nav>
-    <header class="guide-heading"><div><span class="section-kicker mono">MY TRAVEL GUIDE</span><h1 data-i18n-skip>${esc(pin.title)}</h1><p><span>${spec.kind==='country'?'国家／地区':'城市／景点'}</span><span aria-hidden="true">·</span><span data-guide-visit-status>${pinStatusLabel(pin)}</span></p></div><a class="text-link guide-map-link" href="${mapHref(countryId)}">返回对应地图 <span>↗</span></a></header>
+    <header class="guide-heading"><div><span class="section-kicker mono">MY TRAVEL GUIDE</span><div class="place-title-with-trips"><h1 data-i18n-skip>${esc(pin.title)}</h1><div class="place-trip-chips">${renderTripChips(pin,pins)}</div></div><p><span>${spec.kind==='country'?'国家／地区':'城市／景点'}</span><span aria-hidden="true">·</span><span data-guide-visit-status>${pinStatusLabel(pin)}</span></p></div><a class="text-link guide-map-link" href="${mapHref(countryId)}">返回对应地图 <span>↗</span></a></header>
     <p class="guide-virtual-note" data-guide-virtual-note ${isVirtual?'':'hidden'}>这个国家还没有加入我的地图。保存资料时，会同时加入它的国家标记。</p>
     <div class="guide-overview"><figure class="guide-media"><div class="guide-image" data-guide-image>${photo?renderImage(photo,pin.title):'<span class="guide-image-placeholder">正在寻找图片…</span>'}</div><figcaption data-guide-image-credit>${photo?'图片由你提供。':''}</figcaption><div class="guide-photo-actions"><button type="button" class="text-link" data-guide-photo-edit>更换图片 <span aria-hidden="true">↗</span></button><span>图片自动加载，也可以手动更换。</span></div></figure><div class="guide-introduction"><span class="section-kicker mono">MY OWN WORDS</span><h2>我的介绍</h2><div data-guide-note>${renderNote(pin.note)}</div><div class="guide-reference-links"><a class="text-link" data-guide-wikipedia href="${esc(wikipedia||'https://www.wikipedia.org/')}" ${external} ${wikipedia?'':'hidden'}>在 Wikipedia 阅读更多 <span>↗</span></a>${spec.kind==='place'&&country?`<a class="text-link" href="${esc(placeGuideHref(virtualCountryPin(country)))}">查看所属国家攻略 <span>↗</span></a>`:''}</div></div></div>
     <section class="guide-saved-links"><div class="guide-section-heading"><h2>我收藏的攻略</h2><span data-guide-link-count>${guideLinks(pin.guides).length}</span></div><div data-guide-links>${renderGuideLinks(pin.guides)}</div></section>
@@ -164,7 +165,7 @@ export function mountTravelGuide(root,{spec,getPins,onSave}) {
   ratingCleanup=mountPlaceRating(page,{getPin:()=>resolveTravelGuide(spec,getPins())?.pin,onSave:async next=>{
     const latest=resolveTravelGuide(spec,getPins());if(!latest)throw new Error('这个地点已经不在收藏中，请返回地图查看。');
     if(latest.isVirtual&&next.status==='want'&&!next.desireRating)return {saved:true,pin:latest.pin};
-    const merged={...latest.pin,status:next.status,desireRating:next.desireRating,recommendationRating:next.recommendationRating,residenceStart:next.residenceStart,residenceEnd:next.residenceEnd};
+    const merged={...latest.pin,status:next.status,desireRating:next.desireRating,recommendationRating:next.recommendationRating,residenceStart:next.residenceStart,residenceEnd:next.residenceEnd,residenceBreaks:next.residenceBreaks};
     const result=await onSave(merged);if(stopped||result===false||result?.ok===false||result?.success===false||result?.error)return result;
     state={...(resolveTravelGuide(spec,getPins())||latest),pin:result?.pin||merged,isVirtual:false};updateView(state.pin);return result;
   }});

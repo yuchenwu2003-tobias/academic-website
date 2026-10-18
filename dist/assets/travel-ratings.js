@@ -1,10 +1,11 @@
-import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-duration';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-duration';
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-duration';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-duration';
-import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-duration';
-import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-duration';
-import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-duration';
+import {renderTravelTrips,mountTravelTrips} from './travel-trips.js?v=20261018-journeys';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-journeys';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-journeys';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-journeys';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-journeys';
+import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-journeys';
+import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-journeys';
+import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-journeys';
 
 export const DESIRE_RATING_LABELS=['未评分','随缘','有点想去','值得计划','很想去','非去不可'];
 export const RECOMMENDATION_RATING_LABELS=['未评分','不太推荐','一般','值得一去','很推荐','强烈推荐'];
@@ -115,7 +116,7 @@ function groupedCards(groups,kind){
 export function renderTravelRatings(pins=[]){
   const rows=travelRatingRows(pins);
   const initial=groupTravelRatingRows(selectTravelRatingRows(rows.country),{limit:24});
-  return `<section class="travel-ratings-page" data-travel-ratings><header class="page-heading"><span class="section-kicker mono">PLACES ON MY MIND</span><h1>旅行评分<span>。</span></h1><p>想去的地点，记录向往；去过的地点，留下推荐。按大洲与国家整理自己的旅行清单。</p></header><div class="travel-ratings-tabs" role="tablist" aria-label="评分对象"><button type="button" role="tab" data-ratings-tab="country" aria-selected="true" aria-controls="travel-rating-results">国家</button><button type="button" role="tab" data-ratings-tab="city" aria-selected="false" aria-controls="travel-rating-results">城市与景点</button></div><div class="travel-ratings-tools"><label class="travel-ratings-search"><span class="sr-only">搜索国家、城市或景点</span><input type="search" data-ratings-search placeholder="搜索国家、城市或景点…" autocomplete="off"></label><div class="travel-ratings-sort" role="group" aria-label="评分排序"><button type="button" data-ratings-sort="desc" aria-pressed="true">评分高到低</button><button type="button" data-ratings-sort="asc" aria-pressed="false">评分低到高</button></div></div><p class="travel-ratings-help"><span>单击评分，双击清除。</span><span class="sr-only">键盘按 Enter 或空格评分，按 Delete 或退格清除。</span>想去的地点评向往程度，去过的地点评推荐程度。两种评分分别保存。</p><div class="travel-ratings-status"><span data-ratings-count role="status"></span><p data-ratings-feedback role="status"></p></div><div class="travel-ratings-grid" id="travel-rating-results" data-ratings-results role="tabpanel" aria-label="国家评分">${groupedCards(initial,'country')}</div><button type="button" class="text-link travel-ratings-more" data-ratings-more hidden>显示更多 <span>↓</span></button></section>`;
+  return `<section class="travel-ratings-page" data-travel-ratings><header class="page-heading"><span class="section-kicker mono">PLACES ON MY MIND</span><h1>旅行评分<span>。</span></h1><p>想去的地点，记录向往；去过的地点，留下推荐。按大洲与国家整理自己的旅行清单。</p></header>${renderTravelTrips()}<div class="travel-ratings-tabs" role="tablist" aria-label="评分对象"><button type="button" role="tab" data-ratings-tab="country" aria-selected="true" aria-controls="travel-rating-results">国家</button><button type="button" role="tab" data-ratings-tab="city" aria-selected="false" aria-controls="travel-rating-results">城市与景点</button></div><div class="travel-ratings-tools"><label class="travel-ratings-search"><span class="sr-only">搜索国家、城市或景点</span><input type="search" data-ratings-search placeholder="搜索国家、城市或景点…" autocomplete="off"></label><div class="travel-ratings-sort" role="group" aria-label="评分排序"><button type="button" data-ratings-sort="desc" aria-pressed="true">评分高到低</button><button type="button" data-ratings-sort="asc" aria-pressed="false">评分低到高</button></div></div><p class="travel-ratings-help"><span>单击评分，双击清除。</span><span class="sr-only">键盘按 Enter 或空格评分，按 Delete 或退格清除。</span>想去的地点评向往程度，去过的地点评推荐程度。两种评分分别保存。</p><div class="travel-ratings-status"><span data-ratings-count role="status"></span><p data-ratings-feedback role="status"></p></div><div class="travel-ratings-grid" id="travel-rating-results" data-ratings-results role="tabpanel" aria-label="国家评分">${groupedCards(initial,'country')}</div><button type="button" class="text-link travel-ratings-more" data-ratings-more hidden>显示更多 <span>↓</span></button></section>`;
 }
 
 export function mountTravelRatings(root,{getPins,onSave}){
@@ -242,5 +243,6 @@ export function mountTravelRatings(root,{getPins,onSave}){
   const events={click:onClick,dblclick:onDoubleClick,pointerover:onPreview,pointerout:onPreviewEnd,focusin:onPreview,focusout:onPreviewEnd,keydown:onKeyDown};
   Object.entries(events).forEach(([type,listener])=>panel.addEventListener(type,listener));search.addEventListener('input',onInput);
   update();
-  return ()=>{cancelPending();stopped=true;residenceEditors.forEach(editor=>editor.destroy());Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
+  const tripCleanup=mountTravelTrips(panel,{getPins,onSave,onChanged:update});
+  return ()=>{tripCleanup();cancelPending();stopped=true;residenceEditors.forEach(editor=>editor.destroy());Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
 }

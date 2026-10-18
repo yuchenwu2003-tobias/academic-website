@@ -3,6 +3,9 @@
 export const ATLAS_SIZE = {"width":1254,"height":1254};
 export const ATLAS_SRC = 'assets/travel-landmarks-atlas-v3.png';
 export const SPRITES = {
+  'yushan':{src:'assets/landmark-yushan-v1.png',sourceWidth:1536,sourceHeight:1024,x:21,y:75,width:1494,height:893},
+  "matterhorn": {src:'assets/landmark-matterhorn-v1.png',sourceWidth:1430,sourceHeight:1100,x:4,y:109,width:1426,height:934},
+  "dolomites": {src:'assets/landmark-dolomites-v1.png',sourceWidth:1428,sourceHeight:1101,x:16,y:137,width:1397,height:831},
   "eiffel": {
     "x": 69,
     "y": 91,

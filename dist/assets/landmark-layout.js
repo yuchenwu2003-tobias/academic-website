@@ -1,4 +1,4 @@
-import {project} from './projection.js?v=20261018-duration';
+import {project} from './projection.js?v=20261018-journeys';
 
 const PADDING = 8;
 const MARGIN = 10;
@@ -37,6 +37,7 @@ export function layoutLandmarks(items, view, viewport = {}, options = {}) {
   })).sort((a, b) => a.priority - b.priority || a.cell - b.cell || a.index - b.index);
   const placed = [];
   for (const {item, priority} of candidates) {
+    const size=Number.isFinite(item.iconSize)&&item.iconSize>0?Math.min(iconSize,item.iconSize):iconSize;
     const minimumZoom = priority <= 1 ? 1 : priority === 2 ? 1.9 : 4;
     if (!options.ignoreLevels && zoom + 1e-10 < minimumZoom) continue;
     if (![item.lat, item.lon].every(Number.isFinite) || Math.abs(item.lat) > 90 || Math.abs(item.lon) > 180) continue;
@@ -45,23 +46,23 @@ export function layoutLandmarks(items, view, viewport = {}, options = {}) {
     const anchorScreenY = letterboxY + (anchor.y - view.y) * renderScale;
     // Do not pull landmarks from offscreen into the map just to fill space.
     if (anchorScreenX < 0 || anchorScreenX > width || anchorScreenY < 0 || anchorScreenY > height) continue;
-    const boxWidth = Math.max(iconSize, showLabel?String(item.caption ?? item.title ?? '').length * 9:0) + (showLabel?12:0);
-    const boxHeight = iconSize + (showLabel?20:6);
-    const box = {x: anchorScreenX - boxWidth / 2, y: anchorScreenY - iconSize, width: boxWidth, height: boxHeight};
+    const boxWidth = Math.max(size, showLabel?String(item.caption ?? item.title ?? '').length * 9:0) + (showLabel?12:0);
+    const boxHeight = size + (showLabel?20:6);
+    const box = {x: anchorScreenX - boxWidth / 2, y: anchorScreenY - size, width: boxWidth, height: boxHeight};
     const padded = expand(box,padding);
     if (padded.x < MARGIN || padded.y < MARGIN || padded.x + padded.width > width - MARGIN || padded.y + padded.height > height - MARGIN) continue;
     if (occupied.some(other => overlaps(padded, other))) continue;
     placed.push({
       ...item,
       x: anchor.x,
-      y: anchor.y - iconSize * scale,
+      y: anchor.y - size * scale,
       scale,
-      size: iconSize,
+      size,
       showLabel,
       anchorX: anchor.x,
       anchorY: anchor.y,
       anchorLocalX: 0,
-      anchorLocalY: iconSize,
+      anchorLocalY: size,
       box
     });
     occupied.push(padded);

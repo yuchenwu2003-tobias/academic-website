@@ -1,6 +1,6 @@
-import {renderPinDrawing} from './pin-icons.js?v=20261018-duration';
-import {COUNTRIES,CONTINENTS} from './geography-data.js?v=20261018-duration';
-import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-duration';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-journeys';
+import {COUNTRIES,CONTINENTS} from './geography-data.js?v=20261018-journeys';
+import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-journeys';
 
 const RAD=Math.PI/180,DEG=180/Math.PI;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));

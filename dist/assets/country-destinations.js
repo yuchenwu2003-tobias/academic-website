@@ -1,7 +1,7 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-duration';
-import {COUNTRY_CAPITALS,COUNTRY_CAPITAL_FALLBACKS} from './country-capitals.js?v=20261018-duration';
-import {unproject} from './projection.js?v=20261018-duration';
-import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-duration';
+import {COUNTRIES} from './geography-data.js?v=20261018-journeys';
+import {COUNTRY_CAPITALS,COUNTRY_CAPITAL_FALLBACKS} from './country-capitals.js?v=20261018-journeys';
+import {unproject} from './projection.js?v=20261018-journeys';
+import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-journeys';
 
 const validPoint=point=>point&&Number.isFinite(point.lat)&&Number.isFinite(point.lon)&&Math.abs(point.lat)<=90&&Math.abs(point.lon)<=180;
 function countryPlace(country){

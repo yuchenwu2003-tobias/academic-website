@@ -1,4 +1,4 @@
-import {countryById, fitRegion} from './geography.js?v=20261018-duration';
+import {countryById, fitRegion} from './geography.js?v=20261018-journeys';
 
 const WORLD_OVERVIEW_IDS = new Set(['eiffel','great-wall','fuji','liberty','christ-redeemer','opera-house','penguin','table-mountain','savanna','taj-mahal','cappadocia']);
 const WORLD_FOCUS = new Map([
@@ -26,7 +26,7 @@ export function landmarkPresentation(items,region,view,viewport={}) {
 export function selectLandmarks(items, region = {kind: 'world'}, view) {
   if (!Array.isArray(items) || !region) return [];
   const width = Number.isFinite(view?.width) && view.width > 0 ? view.width : null;
-  if (region.kind === 'country') return items.filter(item => item && item.country === region.id);
+  if (region.kind === 'country') return items.filter(item => item && (item.country === region.id || item.countries?.includes(region.id)));
   let maximumPriority;
   if (region.kind === 'continent') {
     const initialWidth = fitRegion(region).width;

@@ -1,9 +1,10 @@
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-duration';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-duration';
-import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-duration';
-import {pinCountry} from './geography.js?v=20261018-duration';
-import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-duration';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-duration';
+import {renderTripChips} from './trip-model.js?v=20261018-journeys';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-journeys';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-journeys';
+import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-journeys';
+import {pinCountry} from './geography.js?v=20261018-journeys';
+import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-journeys';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-journeys';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
 const safeUrl = value => {try {const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';} catch {return '';}};
@@ -21,7 +22,7 @@ function cardMarkup(pin, pins) {
   const href = placeGuideHref(pin), guides = guideLinks(pin);
   const countryId = pin.kind === 'country' ? normalizeCountryId(pin.countryId) : null;
   const children = countryId ? pins.filter(item => item && item.kind !== 'country' && pinCountry(item) === countryId) : [];
-  return `<a class="place-info-cover" href="${esc(href)}"><div class="place-info-media"><img data-place-info-image alt="${esc(pin.title)}" data-i18n-skip hidden referrerpolicy="no-referrer"><div class="place-info-placeholder" data-place-info-placeholder>${placeholderIcon}<span data-place-info-image-status>正在寻找地点图片…</span><small data-place-info-image-help hidden>可以直接在下方填写图片链接。</small></div></div><div class="place-info-heading"><div class="place-info-meta"><span>${pin.kind === 'country' ? '国家／地区' : '城市／景点'}</span><span class="place-info-status ${isExperienced(pin) ? 'is-visited' : ''}">${pinStatusLabel(pin)}</span></div><h2 id="place-info-title" data-i18n-skip>${esc(pin.title)}</h2><span class="place-info-open-label">打开攻略页 <span aria-hidden="true">↗</span></span></div></a>
+  return `<a class="place-info-cover" href="${esc(href)}"><div class="place-info-media"><img data-place-info-image alt="${esc(pin.title)}" data-i18n-skip hidden referrerpolicy="no-referrer"><div class="place-info-placeholder" data-place-info-placeholder>${placeholderIcon}<span data-place-info-image-status>正在寻找地点图片…</span><small data-place-info-image-help hidden>可以直接在下方填写图片链接。</small></div></div><div class="place-info-heading"><div class="place-info-meta"><span>${pin.kind === 'country' ? '国家／地区' : '城市／景点'}</span><span class="place-info-status ${isExperienced(pin) ? 'is-visited' : ''}">${pinStatusLabel(pin)}</span></div><div class="place-title-with-trips"><h2 id="place-info-title" data-i18n-skip>${esc(pin.title)}</h2><div class="place-trip-chips">${renderTripChips(pin,pins)}</div></div><span class="place-info-open-label">打开攻略页 <span aria-hidden="true">↗</span></span></div></a>
     <div class="place-info-source-row"><a data-place-info-wikipedia hidden ${external}>维基百科 ↗</a><a data-place-info-credit hidden ${external}></a></div>
     ${renderPlaceRating(pin)}
     <section class="place-info-editor" data-place-info-editor>${editorMarkup(pin)}</section>

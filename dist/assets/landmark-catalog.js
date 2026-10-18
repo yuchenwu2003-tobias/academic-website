@@ -44,4 +44,8 @@ export const LANDMARK_CATALOG = [
   { id: 'bali-coast', title: '巴厘岛 · 乌鲁瓦图海岸', country: 'idn', lat: -8.8291, lon: 115.0849, cell: 33, priority: 3 },
   { id: 'grand-canyon', title: '科罗拉多大峡谷', country: 'usa', lat: 36.0610, lon: -112.1076, cell: 34, priority: 2 },
   { id: 'penguin', title: '南极 · 企鹅与冰原', country: 'ata', lat: -77.5500, lon: 166.1700, cell: 35, priority: 1 },
+  // Independent transparent artwork; coordinates refer to the summit / representative viewpoint.
+  { id:'matterhorn',title:'马特洪峰',country:'che',countries:['che','ita'],lat:45.9764,lon:7.6586,priority:2 },
+  { id:'dolomites',title:'多洛米蒂 · 三峰山',iconSize:56,country:'ita',lat:46.6191,lon:12.3030,priority:2 },
+  {id:'yushan',title:'玉山',country:'twn',lat:23.47,lon:120.957267,priority:2},
 ];

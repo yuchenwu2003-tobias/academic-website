@@ -1,14 +1,14 @@
-import {getTravelResidences} from './travel-map.js?v=20261018-duration';
-import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-duration';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-duration';
-import {placeGuideHref} from './place-media.js?v=20261018-duration';
-import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-duration';
-import {project} from './projection.js?v=20261018-duration';
-import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-duration';
-import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-duration';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-duration';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-duration';
-import {toTraditional} from './i18n.js?v=20261018-duration';
+import {getTravelResidences} from './travel-map.js?v=20261018-journeys';
+import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-journeys';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-journeys';
+import {placeGuideHref} from './place-media.js?v=20261018-journeys';
+import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-journeys';
+import {project} from './projection.js?v=20261018-journeys';
+import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-journeys';
+import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-journeys';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-journeys';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-journeys';
+import {toTraditional} from './i18n.js?v=20261018-journeys';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external='target="_blank" rel="noopener noreferrer"';
@@ -79,7 +79,7 @@ export function mountAcademicMap(root,{region={kind:'world',name:'世界'}}={}) 
   }
   let residenceSnapshot=[];const residenceRecords=()=>residenceSnapshot;
   function draw() {
-    residenceSnapshot=getTravelResidences().map(pin=>({id:'@residence:'+pin.id,name:pin.title,lat:pin.lat,lon:pin.lon,isResidence:true,status:pin.status,period:pin.status==='resident'?residenceDuration(pin):pinStatusLabel(pin),pin}));
+    residenceSnapshot=getTravelResidences().filter(pin=>pin.status==='resident').map(pin=>({id:'@residence:'+pin.id,name:pin.title,lat:pin.lat,lon:pin.lon,isResidence:true,status:pin.status,period:'',pin}));
     const regional=getOverviewFiltered(groups,region),visible=filterAcademicGroups(regional,listQuery.value);
     const residences=residenceRecords(),regionalResidences=getOverviewFiltered(residences,region);
     globe?.setGroups([...regional,...regionalResidences]);

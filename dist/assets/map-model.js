@@ -1,4 +1,4 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-duration';
+import {COUNTRIES} from './geography-data.js?v=20261018-journeys';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
 export const isExperienced=pin=>['visited','resident'].includes(pin?.status);
 export const isResidenceStatus=pin=>['resident','want-resident'].includes(pin?.status);
@@ -8,10 +8,14 @@ export function residenceDuration(pin,now=new Date()){
   if(!pin?.residenceStart)return '';
   const [startYear,startMonth]=pin.residenceStart.split('-').map(Number);
   const [endYear,endMonth]=pin.residenceEnd?pin.residenceEnd.split('-').map(Number):[now.getFullYear(),now.getMonth()+1];
-  const months=Math.max(0,(endYear-startYear)*12+endMonth-startMonth),years=Math.floor(months/12),rest=months%12;
+  const toMonth=value=>{const [year,month]=value.split('-').map(Number);return year*12+month-1;};
+  const begin=startYear*12+startMonth-1,end=endYear*12+endMonth-1;
+  const excluded=(pin.residenceBreaks||[]).map(range=>[Math.max(begin,toMonth(range.start)),Math.min(end,toMonth(range.end))]).filter(([start,finish])=>finish>start).sort((a,b)=>a[0]-b[0]);
+  let removed=0,lastEnd=begin;for(const [start,finish] of excluded){removed+=Math.max(0,finish-Math.max(start,lastEnd));lastEnd=Math.max(lastEnd,finish);}
+  const months=Math.max(0,end-begin-removed),years=Math.floor(months/12),rest=months%12;
   return years?`${years}yr${rest?` ${rest}mo`:''}`:`${months}mo`;
 }
-export {project,unproject} from './projection.js?v=20261018-duration';
+export {project,unproject} from './projection.js?v=20261018-journeys';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
 export function normalizeCountryId(value) {
   if(typeof value!=='string')return null;
@@ -57,6 +61,17 @@ export function normalizePin(pin) {
     if(typeof value!=='string'||!(/^[1-9]\d{3}-(0[1-9]|1[0-2])$/).test(value))throw new Error('居住时间请使用有效的年和月。');result[field]=value;
   }
   if(result.residenceEnd&&(!result.residenceStart||result.residenceEnd<result.residenceStart))throw new Error('请先填写入住时间，结束时间不能早于入住时间。');
+  if(pin.residenceBreaks!==undefined){
+    if(!Array.isArray(pin.residenceBreaks)||pin.residenceBreaks.length>20)throw new Error('离开期间最多保存 20 段。');
+    if(pin.residenceBreaks.length){
+      if(!result.residenceStart)throw new Error('请先填写入住时间，再添加离开期间。');
+      result.residenceBreaks=pin.residenceBreaks.map(range=>{
+        if(!range||![range.start,range.end].every(value=>typeof value==='string'&&/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(value))||range.end<=range.start)throw new Error('离开期间需要有效的起止月份，结束月份应晚于开始月份。');
+        if(range.start<result.residenceStart||(result.residenceEnd&&range.end>result.residenceEnd))throw new Error('离开期间应在居住的起止月份之内。');
+        return {start:range.start,end:range.end};
+      });
+    }
+  }
   const countryHint=normalizeCountryHint(pin.countryHint);
   if(countryHint)result.countryHint=countryHint;
   result.guides=normalizeGuideLinks(pin.guides);
