@@ -1,9 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-ratings-final';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-ratings-final';
-import {countryById} from './geography.js?v=20261018-ratings-final';
-import {unproject} from './projection.js?v=20261018-ratings-final';
-import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-ratings-final';
-import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-ratings-final';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-linked-wiki-photos';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-linked-wiki-photos';
+import {countryById} from './geography.js?v=20261018-linked-wiki-photos';
+import {unproject} from './projection.js?v=20261018-linked-wiki-photos';
+import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-linked-wiki-photos';
+import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-linked-wiki-photos';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PHOTON_ENDPOINT='https://photon.komoot.io/api/';

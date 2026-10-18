@@ -1,5 +1,5 @@
-import {normalizePin} from './map-model.js?v=20261018-ratings-final';
-import {pinCountry} from './geography.js?v=20261018-ratings-final';
+import {normalizePin} from './map-model.js?v=20261018-linked-wiki-photos';
+import {pinCountry} from './geography.js?v=20261018-linked-wiki-photos';
 export const TRIP_STORAGE_KEY='tobias.travel-trips.v1';
 let memory;
 export const tripName=trip=>`${trip.year} · ${trip.region}`;

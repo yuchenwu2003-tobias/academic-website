@@ -1,7 +1,7 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-ratings-final';
-import {countryPlaceById} from './country-destinations.js?v=20261018-ratings-final';
-import {pinCountry} from './geography.js?v=20261018-ratings-final';
-import {normalizeCountryId} from './map-model.js?v=20261018-ratings-final';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-linked-wiki-photos';
+import {countryPlaceById} from './country-destinations.js?v=20261018-linked-wiki-photos';
+import {pinCountry} from './geography.js?v=20261018-linked-wiki-photos';
+import {normalizeCountryId} from './map-model.js?v=20261018-linked-wiki-photos';
 
 // API reference: https://www.mediawiki.org/wiki/API:Pageimages and API:Search.
 // Only public place/country names are queried. Personal notes and guides are never read here.
@@ -45,13 +45,24 @@ function lookupIdentity(pin) {
   return {query, language, country, searchUrl: search.href};
 }
 
-async function lookupWikipedia(query, language, {signal, fetcher}) {
+function articleReference(value){
+  try{
+    const url=new URL(value),match=url.hostname.match(/^([a-z-]+)(?:\.m)?\.wikipedia\.org$/i);
+    if(!match||match[1]==='www'||!url.pathname.startsWith('/wiki/'))return null;
+    const title=decodeURIComponent(url.pathname.slice(6)).replaceAll('_',' ').trim();
+    if(!title||title.length>500||/[\u0000-\u001f]/.test(title)||/^(?:Special|File|Image|Category|Help|Template|Talk|User|Wikipedia):/i.test(title))return null;
+    return {title,language:match[1].toLowerCase()};
+  }catch{return null;}
+}
+
+async function lookupWikipedia(query, language, {signal, fetcher,pageTitle=''}) {
   checkAbort(signal);
-  const key = `${language}:${query}`;
+  const key = `${language}:${pageTitle?'page:':'search:'}${pageTitle||query}`;
   const saved = wikiCache.get(key);
   if (saved && Date.now() - saved.savedAt < CACHE_TTL) return saved.value;
   const url = new URL(`https://${language}.wikipedia.org/w/api.php`);
-  for (const [name, value] of Object.entries({action: 'query', generator: 'search', gsrsearch: query, gsrnamespace: '0', gsrlimit: '3', prop: 'pageimages|info', piprop: 'thumbnail|name', pithumbsize: '900', pilicense: 'free', inprop: 'url', origin: '*', format: 'json', formatversion: '2'})) url.searchParams.set(name, value);
+  const selection=pageTitle?{titles:pageTitle,redirects:'1'}:{generator:'search',gsrsearch:query,gsrnamespace:'0',gsrlimit:'3'};
+  for (const [name, value] of Object.entries({action: 'query',...selection, prop: 'pageimages|info', piprop: 'thumbnail|name', pithumbsize: '900', pilicense: 'free', inprop: 'url', origin: '*', format: 'json', formatversion: '2'})) url.searchParams.set(name, value);
   const controller = new AbortController();
   const cancel = () => controller.abort();
   signal?.addEventListener('abort', cancel, {once: true});
@@ -99,7 +110,8 @@ export async function getPlaceMedia(pin, {signal, fetcher = globalThis.fetch} = 
   const base = {imageUrl: manualImage, wikipediaUrl: manualWiki || identity.searchUrl, imageCreditUrl: manualImage ? manualImage : '', imageCreditLabel: manualImage ? '手动图片链接' : ''};
   if ((manualImage && manualWiki) || !identity.query || typeof fetcher !== 'function') return base;
   try {
-    const primary = await lookupWikipedia(identity.query, identity.language, {signal, fetcher});
+    const article=articleReference(manualWiki);
+    const primary = await lookupWikipedia(article?.title||identity.query, article?.language||identity.language, {signal, fetcher,pageTitle:article?.title||''});
     checkAbort(signal);
     let picture = primary;
     // Country articles often lead with a flag, coat of arms or locator map.

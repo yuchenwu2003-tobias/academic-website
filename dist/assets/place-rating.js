@@ -1,6 +1,6 @@
-import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-ratings-final';
-import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-ratings-final';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-ratings-final';
+import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-linked-wiki-photos';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-linked-wiki-photos';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-linked-wiki-photos';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const desireLabels=['随缘','有点想去','值得计划','很想去','非去不可'];
 const recommendationLabels=['不太推荐','一般','值得一去','很推荐','强烈推荐'];

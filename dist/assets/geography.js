@@ -1,7 +1,7 @@
-import {CONTINENTS,COUNTRIES} from './geography-data.js?v=20261018-ratings-final';
-import {project} from './projection.js?v=20261018-ratings-final';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-ratings-final';
-import {normalizeCountryHint,normalizeCountryId} from './map-model.js?v=20261018-ratings-final';
+import {CONTINENTS,COUNTRIES} from './geography-data.js?v=20261018-linked-wiki-photos';
+import {project} from './projection.js?v=20261018-linked-wiki-photos';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-linked-wiki-photos';
+import {normalizeCountryHint,normalizeCountryId} from './map-model.js?v=20261018-linked-wiki-photos';
 export {CONTINENTS,COUNTRIES};
 export const continentById=new Map(CONTINENTS.map(item=>[item.id,item]));
 export const countryById=new Map(COUNTRIES.map(item=>[item.id,item]));
