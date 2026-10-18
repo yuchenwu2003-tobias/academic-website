@@ -1,5 +1,5 @@
-import {normalizePin} from './map-model.js?v=20261018-mont-saint-michel';
-import {pinCountry} from './geography.js?v=20261018-mont-saint-michel';
+import {normalizePin} from './map-model.js?v=20261018-etretat';
+import {pinCountry} from './geography.js?v=20261018-etretat';
 export const TRIP_STORAGE_KEY='tobias.travel-trips.v1';
 let memory;
 export const tripName=trip=>`${trip.year} · ${trip.region}`;

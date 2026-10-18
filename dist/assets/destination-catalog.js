@@ -2754,5 +2754,6 @@ export const DESTINATIONS = [
   {id:'landmark-matterhorn',name:'马特洪峰',english:'Matterhorn',country:'che',continent:'europe',lat:45.9764,lon:7.6586,kind:'landmark',priority:2},
   {id:'landmark-dolomites',name:'多洛米蒂',english:'Dolomites · Tre Cime di Lavaredo',country:'ita',continent:'europe',lat:46.6191,lon:12.3030,kind:'landmark',priority:2},
   {id:'landmark-yushan',name:'玉山',english:'Yushan · Jade Mountain',country:'twn',continent:'asia',lat:23.47,lon:120.957267,kind:'landmark',priority:2},
-  {id:'landmark-mont-saint-michel',name:'圣米歇尔山',english:'Mont-Saint-Michel',country:'fra',continent:'europe',lat:48.635558,lon:-1.510558,kind:'landmark',priority:2}
+  {id:'landmark-mont-saint-michel',name:'圣米歇尔山',english:'Mont-Saint-Michel',country:'fra',continent:'europe',lat:48.635558,lon:-1.510558,kind:'landmark',priority:2},
+  {id:'landmark-etretat',name:'埃特勒塔白崖',english:'Cliffs at Étretat',country:'fra',continent:'europe',lat:49.70639,lon:0.20667,kind:'landmark',priority:2}
 ];

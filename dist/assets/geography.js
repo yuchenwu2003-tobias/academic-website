@@ -1,7 +1,7 @@
-import {CONTINENTS,COUNTRIES} from './geography-data.js?v=20261018-mont-saint-michel';
-import {project} from './projection.js?v=20261018-mont-saint-michel';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-mont-saint-michel';
-import {normalizeCountryHint,normalizeCountryId} from './map-model.js?v=20261018-mont-saint-michel';
+import {CONTINENTS,COUNTRIES} from './geography-data.js?v=20261018-etretat';
+import {project} from './projection.js?v=20261018-etretat';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-etretat';
+import {normalizeCountryHint,normalizeCountryId} from './map-model.js?v=20261018-etretat';
 export {CONTINENTS,COUNTRIES};
 export const continentById=new Map(CONTINENTS.map(item=>[item.id,item]));
 export const countryById=new Map(COUNTRIES.map(item=>[item.id,item]));

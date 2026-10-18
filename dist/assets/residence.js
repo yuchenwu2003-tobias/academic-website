@@ -1,4 +1,4 @@
-import {normalizePin,residencePeriod,residenceDuration} from './map-model.js?v=20261018-mont-saint-michel';
+import {normalizePin,residencePeriod,residenceDuration} from './map-model.js?v=20261018-etretat';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const breakRow=(range={})=>`<div class="residence-break" data-residence-break><div class="residence-dates"><label>离开月份<input type="month" data-break-start value="${esc(range.start||'')}" required></label><label>返回月份<input type="month" data-break-end value="${esc(range.end||'')}" required></label></div><button type="button" data-residence-break-remove aria-label="移除此离开期间">×</button></div>`;
 export function renderResidenceEditor(pin){

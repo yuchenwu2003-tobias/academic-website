@@ -1,4 +1,4 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-mont-saint-michel';
+import {COUNTRIES} from './geography-data.js?v=20261018-etretat';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
 export const isExperienced=pin=>['visited','resident'].includes(pin?.status);
 export const isResidenceStatus=pin=>['resident','want-resident'].includes(pin?.status);
@@ -15,7 +15,7 @@ export function residenceDuration(pin,now=new Date()){
   const months=Math.max(0,end-begin-removed),years=Math.floor(months/12),rest=months%12;
   return years?`${years}yr${rest?` ${rest}mo`:''}`:`${months}mo`;
 }
-export {project,unproject} from './projection.js?v=20261018-mont-saint-michel';
+export {project,unproject} from './projection.js?v=20261018-etretat';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
 export function normalizeCountryId(value) {
   if(typeof value!=='string')return null;

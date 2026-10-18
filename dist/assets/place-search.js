@@ -1,9 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-mont-saint-michel';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-mont-saint-michel';
-import {countryById} from './geography.js?v=20261018-mont-saint-michel';
-import {unproject} from './projection.js?v=20261018-mont-saint-michel';
-import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-mont-saint-michel';
-import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-mont-saint-michel';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-etretat';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-etretat';
+import {countryById} from './geography.js?v=20261018-etretat';
+import {unproject} from './projection.js?v=20261018-etretat';
+import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-etretat';
+import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-etretat';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PHOTON_ENDPOINT='https://photon.komoot.io/api/';

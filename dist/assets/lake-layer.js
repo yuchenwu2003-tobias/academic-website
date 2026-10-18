@@ -1,4 +1,4 @@
-import {LAKES} from './lake-data.js?v=20261018-mont-saint-michel';
+import {LAKES} from './lake-data.js?v=20261018-etretat';
 
 const overviewById=new Map(LAKES.map(lake=>[lake.id,lake]));
 const entries={medium:{},fine:{}};

@@ -1,10 +1,10 @@
-import {renderTripChips} from './trip-model.js?v=20261018-mont-saint-michel';
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-mont-saint-michel';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-mont-saint-michel';
-import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-mont-saint-michel';
-import {pinCountry} from './geography.js?v=20261018-mont-saint-michel';
-import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-mont-saint-michel';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-mont-saint-michel';
+import {renderTripChips} from './trip-model.js?v=20261018-etretat';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-etretat';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-etretat';
+import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-etretat';
+import {pinCountry} from './geography.js?v=20261018-etretat';
+import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-etretat';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-etretat';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
 const safeUrl = value => {try {const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';} catch {return '';}};

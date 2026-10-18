@@ -1,13 +1,13 @@
-import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-mont-saint-michel';
-import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-mont-saint-michel';
-import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-mont-saint-michel';
-import {layoutLandmarks} from './landmark-layout.js?v=20261018-mont-saint-michel';
-import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-mont-saint-michel';
-import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-mont-saint-michel';
-import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-mont-saint-michel';
-import {mountMapDetail} from './map-detail.js?v=20261018-mont-saint-michel';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-mont-saint-michel';
-import {translateText} from './i18n.js?v=20261018-mont-saint-michel';
+import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-etretat';
+import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-etretat';
+import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-etretat';
+import {layoutLandmarks} from './landmark-layout.js?v=20261018-etretat';
+import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-etretat';
+import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-etretat';
+import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-etretat';
+import {mountMapDetail} from './map-detail.js?v=20261018-etretat';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-etretat';
+import {translateText} from './i18n.js?v=20261018-etretat';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mapRouteBase=value=>typeof value==='string'&&/^#\/[a-z0-9/_-]+$/i.test(value)?value.replace(/\/+$/,''):'#/travel';
 function countryShapes(region,routeBase) {
