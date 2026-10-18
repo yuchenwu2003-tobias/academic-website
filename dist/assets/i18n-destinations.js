@@ -1,4 +1,5 @@
 export const DESTINATION_UI_EN = {
+  '圣米歇尔山':'Mont-Saint-Michel',
   '玉山':'Yushan · Jade Mountain',
   '马特洪峰':'Matterhorn','多洛米蒂':'Dolomites','多洛米蒂 · 三峰山':'Dolomites · Tre Cime di Lavaredo',
   "一键添加旅行目的地": "Add travel destinations in one click",

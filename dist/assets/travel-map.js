@@ -1,15 +1,15 @@
-import {getTravelTrips,normalizeTrips,mergeTravelTrips} from './trip-model.js?v=20261018-journeys';
-import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus} from './map-model.js?v=20261018-journeys';
-import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-journeys';
-import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-journeys';
-import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-journeys';
-import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-journeys';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-journeys';
-import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-journeys';
-import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-journeys';
-import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-journeys';
-import {mountClickChoices} from './click-choices.js?v=20261018-journeys';
-import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-journeys';
+import {getTravelTrips,normalizeTrips,mergeTravelTrips} from './trip-model.js?v=20261018-mont-saint-michel';
+import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus} from './map-model.js?v=20261018-mont-saint-michel';
+import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-mont-saint-michel';
+import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-mont-saint-michel';
+import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-mont-saint-michel';
+import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-mont-saint-michel';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-mont-saint-michel';
+import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-mont-saint-michel';
+import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-mont-saint-michel';
+import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-mont-saint-michel';
+import {mountClickChoices} from './click-choices.js?v=20261018-mont-saint-michel';
+import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-mont-saint-michel';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kindName=pin=>pin.kind==='country'?'国家／地区':'城市／景点';

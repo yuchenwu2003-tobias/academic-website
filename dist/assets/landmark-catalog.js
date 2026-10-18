@@ -48,4 +48,5 @@ export const LANDMARK_CATALOG = [
   { id:'matterhorn',title:'马特洪峰',country:'che',countries:['che','ita'],lat:45.9764,lon:7.6586,priority:2 },
   { id:'dolomites',title:'多洛米蒂 · 三峰山',iconSize:56,country:'ita',lat:46.6191,lon:12.3030,priority:2 },
   {id:'yushan',title:'玉山',country:'twn',lat:23.47,lon:120.957267,priority:2},
+  {id:'mont-saint-michel',title:'圣米歇尔山',country:'fra',lat:48.635558,lon:-1.510558,priority:2},
 ];

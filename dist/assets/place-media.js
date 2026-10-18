@@ -1,7 +1,7 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-journeys';
-import {countryPlaceById} from './country-destinations.js?v=20261018-journeys';
-import {pinCountry} from './geography.js?v=20261018-journeys';
-import {normalizeCountryId} from './map-model.js?v=20261018-journeys';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-mont-saint-michel';
+import {countryPlaceById} from './country-destinations.js?v=20261018-mont-saint-michel';
+import {pinCountry} from './geography.js?v=20261018-mont-saint-michel';
+import {normalizeCountryId} from './map-model.js?v=20261018-mont-saint-michel';
 
 // API reference: https://www.mediawiki.org/wiki/API:Pageimages and API:Search.
 // Only public place/country names are queried. Personal notes and guides are never read here.

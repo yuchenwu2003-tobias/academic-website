@@ -1,10 +1,10 @@
-import {Converter} from './vendor/opencc/cn2t.js?v=20261018-journeys';
-import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-journeys';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-journeys';
-import {UI_EN} from './i18n-messages.js?v=20261018-journeys';
-import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-journeys';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-journeys';
-import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-journeys';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-mont-saint-michel';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-mont-saint-michel';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-mont-saint-michel';
+import {UI_EN} from './i18n-messages.js?v=20261018-mont-saint-michel';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-mont-saint-michel';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-mont-saint-michel';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-mont-saint-michel';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];

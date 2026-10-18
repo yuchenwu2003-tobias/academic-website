@@ -1,11 +1,11 @@
-import {renderTripChips} from './trip-model.js?v=20261018-journeys';
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-journeys';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-journeys';
-import {countryById,pinCountry} from './geography.js?v=20261018-journeys';
-import {countryPlaces} from './country-destinations.js?v=20261018-journeys';
-import {normalizeGuideLinks} from './map-model.js?v=20261018-journeys';
-import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-journeys';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-journeys';
+import {renderTripChips} from './trip-model.js?v=20261018-mont-saint-michel';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-mont-saint-michel';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-mont-saint-michel';
+import {countryById,pinCountry} from './geography.js?v=20261018-mont-saint-michel';
+import {countryPlaces} from './country-destinations.js?v=20261018-mont-saint-michel';
+import {normalizeGuideLinks} from './map-model.js?v=20261018-mont-saint-michel';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-mont-saint-michel';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-mont-saint-michel';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const countryPlaceById=new Map(countryPlaces.map(place=>[place.id,place]));

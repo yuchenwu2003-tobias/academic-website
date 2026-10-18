@@ -1,14 +1,14 @@
-import {getTravelResidences} from './travel-map.js?v=20261018-journeys';
-import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-journeys';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-journeys';
-import {placeGuideHref} from './place-media.js?v=20261018-journeys';
-import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-journeys';
-import {project} from './projection.js?v=20261018-journeys';
-import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-journeys';
-import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-journeys';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-journeys';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-journeys';
-import {toTraditional} from './i18n.js?v=20261018-journeys';
+import {getTravelResidences} from './travel-map.js?v=20261018-mont-saint-michel';
+import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-mont-saint-michel';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-mont-saint-michel';
+import {placeGuideHref} from './place-media.js?v=20261018-mont-saint-michel';
+import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-mont-saint-michel';
+import {project} from './projection.js?v=20261018-mont-saint-michel';
+import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-mont-saint-michel';
+import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-mont-saint-michel';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-mont-saint-michel';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-mont-saint-michel';
+import {toTraditional} from './i18n.js?v=20261018-mont-saint-michel';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external='target="_blank" rel="noopener noreferrer"';

@@ -1,8 +1,8 @@
-import {getTravelTrips,tripName,commitTravelTrip} from './trip-model.js?v=20261018-journeys';
-import {localPlaceMatches,searchOnlinePlaces} from './place-search.js?v=20261018-journeys';
-import {findDestinationPin} from './destination-picker.js?v=20261018-journeys';
-import {placeGuideHref} from './place-media.js?v=20261018-journeys';
-import {toTraditional} from './i18n.js?v=20261018-journeys';
+import {getTravelTrips,tripName,commitTravelTrip} from './trip-model.js?v=20261018-mont-saint-michel';
+import {localPlaceMatches,searchOnlinePlaces} from './place-search.js?v=20261018-mont-saint-michel';
+import {findDestinationPin} from './destination-picker.js?v=20261018-mont-saint-michel';
+import {placeGuideHref} from './place-media.js?v=20261018-mont-saint-michel';
+import {toTraditional} from './i18n.js?v=20261018-mont-saint-michel';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function renderTravelTrips(){return `<section class="travel-trips" data-travel-trips><div class="trip-section-heading"><div><span class="section-kicker mono">JOURNEYS & MEMORIES</span><h2>行程记录</h2></div><button type="button" class="map-add" data-trip-new>＋ 新建行程</button></div><p class="trip-help">按年份与地区命名，记录同一段旅途中的城市与评分。</p><div data-trip-list></div><p data-trip-message role="status"></p><dialog class="trip-dialog" data-trip-dialog aria-labelledby="trip-dialog-title"><form data-trip-form><div class="trip-dialog-top"><span class="mono">A JOURNEY TO REMEMBER</span><button type="button" data-trip-close aria-label="关闭行程编辑">×</button></div><h2 id="trip-dialog-title">新建行程</h2><div class="trip-name-fields"><label>年份<input name="year" type="number" min="1900" max="9999" required></label><label>地区<input name="region" maxlength="80" placeholder="例如：台湾、瑞士、日本关西" required></label></div><p class="trip-name-preview" data-trip-name data-i18n-skip></p><label class="trip-city-search">添加城市<input type="search" data-trip-query placeholder="搜索已收藏或其他城市…" autocomplete="off"></label><button type="button" class="text-link" data-trip-search>搜索更多城市</button><div class="trip-city-results" data-trip-results></div><h3>本次行程的城市</h3><p class="trip-help">每个城市必须点击推荐星级，保存后自动标为去过。</p><div data-trip-stops></div><p class="trip-error" data-trip-feedback role="status"></p><div class="trip-form-actions"><button type="button" class="text-link" data-trip-close>取消</button><button type="submit" class="map-add" data-trip-save>保存行程</button></div></form></dialog></section>`;}
 export function mountTravelTrips(root,{getPins,onSave,onChanged=()=>{}}){
