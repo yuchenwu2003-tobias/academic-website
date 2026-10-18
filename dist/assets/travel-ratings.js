@@ -1,14 +1,14 @@
-import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-trip-months';
-import {renderTravelTrips,mountTravelTrips} from './travel-trips.js?v=20261018-trip-months';
-import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-trip-months';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-trip-months';
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-trip-months';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-trip-months';
-import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-trip-months';
-import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-trip-months';
-import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-trip-months';
-import {getTravelTrips} from './trip-model.js?v=20261018-trip-months';
-import {getPlaceMedia} from './place-media.js?v=20261018-trip-months';
+import {renderMapVisibility,mountMapVisibility} from './map-visibility.js?v=20261018-wiki-details';
+import {renderTravelTrips,mountTravelTrips} from './travel-trips.js?v=20261018-wiki-details';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-wiki-details';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-wiki-details';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-wiki-details';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
+import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-wiki-details';
+import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-wiki-details';
+import {toTraditional,countrySearchAliases,placeNameSearchText} from './i18n.js?v=20261018-wiki-details';
+import {getTravelTrips} from './trip-model.js?v=20261018-wiki-details';
+import {getPlaceMedia} from './place-media.js?v=20261018-wiki-details';
 
 export const DESIRE_RATING_LABELS=['未评分','随缘','有点想去','值得计划','很想去','非去不可'];
 export const RECOMMENDATION_RATING_LABELS=['未评分','不太推荐','一般','值得一去','很推荐','强烈推荐'];
@@ -72,7 +72,7 @@ function matches(row,query){
   if(!words.length)return true;
   if(row.kind==='country'&&countryMatchesQuery(countryPlaceById.get(row.countryId),query))return true;
   const country=countryPlaceById.get(row.countryId);
-  const names=`${row.title} ${row.english} ${country?.name||''} ${country?.english||''} ${countrySearchAliases(row.countryId)}`;
+  const names=`${placeNameSearchText(row.title)} ${row.english} ${country?.name||''} ${country?.english||''} ${countrySearchAliases(row.countryId)}`;
   const haystack=textKey(`${names} ${toTraditional(names)}`);
   return words.every(word=>haystack.includes(word));
 }

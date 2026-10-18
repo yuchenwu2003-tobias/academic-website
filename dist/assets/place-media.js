@@ -1,7 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-trip-months';
-import {countryPlaceById} from './country-destinations.js?v=20261018-trip-months';
-import {pinCountry} from './geography.js?v=20261018-trip-months';
-import {normalizeCountryId} from './map-model.js?v=20261018-trip-months';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
+import {countryPlaceById} from './country-destinations.js?v=20261018-wiki-details';
+import {pinCountry} from './geography.js?v=20261018-wiki-details';
+import {normalizeCountryId} from './map-model.js?v=20261018-wiki-details';
+import {translatePlaceName} from './i18n.js?v=20261018-wiki-details';
+import {preferredWikipediaTitle,wikipediaArticleReference,nearbyWikipediaPage} from './wikipedia-places.js?v=20261018-wiki-details';
 
 // API reference: https://www.mediawiki.org/wiki/API:Pageimages and API:Search.
 // Only public place/country names are queried. Personal notes and guides are never read here.
@@ -36,33 +38,24 @@ function lookupIdentity(pin) {
   const country = countryPlaceById.get(countryId);
   const rawId = typeof pin?.id === 'string' ? pin.id.replace(/^(?:destination-|source-)/, '') : '';
   const destination = destinationById.get(rawId);
-  const name = String(pin?.kind === 'country' ? country?.english || pin?.title || '' : destination?.english || pin?.title || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+  const name = String(pin?.kind === 'country' ? country?.english || pin?.title || '' : destination?.english || translatePlaceName(pin?.title,'en')).replace(/\s+/g, ' ').trim().slice(0, 180);
   const language = /[\u3400-\u9fff]/.test(name) ? 'zh' : 'en';
   const countryName = language === 'zh' ? country?.name : country?.english;
   const query = [name, pin?.kind !== 'country' && countryName && !name.toLowerCase().includes(countryName.toLowerCase()) ? countryName : ''].filter(Boolean).join(' ');
   const search = new URL(`https://${language}.wikipedia.org/wiki/Special:Search`);
   search.searchParams.set('search', query);
-  return {query, language, country, searchUrl: search.href};
+  const known=Boolean(destination)||pin?.kind==='country'||translatePlaceName(pin?.title,'zh-CN')!==pin?.title||translatePlaceName(pin?.title,'en')!==pin?.title;
+  return {name,query,language,country,known,searchUrl:search.href};
 }
 
-function articleReference(value){
-  try{
-    const url=new URL(value),match=url.hostname.match(/^([a-z-]+)(?:\.m)?\.wikipedia\.org$/i);
-    if(!match||match[1]==='www'||!url.pathname.startsWith('/wiki/'))return null;
-    const title=decodeURIComponent(url.pathname.slice(6)).replaceAll('_',' ').trim();
-    if(!title||title.length>500||/[\u0000-\u001f]/.test(title)||/^(?:Special|File|Image|Category|Help|Template|Talk|User|Wikipedia):/i.test(title))return null;
-    return {title,language:match[1].toLowerCase()};
-  }catch{return null;}
-}
-
-async function lookupWikipedia(query, language, {signal, fetcher,pageTitle=''}) {
+async function lookupWikipedia(query, language, {signal,fetcher,pageTitle='',near=null,allowMissingLocation=false}) {
   checkAbort(signal);
-  const key = `${language}:${pageTitle?'page:':'search:'}${pageTitle||query}`;
+  const key = `${language}:${pageTitle?'page:':'search:'}${pageTitle||query}${near?`@${near.lat},${near.lon}:${allowMissingLocation}`:''}`;
   const saved = wikiCache.get(key);
   if (saved && Date.now() - saved.savedAt < CACHE_TTL) return saved.value;
   const url = new URL(`https://${language}.wikipedia.org/w/api.php`);
   const selection=pageTitle?{titles:pageTitle,redirects:'1'}:{generator:'search',gsrsearch:query,gsrnamespace:'0',gsrlimit:'3'};
-  for (const [name, value] of Object.entries({action: 'query',...selection, prop: 'pageimages|info', piprop: 'thumbnail|name', pithumbsize: '900', pilicense: 'free', inprop: 'url', origin: '*', format: 'json', formatversion: '2'})) url.searchParams.set(name, value);
+  for (const [name, value] of Object.entries({action: 'query',...selection, prop: 'pageimages|info|pageprops|coordinates', piprop: 'thumbnail|name', pithumbsize: '900', pilicense: 'free', inprop: 'url', origin: '*', format: 'json', formatversion: '2'})) url.searchParams.set(name, value);
   const controller = new AbortController();
   const cancel = () => controller.abort();
   signal?.addEventListener('abort', cancel, {once: true});
@@ -76,7 +69,7 @@ async function lookupWikipedia(query, language, {signal, fetcher,pageTitle=''}) 
     if (payload?.error) throw new Error('Wikipedia media unavailable');
     const rawPages = payload?.query?.pages;
     const pages = (Array.isArray(rawPages) ? rawPages : rawPages && typeof rawPages === 'object' ? Object.values(rawPages) : [])
-      .filter(page => page && !page.missing && page.ns === 0)
+      .filter(page => page && !page.missing && page.ns === 0 && page.pageprops?.disambiguation===undefined && (!near||nearbyWikipediaPage(page,near)||(allowMissingLocation&&!page.coordinates?.length)))
       .sort((a, b) => (a.index || 1) - (b.index || 1));
     const page = pages.find(item => wikipediaUrl(item.fullurl || item.canonicalurl));
     const articleUrl = wikipediaUrl(page?.fullurl || page?.canonicalurl);
@@ -110,8 +103,11 @@ export async function getPlaceMedia(pin, {signal, fetcher = globalThis.fetch} = 
   const base = {imageUrl: manualImage, wikipediaUrl: manualWiki || identity.searchUrl, imageCreditUrl: manualImage ? manualImage : '', imageCreditLabel: manualImage ? '手动图片链接' : ''};
   if ((manualImage && manualWiki) || !identity.query || typeof fetcher !== 'function') return base;
   try {
-    const article=articleReference(manualWiki);
-    const primary = await lookupWikipedia(article?.title||identity.query, article?.language||identity.language, {signal, fetcher,pageTitle:article?.title||''});
+    const article=wikipediaArticleReference(manualWiki);
+    let primary=await lookupWikipedia(article?.title||identity.name,article?.language||identity.language,{signal,fetcher,pageTitle:article?.title||preferredWikipediaTitle(identity.name),near:article?null:pin,allowMissingLocation:identity.known});
+    // Unknown/missing/ambiguous exact titles may use search only when geographic
+    // coordinates confirm a nearby place. Never link an arbitrary first hit.
+    if(!article&&!primary.wikipediaUrl&&pin?.kind!=='country')primary=await lookupWikipedia(identity.query,identity.language,{signal,fetcher,near:pin});
     checkAbort(signal);
     let picture = primary;
     // Country articles often lead with a flag, coat of arms or locator map.
@@ -119,7 +115,8 @@ export async function getPlaceMedia(pin, {signal, fetcher = globalThis.fetch} = 
     const unsuitableCountryImage = !primary.imageUrl || /(?:flag|coat|map)|\.svg(?:$|[?#])/i.test(primary.fileName);
     if (!manualImage && pin?.kind === 'country' && unsuitableCountryImage && identity.country?.english) {
       try {
-        picture = await lookupWikipedia(`Tourism in ${identity.country.english}`, 'en', {signal, fetcher});
+        const tourismTitle=`Tourism in ${identity.country.english}`;
+        picture = await lookupWikipedia(tourismTitle, 'en', {signal,fetcher,pageTitle:tourismTitle});
         if (/(?:flag|coat|map)|\.svg(?:$|[?#])/i.test(picture.fileName)) picture = {...picture, imageUrl: '', imageCreditUrl: '', imageCreditLabel: ''};
       } catch (error) {
         checkAbort(signal);

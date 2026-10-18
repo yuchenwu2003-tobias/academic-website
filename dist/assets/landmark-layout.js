@@ -1,4 +1,4 @@
-import {project} from './projection.js?v=20261018-trip-months';
+import {project} from './projection.js?v=20261018-wiki-details';
 
 const PADDING = 8;
 const MARGIN = 10;

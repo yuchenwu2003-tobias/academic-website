@@ -1,5 +1,6 @@
-import {showTravelMapMarker,pinStatusLabel} from './map-model.js?v=20261018-trip-months';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-trip-months';
+import {showTravelMapMarker,pinStatusLabel} from './map-model.js?v=20261018-wiki-details';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-wiki-details';
+import {placeNameSearchText,toTraditional} from './i18n.js?v=20261018-wiki-details';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const modes=[['auto','自动'],['show','显示'],['hide','隐藏']];
 export function renderMapVisibility(pin){
@@ -23,12 +24,12 @@ export function mountMapVisibility(root,{getPin,onSave,onChanged=()=>{}}){
   return {refresh,destroy(){stopped=true;root.removeEventListener('click',onClick);}};
 }
 export function renderMapDisplaySettings(){
-  return '<dialog class="map-display-dialog" data-map-display-dialog aria-labelledby="map-display-title"><div class="map-display-heading"><div><span class="mono">YOUR MAP, YOUR CHOICE</span><h2 id="map-display-title">地图显示设置</h2></div><button type="button" data-map-display-close aria-label="关闭地图显示设置">×</button></div><p class="map-display-help">自动：世界地图显示五星城市，大洲显示四星与五星，国家显示全部城市；国家图钉仅五星。居住星标保留显示。</p><p class="map-display-help">也可以逐个选择显示或隐藏，只影响地图，不改变收藏、评分和旅行状态。</p><label class="map-display-search">搜索已标记地点<input type="search" data-map-display-search placeholder="搜索地点名称…" autocomplete="off"></label><div class="map-display-list" data-map-display-list></div></dialog>';
+  return '<dialog class="map-display-dialog" data-map-display-dialog aria-labelledby="map-display-title"><div class="map-display-heading"><div><span class="mono">YOUR MAP, YOUR CHOICE</span><h2 id="map-display-title">地图显示设置</h2></div><button type="button" data-map-display-close aria-label="关闭地图显示设置">×</button></div><p class="map-display-help">自动：按缩放尺度切换，世界显示五星城市，大洲显示四星与五星，国家显示全部城市；国家图钉仅五星。居住星标保留显示。</p><p class="map-display-help">也可以逐个选择显示或隐藏，只影响地图，不改变收藏、评分和旅行状态。</p><label class="map-display-search">搜索已标记地点<input type="search" data-map-display-search placeholder="搜索地点名称…" autocomplete="off"></label><div class="map-display-list" data-map-display-list></div></dialog>';
 }
-export function mountMapDisplaySettings(root,{getPins,onSave,region}){
+export function mountMapDisplaySettings(root,{getPins,onSave,region,getRegion=()=>region}){
   const dialog=root.querySelector('[data-map-display-dialog]'),list=root.querySelector('[data-map-display-list]'),search=root.querySelector('[data-map-display-search]'),open=root.querySelector('[data-map-display]'),close=root.querySelector('[data-map-display-close]');
-  function refresh(){if(!dialog.open)return;const query=search.value.trim().toLocaleLowerCase(),pins=getPins().filter(pin=>pin.title.toLocaleLowerCase().includes(query)).slice().sort((a,b)=>a.title.localeCompare(b.title,'zh-CN'));
-    list.innerHTML=pins.length?pins.map(pin=>'<article class="map-display-row"><div class="map-display-place"><svg viewBox="-20 -38 50 44" aria-hidden="true">'+renderPinDrawing(pin.kind,pin.status)+'</svg><div><strong data-i18n-skip>'+esc(pin.title)+'</strong><span>'+pinStatusLabel(pin)+' · '+(showTravelMapMarker(pin,region)?'当前显示':'当前隐藏')+'</span></div></div>'+renderMapVisibility(pin)+'</article>').join(''):'<p class="map-display-help">没有匹配的已标记地点。</p>';visibility.refresh();}
+  function refresh(){if(!dialog.open)return;const query=toTraditional(search.value.trim()).toLocaleLowerCase(),pins=getPins().filter(pin=>toTraditional(placeNameSearchText(pin.title)).toLocaleLowerCase().includes(query)).slice().sort((a,b)=>a.title.localeCompare(b.title,'zh-CN'));
+    list.innerHTML=pins.length?pins.map(pin=>'<article class="map-display-row"><div class="map-display-place"><svg viewBox="-20 -38 50 44" aria-hidden="true">'+renderPinDrawing(pin.kind,pin.status)+'</svg><div><strong data-i18n-skip>'+esc(pin.title)+'</strong><span>'+pinStatusLabel(pin)+' · '+(showTravelMapMarker(pin,getRegion())?'当前显示':'当前隐藏')+'</span></div></div>'+renderMapVisibility(pin)+'</article>').join(''):'<p class="map-display-help">没有匹配的已标记地点。</p>';visibility.refresh();}
   const visibility=mountMapVisibility(list,{getPin:id=>getPins().find(pin=>pin.id===id),onSave,onChanged:refresh});
   function show(){search.value='';dialog.showModal();refresh();}function hide(){dialog.close();}
   open.addEventListener('click',show);close.addEventListener('click',hide);search.addEventListener('input',refresh);

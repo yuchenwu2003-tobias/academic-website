@@ -1,4 +1,4 @@
-import {countryById, fitRegion} from './geography.js?v=20261018-trip-months';
+import {countryById, fitRegion} from './geography.js?v=20261018-wiki-details';
 
 const WORLD_OVERVIEW_IDS = new Set(['eiffel','great-wall','fuji','liberty','christ-redeemer','opera-house','penguin','table-mountain','savanna','taj-mahal','cappadocia']);
 const WORLD_FOCUS = new Map([

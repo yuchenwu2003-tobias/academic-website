@@ -1,5 +1,5 @@
-import {normalizePin,residencePeriod,residenceDuration} from './map-model.js?v=20261018-trip-months';
-import {EDIT_PENCIL} from './editable-field.js?v=20261018-trip-months';
+import {normalizePin,residencePeriod,residenceDuration} from './map-model.js?v=20261018-wiki-details';
+import {EDIT_PENCIL} from './editable-field.js?v=20261018-wiki-details';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const breakRow=(range={})=>'<div class="residence-break" data-residence-break><div class="residence-dates"><label>离开月份<input type="month" data-break-start value="'+esc(range.start||'')+'" required readonly></label><label>返回月份<input type="month" data-break-end value="'+esc(range.end||'')+'" required readonly></label></div><button type="button" data-residence-break-remove aria-label="移除此离开期间">×</button></div>';
 const summary=pin=>(pin.residenceBreaks||[]).length?'<span>不计入居住时长</span><span data-i18n-skip>'+pin.residenceBreaks.map(range=>esc(range.start.replace('-','.')+' — '+range.end.replace('-','.'))).join('；')+'</span>':'';

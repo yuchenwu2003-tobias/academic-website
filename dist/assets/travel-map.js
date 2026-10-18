@@ -1,16 +1,17 @@
-import {renderMapDisplaySettings,mountMapDisplaySettings} from './map-visibility.js?v=20261018-trip-months';
-import {getTravelTrips,normalizeTrips,mergeTravelTrips} from './trip-model.js?v=20261018-trip-months';
-import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus,showTravelMapMarker} from './map-model.js?v=20261018-trip-months';
-import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-trip-months';
-import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-trip-months';
-import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-trip-months';
-import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-trip-months';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-trip-months';
-import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-trip-months';
-import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-trip-months';
-import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-trip-months';
-import {mountClickChoices} from './click-choices.js?v=20261018-trip-months';
-import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-trip-months';
+import {renderMapDisplaySettings,mountMapDisplaySettings} from './map-visibility.js?v=20261018-wiki-details';
+import {getTravelTrips,normalizeTrips,mergeTravelTrips} from './trip-model.js?v=20261018-wiki-details';
+import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus,showTravelMapMarker} from './map-model.js?v=20261018-wiki-details';
+import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-wiki-details';
+import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-wiki-details';
+import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-wiki-details';
+import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-wiki-details';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-wiki-details';
+import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-wiki-details';
+import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-wiki-details';
+import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-wiki-details';
+import {mountClickChoices} from './click-choices.js?v=20261018-wiki-details';
+import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-wiki-details';
+import {markerLevelForView,markerLevelDescription} from './map-marker-level.js?v=20261018-wiki-details';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kindName=pin=>pin.kind==='country'?'国家／地区':'城市／景点';
@@ -45,6 +46,7 @@ export function renderTravelMap({compact=false,region={kind:"world",name:"世界
     ${renderMapScene(region,compact)}
     <div class="map-bottom"><div class="map-legend"><span><i class="legend-dot"></i> 想去</span><span><i class="legend-dot visited"></i> 去过</span><span><i class="legend-resident">★</i> 居住</span><span><i class="legend-want-resident">★</i> 想要居住</span><strong data-pin-count>0 个地点</strong></div><span class="map-data-credit">投影：<a href="https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map" target="_blank" rel="noopener noreferrer">Equal Earth</a> · 边界：<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a></span></div>
     <div class="map-kind-legend" aria-label="标记类型"><span><svg viewBox="-20 -38 50 44" aria-hidden="true">${renderPinDrawing('city')}</svg>城市／景点</span><span><svg viewBox="-20 -38 50 44" aria-hidden="true">${renderPinDrawing('country')}</svg>国家／地区（仅五星）</span><a class="map-ratings-link" href="#/travel/ratings">旅行评分 ↗</a></div>
+    <p class="map-storage-note" data-map-marker-rule></p>
     <p class="map-storage-note" data-map-message role="status">标记保存在当前浏览器；导出后可备份或在其他设备导入。</p>
     ${renderDestinationPicker(region,compact)}
     ${renderRegionDirectory(region,compact)}
@@ -64,6 +66,7 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   let selectedRecord;
   let adding=false;
   let view=fitRegion(region);
+  let markerLevel=markerLevelForView(view);
   let picker;
   let placeSearch;
   let placeInfo;
@@ -94,10 +97,15 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
     root.querySelector('[data-map-hint]').firstChild.textContent='点击地图，放下你的 📌 ';
     if(value) announce('请在地图上选择一个位置，放下你的旅行标记。');
   }
+  function drawMarkers(pins=pinsInRegion(allPins(),region).sort((a,b)=>Number(isResidenceStatus(a))-Number(isResidenceStatus(b)))) {
+    const scale=view.width/1000;
+    markers.innerHTML=pins.filter(pin=>showTravelMapMarker(pin,{kind:markerLevel})).map(pin=>{const p=project(pin.lat,pin.lon),country=pin.kind==='country',resident=isResidenceStatus(pin);return `<g class="map-pin-marker ${country?'is-country':'is-city'} ${isExperienced(pin)?'is-visited':''} ${resident?'is-resident':''} ${pin.status==='want-resident'?'is-want-resident':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" data-pin-kind="${country?'country':'city'}" aria-label="${esc(pin.title)}，${kindName(pin)}，${pinStatusLabel(pin)}，点击查看资料"><title>${esc(pin.title)}</title><circle cx="${resident?0:country?6:0}" cy="${resident?0:country?-15:-12}" r="20" class="marker-hit-area"/><g class="marker-visual">${renderPinDrawing(pin.kind,pin.status)}</g>${resident?`<text class="marker-resident-label" x="18" y="2" data-i18n-skip>${esc(pin.title)}</text><text class="marker-resident-period" x="18" y="14">${esc(pin.status==='resident'?residenceDuration(pin):'想要居住')}</text>`:''}</g>`;}).join('');
+    root.dataset.markerLevel=markerLevel;
+    root.querySelector('[data-map-marker-rule]').textContent=markerLevelDescription(markerLevel);
+  }
   function draw() {
     const pins=pinsInRegion(allPins(),region).sort((a,b)=>Number(isResidenceStatus(a))-Number(isResidenceStatus(b)));
-    const scale=view.width/1000;
-    markers.innerHTML=pins.filter(pin=>showTravelMapMarker(pin,region)).map(pin=>{const p=project(pin.lat,pin.lon),country=pin.kind==='country',resident=isResidenceStatus(pin);return `<g class="map-pin-marker ${country?'is-country':'is-city'} ${isExperienced(pin)?'is-visited':''} ${resident?'is-resident':''} ${pin.status==='want-resident'?'is-want-resident':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" data-pin-kind="${country?'country':'city'}" aria-label="${esc(pin.title)}，${kindName(pin)}，${pinStatusLabel(pin)}，点击查看资料"><title>${esc(pin.title)}</title><circle cx="${resident?0:country?6:0}" cy="${resident?0:country?-15:-12}" r="20" class="marker-hit-area"/><g class="marker-visual">${renderPinDrawing(pin.kind,pin.status)}</g>${resident?`<text class="marker-resident-label" x="18" y="2" data-i18n-skip>${esc(pin.title)}</text><text class="marker-resident-period" x="18" y="14">${esc(pin.status==='resident'?residenceDuration(pin):'想要居住')}</text>`:''}</g>`;}).join('');
+    drawMarkers(pins);
     root.querySelector('[data-pin-count]').textContent=`${pins.length} 个地点`;
     document.querySelector('.travel-count')?.replaceChildren(document.createTextNode(`${String(pins.length).padStart(2,'0')} PLACES TO GO`));
     const list=root.querySelector('[data-map-list]');
@@ -188,11 +196,11 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   function onStorage(event){if(event.key===STORAGE_KEY){memoryState=undefined;state=readState();draw();announce('地图已与此浏览器中的另一个标签页同步。');}}
   function onEscape(event){if(event.key==='Escape')setAdding(false);}
   window.addEventListener('storage',onStorage);document.addEventListener('keydown',onEscape);
-  const scene=mountMapScene(root,{region,isAdding:()=>adding,onMarkerClick:selectPin,onChoosePoint:showEditor,announce,onViewChange:next=>{view=next;markers.querySelectorAll('[data-pin-id]').forEach(marker=>{const pin=allPins().find(pin=>pin.id===marker.dataset.pinId);if(pin){const p=project(pin.lat,pin.lon);marker.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${view.width/1000})`);}});}});
+  const scene=mountMapScene(root,{region,isAdding:()=>adding,onMarkerClick:selectPin,onChoosePoint:showEditor,announce,onViewChange:next=>{view=next;const nextLevel=markerLevelForView(view);if(nextLevel!==markerLevel){const focused=document.activeElement?.closest?.('[data-pin-id]')?.dataset.pinId;markerLevel=nextLevel;drawMarkers();if(focused)[...markers.querySelectorAll('[data-pin-id]')].find(marker=>marker.dataset.pinId===focused)?.focus({preventScroll:true});markerSettings?.refresh();}else{const pinsById=new Map(allPins().map(pin=>[pin.id,pin]));markers.querySelectorAll('[data-pin-id]').forEach(marker=>{const pin=pinsById.get(marker.dataset.pinId);if(pin){const p=project(pin.lat,pin.lon);marker.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${view.width/1000})`);}});}}});
   picker=mountDestinationPicker(root,{region,getPins:allPins,onAdd:addDestination});
-  placeSearch=mountPlaceSearch(root,{region,getPins:allPins,onAdd:addPlace,onEdit:editPin});
+  placeSearch=mountPlaceSearch(root,{region,getPins:allPins,onAdd:addPlace,onEdit:selectPin,onAdded:(pin,result)=>placeInfo?.open(pin,{feedback:result.saved?'已添加地点，可以直接填写资料。':'地点暂存在本页，浏览器未能保存。请导出地图备份。'})});
   placeInfo=mountPlaceInfo(root,{getPins:allPins,onEdit:editPin,onRemove:removePin,onSave:next=>{const pin=normalizePin(next);state.pins=state.pins.filter(item=>item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);return {pin,saved:store()};}});
-  markerSettings=mountMapDisplaySettings(root,{getPins:()=>pinsInRegion(allPins(),region),region,onSave:next=>{const pin=normalizePin(next);state.pins=state.pins.filter(item=>item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);return {pin,saved:store()};}});
+  markerSettings=mountMapDisplaySettings(root,{getPins:()=>pinsInRegion(allPins(),region),region,getRegion:()=>({kind:markerLevel}),onSave:next=>{const pin=normalizePin(next);state.pins=state.pins.filter(item=>item.id!==pin.id);state.pins.push(pin);state.hidden=state.hidden.filter(id=>id!==pin.id);return {pin,saved:store()};}});
   draw();
   return ()=>{markerSettings.destroy();placeInfo.destroy();placeSearch.destroy();picker.destroy();scene.destroy();choices.destroy();window.removeEventListener('storage',onStorage);document.removeEventListener('keydown',onEscape);if(dialog.open)dialog.close();};
 }

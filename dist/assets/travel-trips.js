@@ -1,12 +1,12 @@
-import {getTravelTrips,tripName,commitTravelTrip,createTripStop} from './trip-model.js?v=20261018-trip-months';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-trip-months';
-import {findDestinationPin} from './destination-picker.js?v=20261018-trip-months';
-import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-trip-months';
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-trip-months';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-trip-months';
-import {countryById,pinCountry} from './geography.js?v=20261018-trip-months';
-import {pinStatusLabel,residencePeriod,residenceDuration,STORAGE_KEY} from './map-model.js?v=20261018-trip-months';
-import {toTraditional,translateText} from './i18n.js?v=20261018-trip-months';
+import {getTravelTrips,tripName,commitTravelTrip,createTripStop} from './trip-model.js?v=20261018-wiki-details';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-wiki-details';
+import {findDestinationPin} from './destination-picker.js?v=20261018-wiki-details';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-wiki-details';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-wiki-details';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-wiki-details';
+import {countryById,pinCountry} from './geography.js?v=20261018-wiki-details';
+import {pinStatusLabel,residencePeriod,residenceDuration,STORAGE_KEY} from './map-model.js?v=20261018-wiki-details';
+import {toTraditional,translateText,placeNameSearchText} from './i18n.js?v=20261018-wiki-details';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key=value=>toTraditional(String(value||'')).normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
 const safe=value=>{try{const u=new URL(value);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}};
@@ -25,7 +25,7 @@ export function tripCityOptions(records,{query='',country='all',selected=[]}={})
   return records.filter(record=>{
     const pin=record.pin;if(!pin||pin.kind==='country'||selectedIds.has(pin.id)||seen.has(pin.id))return false;
     if(country!=='all'&&countryOf(pin)!==country)return false;
-    if(match&&!key(pin.title+' '+(record.english||'')+' '+countryName(countryOf(pin))).includes(match))return false;
+    if(match&&!key(placeNameSearchText(pin.title)+' '+(record.english||'')+' '+countryName(countryOf(pin))).includes(match))return false;
     seen.add(pin.id);return true;
   });
 }

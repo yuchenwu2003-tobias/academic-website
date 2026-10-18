@@ -1,9 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-trip-months';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-trip-months';
-import {countryById} from './geography.js?v=20261018-trip-months';
-import {unproject} from './projection.js?v=20261018-trip-months';
-import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-trip-months';
-import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-trip-months';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-wiki-details';
+import {countryById} from './geography.js?v=20261018-wiki-details';
+import {unproject} from './projection.js?v=20261018-wiki-details';
+import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-wiki-details';
+import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-wiki-details';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PHOTON_ENDPOINT='https://photon.komoot.io/api/';
@@ -101,7 +101,7 @@ export function renderPlaceSearch(region={kind:'world'}) {
     <p class="place-search-intro" data-place-search-intro>输入城市、景点或地名，找到后即可加入旅行心愿。</p><form data-place-search-form><label class="sr-only" for="place-search-query" data-place-search-label>搜索地点名称</label><div class="place-search-input-row"><input id="place-search-query" name="query" type="search" maxlength="180" placeholder="例如：哥本哈根、故宫、Mount Fuji…" autocomplete="off" required data-place-search-query><button type="submit" class="map-add" data-place-search-submit>搜索</button></div>${region.kind==='world'?'':`<div class="place-search-scope"><span>搜索范围</span><div class="place-search-scope-options" role="group" aria-label="搜索范围"><button type="button" data-place-search-scope="preferred" aria-pressed="true">优先当前区域</button><button type="button" data-place-search-scope="world" aria-pressed="false">全球</button></div></div>`}</form><p class="place-search-status" data-place-search-status role="status">输入地名后，点击“搜索”查看更多地点。</p><div data-place-search-local></div><div data-place-search-online></div><div class="place-search-feedback" data-place-search-feedback role="status"></div><div class="place-search-edit" hidden data-place-search-edit-wrap><button type="button" class="text-link" data-place-search-edit>编辑这个地点 <span>↗</span></button></div><p class="place-search-source" data-place-search-source>在线地名搜索：<a href="https://photon.komoot.io/" target="_blank" rel="noopener noreferrer">Photon</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p></dialog>`;
 }
 
-export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=searchOnlinePlaces}) {
+export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,onAdded,searchPlaces=searchOnlinePlaces}) {
   const dialog=root.querySelector('[data-place-search-dialog]');
   if(!dialog)return {open(){},update(){},destroy(){}};
   const form=dialog.querySelector('[data-place-search-form]'),input=dialog.querySelector('[data-place-search-query]');
@@ -118,22 +118,22 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
     const localResults=isCountry?countryPlaceMatches(input.value,preferred):localPlaceMatches(input.value,preferred);
     const matchingCountries=!isCountry&&input.value.trim()?countryPlaceMatches(input.value,preferred).slice(0,8):[];
     source.hidden=isCountry;online.hidden=isCountry;input.required=!isCountry;
-    intro.textContent=isCountry?'搜索国家或地区，为整个国家留下一枚标记。':'输入国家、城市、景点或地名，找到后即可加入旅行心愿。';
+    intro.textContent=isCountry?'搜索国家或地区，为整个国家留下一枚标记。':'输入名称找到地点，点击后即可添加并直接填写资料。';
     inputLabel.textContent=isCountry?'搜索国家或地区':'搜索地点名称';
     input.setAttribute('placeholder',isCountry?'例如：中国、丹麦、Japan…':'例如：丹麦、哥本哈根、故宫…');
     dialog.querySelectorAll('[data-place-search-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.placeSearchKind===kind)));
     dialog.querySelectorAll('[data-place-search-scope]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.placeSearchScope===scope)));
     const pins=getPins();available=new Map();
     const section=(items,label,prefix)=>items.length?`<section class="place-search-group"><h3>${label} <span>${items.length}</span></h3><div class="place-search-results">${items.map(place=>{
-      const key=`${prefix}-${place.id}`,added=findDestinationPin({...place,id:place.pinId},pins);available.set(key,place);
-      return `<button type="button" class="place-search-result" data-place-search-result="${esc(key)}" ${added?'disabled':''}><span class="place-search-result-copy"><strong ${place.source==='online'?'data-i18n-skip':''}>${esc(place.name)}</strong>${place.subtitle?`<small ${place.source==='online'?'data-i18n-skip':''}>${esc(place.subtitle)}</small>`:''}</span><span class="place-search-result-action">${added?'已在地图中':'加入心愿'} <span aria-hidden="true">${added?'✓':'＋'}</span></span></button>`;
+      const key=`${prefix}-${place.id}`,added=findDestinationPin({...place,id:place.pinId},pins);available.set(key,{...place,existingPinId:added?.id});
+      return `<button type="button" class="place-search-result" data-place-search-result="${esc(key)}"><span class="place-search-result-copy"><strong ${place.source==='online'?'data-i18n-skip':''}>${esc(place.name)}</strong>${place.subtitle?`<small ${place.source==='online'?'data-i18n-skip':''}>${esc(place.subtitle)}</small>`:''}</span><span class="place-search-result-action">${added?'查看资料':'添加并填写资料'} <span aria-hidden="true">${added?'↗':'＋'}</span></span></button>`;
     }).join('')}</div></section>`:'';
     local.innerHTML=section(matchingCountries,'国家／地区','country')+section(localResults,isCountry?'国家与地区':'已收录的地点',isCountry?'country':'local');
     const distinctOnline=onlineResults.filter(place=>!localResults.some(localPlace=>findDestinationPin(place,[{id:localPlace.pinId,lat:localPlace.lat,lon:localPlace.lon}])));
     online.innerHTML=isCountry?'':section(distinctOnline,'更多搜索结果','online');
     submit.disabled=phase==='loading';dialog.setAttribute('aria-busy',String(phase==='loading'));
     status.classList.toggle('is-error',phase==='error');
-    status.textContent=isCountry?(localResults.length?'选择一个国家或地区，加入旅行心愿。':'没有找到国家或地区，试试中文或英文名称。'):phase==='loading'?'正在寻找这个地方…':phase==='error'?errorMessage:phase==='done'?(onlineResults.length?'找到后点击“加入心愿”，稍后可编辑旅行记录。':'没有找到更多地点。试试加上城市名，或使用英文名。'):'输入地名后，点击“搜索”查看更多地点。';
+    status.textContent=isCountry?(localResults.length?'选择一个国家或地区，加入旅行心愿。':'没有找到国家或地区，试试中文或英文名称。'):phase==='loading'?'正在寻找这个地方…':phase==='error'?errorMessage:phase==='done'?(onlineResults.length?'点击“添加并填写资料”，直接设置评分、标签与介绍。':'没有找到更多地点。试试加上城市名，或使用英文名。'):'输入地名后，点击“搜索”查看更多地点。';
     if(!isCountry&&!localResults.length&&!matchingCountries.length&&phase!=='loading'&&phase!=='done')local.innerHTML='<p class="place-search-empty">已收录的地点暂时没有匹配，点击“搜索”继续查找。</p>';
   }
   function clearFeedback(){feedback.textContent='';feedback.classList.remove('is-warning');editWrap.hidden=true;selectedPinId=null;}
@@ -164,10 +164,12 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
     if(event.target.closest('[data-place-search-edit]')){if(selectedPinId){close();onEdit?.(selectedPinId);}return;}
     const button=event.target.closest('[data-place-search-result]');if(!button||button.disabled)return;
     const place=available.get(button.dataset.placeSearchResult);if(!place)return;
+    if(place.existingPinId){close();onEdit?.(place.existingPinId);return;}
     try {
       const result=onAdd(place);selectedPinId=result.pin?.id||place.pinId;editWrap.hidden=false;
       feedback.textContent=result.saved?(result.inRegion===false?'已加入心愿。这个地点可在世界地图查看。':'已加入心愿，稍后可在地图中编辑旅行记录。'):'这个地点暂存在本页，浏览器未能保存。请导出地图备份。';
       feedback.classList.toggle('is-warning',!result.saved);update();
+      if(result.pin&&onAdded){close();onAdded(result.pin,result);}
     }catch(error){feedback.textContent=error.message;feedback.classList.add('is-warning');update();}
   }
   function onBackdrop(event){if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)close();}}

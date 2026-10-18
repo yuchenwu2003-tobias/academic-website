@@ -1,10 +1,11 @@
-import {Converter} from './vendor/opencc/cn2t.js?v=20261018-trip-months';
-import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-trip-months';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-trip-months';
-import {UI_EN} from './i18n-messages.js?v=20261018-trip-months';
-import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-trip-months';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-trip-months';
-import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-trip-months';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-wiki-details';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-wiki-details';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-wiki-details';
+import {UI_EN} from './i18n-messages.js?v=20261018-wiki-details';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-wiki-details';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-wiki-details';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-wiki-details';
+import {EXTRA_PLACE_NAMES} from './place-name-data.js?v=20261018-wiki-details';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
@@ -39,6 +40,26 @@ export function toTraditional(text) {
   return traditionalCache.get(source);
 }
 
+// Translate recognized geographic names for display only. Notes, input values
+// and unknown custom titles remain exactly as the user wrote them.
+const placeNames=new Map();
+const nameKey=text=>String(text).trim().normalize('NFC').toLocaleLowerCase();
+for(const [name,englishName] of [...COUNTRIES,...CONTINENTS,...DESTINATIONS].map(item=>[item.name,item.english]).concat(EXTRA_PLACE_NAMES)){
+  if(!name||!englishName)continue;
+  const entry=placeNames.get(nameKey(englishName))||{name,traditional:toTraditional(name),english:englishName};
+  for(const alias of [name,toTraditional(name),englishName])if(!placeNames.has(nameKey(alias)))placeNames.set(nameKey(alias),entry);
+}
+export function translatePlaceName(text,selectedLanguage=language){
+  const source=String(text??''),entry=placeNames.get(nameKey(source));
+  if(!entry||!validLanguage(selectedLanguage))return source;
+  const translated=selectedLanguage==='en'?entry.english:selectedLanguage==='zh-TW'?entry.traditional:entry.name;
+  return source.match(/^\s*/)[0]+translated+source.match(/\s*$/)[0];
+}
+export function placeNameSearchText(text){
+  const entry=placeNames.get(nameKey(text));
+  return entry?[text,entry.name,entry.traditional,entry.english].join(' '):String(text??'');
+}
+
 function englishText(source, depth = 0) {
   if (Object.hasOwn(english, source)) return english[source];
   if (depth > 5 || !/[\u3400-\u9fff]/.test(source)) return source;
@@ -53,7 +74,8 @@ function englishText(source, depth = 0) {
     [/^(.+?)(不能为空，且)?最多 (\d+) 个字符。$/,(_,field,required,n)=>`${tr(field)} ${required?'is required and ':''}must have at most ${n} characters.`],
     [/^(\d+) 个结果 · (\d+) 个已评分$/,(_,n,rated)=>`${n} results · ${rated} rated`],
     [/^心愿评分：(.+)$/,(_,score)=>`Desire rating: ${tr(score)}`],
-    [/^(.+)，(有多想去|有多推荐)$/,(_,title,kind)=>`${title}, ${kind==='有多推荐'?'recommendation rating':'desire rating'}`],
+    [/^(.+)，(有多想去|有多推荐)$/,(_,title,kind)=>`${translatePlaceName(title,'en')}, ${kind==='有多推荐'?'recommendation rating':'desire rating'}`],
+    [/^(.+)，(加入行程|查看资料|地图显示|本次行程推荐评分|地图标签|居住|想要居住)$/,(_,title,action)=>`${translatePlaceName(title,'en')}, ${tr(action)}`],
     [/^已将「(.+)」设为 ([1-5]) 分。$/,(_,title,n)=>`Set “${title}” to ${n}/5.`],
     [/^已清除「(.+)」的评分，地点仍保留在地图中。$/,(_,title)=>`Cleared the rating for “${title}”. The place stays on your map.`],
     [/^([0-5]) · (.+)$/,(_,n,label)=>`${n} · ${tr(label)}`],
@@ -75,9 +97,8 @@ function englishText(source, depth = 0) {
     [/^(.+)的头像$/, (_, name) => `${name}'s portrait`],
     [/^(.+)旗帜$/, (_, name) => `${tr(name)} flag`],
     [/^(.+)，(已在地图中|加入旅行心愿)$/, (_, name, action) => `${tr(name)}, ${action === '已在地图中' ? 'already on your map' : 'add to travel wishlist'}`],
-    // Saved pin titles are user content; only their action/status suffix changes.
-    [/^(.+)，(城市／景点|国家／地区)，(去过|想去|居住|想要居住)，点击查看资料$/, (_,title,kind,status)=>`${title}, ${tr(kind)}, ${tr(status)}, view details`],
-    [/^(.+)，(去过|想去|居住|想要居住)，点击编辑$/, (_, title, status) => `${title}, ${tr(status)}, select to edit`],
+    [/^(.+)，(城市／景点|国家／地区)，(去过|想去|居住|想要居住)，点击查看资料$/, (_,title,kind,status)=>`${translatePlaceName(title,'en')}, ${tr(kind)}, ${tr(status)}, view details`],
+    [/^(.+)，(去过|想去|居住|想要居住)，点击编辑$/, (_, title, status) => `${translatePlaceName(title,'en')}, ${tr(status)}, select to edit`],
     [/^(.+)，进入大洲页面$/, (_, name) => `${tr(name)}, explore continent`],
     [/^(.+)，查看国家或地区页面$/, (_, name) => `${tr(name)}, explore country or region`],
     [/^(.+)，查看(.+)页面$/, (_, title, name) => `${tr(title)}, explore ${tr(name)}`],
@@ -118,30 +139,39 @@ const attributeRecords = new WeakMap();
 const ATTRIBUTES = ['aria-label', 'title', 'placeholder', 'alt'];
 const SKIP_TEXT = 'script,style,textarea,[contenteditable="true"],[data-i18n-skip],[data-language-control],.post-body,.post-header h1,.post-header .category,.article-card h3,.article-card>p,.article-meta>.category,.video-caption,.video-platform,.poster-mark,.map-place-card strong,.map-place-card p,.map-pin-marker,.map-landmark,.interest-notes,.place-search-result-name,.place-search-result-address,.filter-tab[data-category]:not([data-category="全部"])';
 const SKIP_ATTRIBUTES = '[data-i18n-skip],.post-body';
+const PLACE_NAME_TEXT='.place-info-heading h2,.place-info-city strong,.guide-heading h1,.guide-country-place h3>a,.travel-rating-title-block>h4,.travel-rating-title-block>h5,.trip-place-top h4,.trip-choice-caption strong,.trip-record-stops a,.trip-record-stops strong,.map-place-card strong,.map-pin-marker>title,.marker-resident-label,.map-display-place strong,.academic-residence-link strong,.academic-residence-label,.academic-globe-residence-label,.place-search-result-name,[data-editable-field="title"]>[data-field-value]';
+const PLACE_NAME_MEDIA='.guide-image img,.place-info-media img,.trip-place-picture img,.travel-rating-photo img';
 let observer;
 let framePending = false;
 
 function translateNode(node) {
-  if (!node.parentElement || node.parentElement.closest(SKIP_TEXT)) return;
+  if (!node.parentElement) return;
+  const placeName=node.parentElement.closest(PLACE_NAME_TEXT);
+  if (!placeName && node.parentElement.closest(SKIP_TEXT)) return;
   const previous = textRecords.get(node);
   const source = previous && node.nodeValue === previous.last ? previous.source : node.nodeValue;
-  const next = translateText(source);
+  const next = placeName?translatePlaceName(source):translateText(source);
   textRecords.set(node, {source, last: next});
   if (node.nodeValue !== next) node.nodeValue = next;
 }
 function translateAttributes(element) {
-  if (element.closest(SKIP_ATTRIBUTES)) return;
+  const geographic=element.matches(PLACE_NAME_MEDIA);
+  if (!geographic&&!element.matches('.academic-residence-marker')&&element.closest(SKIP_ATTRIBUTES)) return;
   const records = attributeRecords.get(element) || {};
   for (const attribute of ATTRIBUTES) {
     if (!element.hasAttribute(attribute)) continue;
     const current = element.getAttribute(attribute);
     const previous = records[attribute];
     const source = previous && current === previous.last ? previous.source : current;
-    // Keep saved titles intact in both Chinese writing systems.
+    // Labels use the same geographic alias as the visible name; source records
+    // remain unchanged so switching language never saves a translated title.
     const pinKindLabel=element.matches('.map-pin-marker')&&source.match(/^(.+)，(城市／景点|国家／地区)，(去过|想去|居住|想要居住)，点击查看资料$/);
     const ratingLabel=source.match(/^(.+)，(有多想去|有多推荐)$/);
     const pinLabel = element.matches('.map-pin-marker') && source.match(/^(.+)，(去过|想去|居住|想要居住)，点击编辑$/);
-    const next=ratingLabel&&language==='zh-TW'?`${ratingLabel[1]}，${toTraditional(ratingLabel[2])}`:pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
+    const actionLabel=source.match(/^(.+)，(加入行程|查看资料|地图显示|本次行程推荐评分|地图标签|居住|想要居住)$/);
+    const namedLabel=ratingLabel||pinKindLabel||pinLabel||actionLabel;
+    const localizedSource=namedLabel?source.replace(namedLabel[1],translatePlaceName(namedLabel[1],language)):source;
+    const next=geographic?translatePlaceName(source):translateText(localizedSource);
     records[attribute] = {source, last: next};
     if (current !== next) element.setAttribute(attribute, next);
   }

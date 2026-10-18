@@ -1,11 +1,11 @@
-import {renderTripChips} from './trip-model.js?v=20261018-trip-months';
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-trip-months';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-trip-months';
-import {countryById,pinCountry} from './geography.js?v=20261018-trip-months';
-import {countryPlaces} from './country-destinations.js?v=20261018-trip-months';
-import {normalizeGuideLinks} from './map-model.js?v=20261018-trip-months';
-import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-trip-months';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-trip-months';
+import {renderTripChips} from './trip-model.js?v=20261018-wiki-details';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-wiki-details';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-wiki-details';
+import {countryById,pinCountry} from './geography.js?v=20261018-wiki-details';
+import {countryPlaces} from './country-destinations.js?v=20261018-wiki-details';
+import {normalizeGuideLinks} from './map-model.js?v=20261018-wiki-details';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-wiki-details';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-wiki-details';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const countryPlaceById=new Map(countryPlaces.map(place=>[place.id,place]));
