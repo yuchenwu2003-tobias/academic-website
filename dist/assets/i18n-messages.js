@@ -121,6 +121,7 @@ export const UI_EN = {
   '桌山': 'Table Mountain', '马拉喀什 · 库图比亚清真寺': 'Koutoubia Mosque',
   '万里长城 · 八达岭': 'Great Wall · Badaling', '富士山': 'Mount Fuji', '泰姬陵': 'Taj Mahal', '吴哥窟': 'Angkor Wat',
   '婆罗浮屠': 'Borobudur', '卡帕多奇亚 · 格雷梅': 'Cappadocia · Göreme',
+  '卡帕多奇亚': 'Cappadocia', '东非草原': 'Maasai Mara',
   '自由女神像': 'Statue of Liberty', '金门大桥': 'Golden Gate Bridge', '奇琴伊察': 'Chichén Itzá',
   '里约基督像': 'Christ the Redeemer', '马丘比丘': 'Machu Picchu', '悉尼歌剧院': 'Sydney Opera House',
   '成都 · 熊猫与竹林': 'Chengdu · Pandas', '桂林山水': 'Guilin landscapes', '黄山': 'Mount Huangshan',

@@ -2,7 +2,7 @@ import {project} from './projection.js';
 
 const PADDING = 8;
 const MARGIN = 10;
-const expand = box => ({x: box.x - PADDING, y: box.y - PADDING, width: box.width + PADDING * 2, height: box.height + PADDING * 2});
+const expand = (box,padding=PADDING) => ({x: box.x - padding, y: box.y - padding, width: box.width + padding * 2, height: box.height + padding * 2});
 const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 const validRect = box => box && [box.x, box.y, box.width, box.height].every(Number.isFinite) && box.width > 0 && box.height > 0;
 
@@ -27,7 +27,9 @@ export function layoutLandmarks(items, view, viewport = {}, options = {}) {
   const scale = 1 / renderScale;
   const zoom = 1000 / view.width;
   const iconSize = Number.isFinite(options.iconSize) && options.iconSize > 0 ? options.iconSize : 80;
-  const occupied = Array.isArray(options.obstacles) ? options.obstacles.filter(validRect).map(expand) : [];
+  const padding=Number.isFinite(options.padding)&&options.padding>=0?options.padding:PADDING;
+  const showLabel=options.showLabels!==false;
+  const occupied = Array.isArray(options.obstacles) ? options.obstacles.filter(validRect).map(box=>expand(box,padding)) : [];
   const candidates = items.filter(item => item && typeof item === 'object').map((item, index) => ({
     item, index,
     priority: Number.isFinite(item.priority) ? item.priority : 1,
@@ -43,10 +45,10 @@ export function layoutLandmarks(items, view, viewport = {}, options = {}) {
     const anchorScreenY = letterboxY + (anchor.y - view.y) * renderScale;
     // Do not pull landmarks from offscreen into the map just to fill space.
     if (anchorScreenX < 0 || anchorScreenX > width || anchorScreenY < 0 || anchorScreenY > height) continue;
-    const boxWidth = Math.max(iconSize, String(item.title ?? '').length * 9) + 12;
-    const boxHeight = iconSize + 20;
+    const boxWidth = Math.max(iconSize, showLabel?String(item.caption ?? item.title ?? '').length * 9:0) + (showLabel?12:0);
+    const boxHeight = iconSize + (showLabel?20:6);
     const box = {x: anchorScreenX - boxWidth / 2, y: anchorScreenY - iconSize, width: boxWidth, height: boxHeight};
-    const padded = expand(box);
+    const padded = expand(box,padding);
     if (padded.x < MARGIN || padded.y < MARGIN || padded.x + padded.width > width - MARGIN || padded.y + padded.height > height - MARGIN) continue;
     if (occupied.some(other => overlaps(padded, other))) continue;
     placed.push({
@@ -55,6 +57,7 @@ export function layoutLandmarks(items, view, viewport = {}, options = {}) {
       y: anchor.y - iconSize * scale,
       scale,
       size: iconSize,
+      showLabel,
       anchorX: anchor.x,
       anchorY: anchor.y,
       anchorLocalX: 0,

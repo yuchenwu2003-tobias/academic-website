@@ -65,7 +65,7 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   function draw() {
     const pins=pinsInRegion(allPins(),region);
     const scale=view.width/1000;
-    markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon);return `<g class="map-pin-marker ${pin.status==='visited'?'is-visited':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" aria-label="${esc(pin.title)}，${pin.status==='visited'?'去过':'想去'}，点击编辑"><title>${esc(pin.title)}</title><circle cy="-12" r="16" class="marker-halo"/><path class="marker-shape" d="M0 0C-3-5-10-10-10-17a10 10 0 0 1 20 0C10-10 3-5 0 0Z"/><circle cy="-17" r="3.2" class="marker-center"/></g>`;}).join('');
+    markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon);return `<g class="map-pin-marker ${pin.status==='visited'?'is-visited':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" aria-label="${esc(pin.title)}，${pin.status==='visited'?'去过':'想去'}，点击编辑"><title>${esc(pin.title)}</title><circle cy="-12" r="16" class="marker-hit-area"/><g class="marker-visual"><circle cy="-12" r="16" class="marker-halo"/><path class="marker-shape" d="M0 0C-3-5-10-10-10-17a10 10 0 0 1 20 0C10-10 3-5 0 0Z"/><circle cy="-17" r="3.2" class="marker-center"/></g></g>`;}).join('');
     root.querySelector('[data-pin-count]').textContent=`${pins.length} 个地点`;
     document.querySelector('.travel-count')?.replaceChildren(document.createTextNode(`${String(pins.length).padStart(2,'0')} PLACES TO GO`));
     const list=root.querySelector('[data-map-list]');

@@ -2,7 +2,7 @@ import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,region
 import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js';
 import {LANDMARK_CATALOG} from './landmark-catalog.js';
 import {layoutLandmarks} from './landmark-layout.js';
-import {selectLandmarks} from './landmark-curation.js';
+import {selectLandmarks,landmarkPresentation} from './landmark-curation.js';
 import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js';
 import {renderLakeLayer,mountLakeLayer} from './lake-layer.js';
 import {mountMapDetail} from './map-detail.js';
@@ -28,15 +28,15 @@ function countryLabel(country,name='世界') {
   const flag=country&&COUNTRY_FLAGS[country.id];
   return `${country?(flag?.src?`<img class="country-flag" src="${esc(flag.src)}" alt="${esc(country.id==='ata'?'南极地区符号':`${country.name}旗帜`)}" width="24" height="18">`:'<span class="country-flag-placeholder" aria-hidden="true">⚑</span>'):''}<b>${esc(country?.name||name)}</b><span class="map-hover-meta">· Equal Earth</span>`;
 }
-function landmarks(items,view,viewport,obstacles) {
-  return layoutLandmarks(items,view,viewport,{obstacles,ignoreLevels:true}).map(item=>{
+function landmarks(items,view,viewport,obstacles,options={}) {
+  return layoutLandmarks(items,view,viewport,{...options,obstacles,ignoreLevels:true}).map(item=>{
     const sprite=SPRITES[item.id];if(!sprite)return '';
     const clip=`landmark-crop-${item.id}`,fit=Math.min((item.size-12)/sprite.width,(item.size-12)/sprite.height);
     const left=-sprite.width*fit/2,top=item.size-sprite.height*fit;
     return `<a href="#/travel/country/${item.country}" data-geo-route class="map-landmark" data-landmark-id="${esc(item.id)}" data-landmark-anchor-x="${item.anchorX}" data-landmark-anchor-y="${item.anchorY}" transform="translate(${item.x} ${item.y}) scale(${item.scale})" aria-label="${esc(translateText(`${item.title}，查看${countryById.get(item.country)?.name||'目的地'}页面`))}">
     <title>${esc(item.title)}</title><defs><clipPath id="${clip}" clipPathUnits="userSpaceOnUse"><rect x="${left}" y="${top}" width="${sprite.width*fit}" height="${sprite.height*fit}"/></clipPath>
     <radialGradient id="${clip}-fade"><stop offset="86%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></radialGradient><mask id="${clip}-soft" maskUnits="userSpaceOnUse" x="${-item.size/2}" y="0" width="${item.size}" height="${item.size}"><rect x="${-item.size/2}" y="0" width="${item.size}" height="${item.size}" fill="url(#${clip}-fade)"/></mask></defs>
-    <g class="map-landmark-icon" clip-path="url(#${clip})" mask="url(#${clip}-soft)" aria-hidden="true"><rect x="${left}" y="${top}" width="${sprite.width*fit}" height="${sprite.height*fit}" fill="transparent" stroke="none"/><image href="${esc(ATLAS_SRC)}" x="${left-sprite.x*fit}" y="${top-sprite.y*fit}" width="${ATLAS_SIZE.width*fit}" height="${ATLAS_SIZE.height*fit}" pointer-events="none"/></g><circle class="map-landmark-anchor" cx="0" cy="${item.size}" r="2.4" aria-hidden="true"/><text text-anchor="middle" y="${item.size+12}">${esc(item.title)}</text></a>`;
+    <g class="map-landmark-icon" clip-path="url(#${clip})" mask="url(#${clip}-soft)" aria-hidden="true"><rect x="${left}" y="${top}" width="${sprite.width*fit}" height="${sprite.height*fit}" fill="transparent" stroke="none"/><image href="${esc(ATLAS_SRC)}" x="${left-sprite.x*fit}" y="${top-sprite.y*fit}" width="${ATLAS_SIZE.width*fit}" height="${ATLAS_SIZE.height*fit}" pointer-events="none"/></g><circle class="map-landmark-anchor" cx="0" cy="${item.size}" r="2.4" aria-hidden="true"/>${item.showLabel?`<text text-anchor="middle" y="${item.size+12}">${esc(item.caption??item.title)}</text>`:''}</a>`;
   }).join('');
 }
 export function renderMapScene(region={kind:'world'},compact=false) {
@@ -68,7 +68,8 @@ export function mountMapScene(root,{region,onViewChange,onMarkerClick,onChoosePo
     if(style!=='cartoon'){layer.replaceChildren();return;}
     const bounds=svg.getBoundingClientRect();
     const obstacles=[...root.querySelectorAll('.map-hover-label,.map-zoom,.map-detail-status,.map-cartoon-hint')].filter(el=>!el.hidden&&el.getBoundingClientRect().width).map(el=>{const b=el.getBoundingClientRect();return{x:b.x-bounds.x,y:b.y-bounds.y,width:b.width,height:b.height};});
-    layer.innerHTML=landmarks(selectLandmarks(LANDMARK_CATALOG,region,view).map(item=>({...item,title:translateText(item.title)})),view,bounds,obstacles);
+    const presentation=landmarkPresentation(selectLandmarks(LANDMARK_CATALOG,region,view),region,view,bounds);
+    layer.innerHTML=landmarks(presentation.items.map(item=>({...item,title:translateText(item.title),...(item.caption?{caption:translateText(item.caption)}:{})})),view,bounds,obstacles,presentation.options);
   }
   function applyStyle(value){style=value;root.dataset.mapStyle=value;root.querySelectorAll('[data-map-style]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mapStyle===value)));drawLandmarks();}
   function applyView(next){view=next;svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.width} ${view.height}`);root.querySelector('[data-map-scale]').value=`${Math.round(100000/view.width)}%`;root.classList.toggle('map-is-zoomed',view.width<450);svg.querySelectorAll('[data-anchor-x]').forEach(el=>el.setAttribute('transform',`translate(${el.dataset.anchorX} ${el.dataset.anchorY}) scale(${view.width/1000})`));drawLandmarks();detail.refresh(view);lakes.refresh(view);onViewChange({...view});}
