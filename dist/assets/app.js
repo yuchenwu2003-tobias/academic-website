@@ -1,11 +1,11 @@
-import {renderTravelMap,mountTravelMap,getTravelPins,saveTravelPin} from './travel-map.js';
-import {renderTravelGuide,mountTravelGuide} from './travel-guides.js';
-import {renderTravelRatings,mountTravelRatings} from './travel-ratings.js?v=20261018-doubleclick';
-import {renderAcademicMap,mountAcademicMap} from './academic-map.js?v=20261018-hd2';
-import {resolveRegion,continentById,regionHref} from './geography.js';
-import {renderInterests} from './interests.js';
-import {renderPortrait} from './portrait.js';
-import {refreshTranslations} from './i18n.js';
+import {renderTravelMap,mountTravelMap,getTravelPins,saveTravelPin} from './travel-map.js?v=20261018-profile';
+import {renderTravelGuide,mountTravelGuide} from './travel-guides.js?v=20261018-profile';
+import {renderTravelRatings,mountTravelRatings} from './travel-ratings.js?v=20261018-profile';
+import {renderAcademicMap,mountAcademicMap} from './academic-map.js?v=20261018-profile';
+import {resolveRegion,continentById,regionHref} from './geography.js?v=20261018-profile';
+import {renderInterests} from './interests.js?v=20261018-profile';
+import {renderPortrait} from './portrait.js?v=20261018-profile';
+import {refreshTranslations} from './i18n.js?v=20261018-profile';
 const icons = {
   academic:'<path d="M3 4h5a3 3 0 0 1 2 1 3 3 0 0 1 2-1h5v12h-5a3 3 0 0 0-2 1 3 3 0 0 0-2-1H3V4Zm7 1v12M5 7h2M13 7h2"/>',
   interests:'<path d="M10 17S2 12 2 7a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 5-8 10-8 10Z"/>',
@@ -116,7 +116,7 @@ export function renderRoute() {
   document.querySelectorAll('.nav-link').forEach(link=>{const selected=ratings?link.dataset.page==='travel-ratings':link.dataset.page===active;link.classList.toggle('active',selected);selected?link.setAttribute('aria-current','page'):link.removeAttribute('aria-current');});
   const label = data.navigation.find(item=>item.id===active)?.label || '页面';
   const postTitle = route==='post'?data.posts.find(post=>post.id===id)?.title:undefined;
-  document.title = `${ratings?'心愿评分':guide?'旅行攻略':postTitle || (['travel','academic'].includes(route)&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
+  document.title = `${ratings?'旅行评分':guide?'旅行攻略':postTitle || (['travel','academic'].includes(route)&&region?.kind!=='world'?region?.name:label)} · ${data.profile.name} 的个人空间`;
   document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');
   document.querySelector('.menu-toggle').setAttribute('aria-label','展开导航');
   document.querySelector('.sidebar').classList.remove('menu-open');
@@ -136,7 +136,7 @@ async function start() {
     if(!response.ok) throw new Error('Content unavailable');
     data=await response.json();
     ['posts','videos','projects','links','navigation'].forEach(key=>{data[key] ||= [];});
-    document.querySelector('#navigation').innerHTML=data.navigation.filter(item=>item.enabled).map(item=>`<a class="nav-link" data-page="${e(item.id)}" href="#/${item.id==='home'?'':e(item.id)}">${icon(item.id)}<span>${e(item.label)}</span><span class="nav-indicator">↗</span></a>${item.id==='travel'?'<a class="nav-link nav-sub-link" data-page="travel-ratings" href="#/travel/ratings"><span aria-hidden="true">↳</span><span>心愿评分</span><span class="nav-indicator">↗</span></a>':''}`).join('');
+    document.querySelector('#navigation').innerHTML=data.navigation.filter(item=>item.enabled).map(item=>`<a class="nav-link" data-page="${e(item.id)}" href="#/${item.id==='home'?'':e(item.id)}">${icon(item.id)}<span>${e(item.label)}</span><span class="nav-indicator">↗</span></a>${item.id==='travel'?'<a class="nav-link nav-sub-link" data-page="travel-ratings" href="#/travel/ratings"><span aria-hidden="true">↳</span><span>旅行评分</span><span class="nav-indicator">↗</span></a>':''}`).join('');
     document.querySelector('.brand-name').innerHTML=`${e(data.profile.name)}<small>一小块互联网</small>`;
     if(data.profile.avatar) document.querySelector('.brand-mark')?.replaceWith(document.createRange().createContextualFragment(renderPortrait(data.profile.avatar,data.profile.name,'nav')));
     document.querySelector('.brand').setAttribute('aria-label',`${data.profile.name} 首页`);

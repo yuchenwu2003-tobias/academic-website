@@ -1,6 +1,6 @@
-import {DESTINATIONS} from './destination-catalog.js';
-import {countryById} from './geography.js';
-import {toTraditional,countrySearchAliases} from './i18n.js';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-profile';
+import {countryById} from './geography.js?v=20261018-profile';
+import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-profile';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const textKey=value=>String(value).normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/[’']/g,'');

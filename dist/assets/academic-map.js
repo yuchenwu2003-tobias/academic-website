@@ -1,10 +1,10 @@
-import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js';
-import {project} from './projection.js';
-import {fitRegion,pinsInRegion,countryAt} from './geography.js';
-import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-hd2';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js';
-import {toTraditional} from './i18n.js';
+import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-profile';
+import {project} from './projection.js?v=20261018-profile';
+import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-profile';
+import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-profile';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-profile';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-profile';
+import {toTraditional} from './i18n.js?v=20261018-profile';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external='target="_blank" rel="noopener noreferrer"';

@@ -1,6 +1,6 @@
-import {COUNTRIES} from './geography-data.js';
+import {COUNTRIES} from './geography-data.js?v=20261018-profile';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
-export {project,unproject} from './projection.js';
+export {project,unproject} from './projection.js?v=20261018-profile';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
 export function normalizeCountryId(value) {
   if(typeof value!=='string')return null;
@@ -40,6 +40,7 @@ export function normalizePin(pin) {
   result.kind=pin.kind==='country'&&countryId?'country':'city';
   if(countryId)result.countryId=countryId;
   result.desireRating=Number.isInteger(pin.desireRating)&&pin.desireRating>=0&&pin.desireRating<=5?pin.desireRating:0;
+  result.recommendationRating=Number.isInteger(pin.recommendationRating)&&pin.recommendationRating>=0&&pin.recommendationRating<=5?pin.recommendationRating:0;
   const countryHint=normalizeCountryHint(pin.countryHint);
   if(countryHint)result.countryHint=countryHint;
   result.guides=normalizeGuideLinks(pin.guides);

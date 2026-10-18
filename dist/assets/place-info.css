@@ -56,6 +56,27 @@
 .place-info-main-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 35px; border-radius: 3px; padding: 12px 17px; color: #faf8ed; background: #4b603b; font-size: 12px; }
 .place-info-main-link:hover { background: #60774c; }
 .place-info-edit { border: 0; background: transparent; color: var(--place-info-muted); padding: 10px 0; font-size: 11px; cursor: pointer; }
+.place-info-editor{border-top:1px solid var(--line);margin-top:18px;padding-top:20px}
+.place-info-editor h3{font:400 24px/1.6 var(--serif);margin:0 0 18px}
+.place-info-editor label{display:flex;flex-direction:column;gap:7px;margin:15px 0;font-size:12px;color:var(--place-info-muted)}
+.place-info-editor input:not([type=hidden]),.place-info-editor textarea{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink);font:14px/1.7 var(--sans)}
+.place-info-editor textarea{resize:vertical}
+.place-info-editor fieldset{border:0;padding:0;margin:20px 0;min-width:0}
+.place-info-editor legend{padding:0;font-size:12px;color:var(--place-info-muted);margin-bottom:8px}
+.place-info-choice-row{display:flex;gap:9px;flex-wrap:wrap}
+.place-info-choice-row button{min-height:40px;padding:8px 20px;border:1px solid var(--line);background:transparent;color:var(--place-info-muted);border-radius:4px;font:12px var(--sans)}
+.place-info-choice-row button[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:var(--place-info-surface)}
+.place-info-guide-row{display:grid;grid-template-columns:1fr 1.4fr auto;align-items:end;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+.place-info-guide-row label{margin:8px 0 0}
+.place-info-remove{align-self:end;min-height:44px;background:transparent;border:0;color:var(--accent);font-size:11px}
+.place-info-auto-photo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:-7px}
+.place-info-auto-photo small{font-size:10px;color:var(--place-info-muted)}
+.place-info-editor-actions{display:flex;align-items:center;justify-content:flex-end;gap:20px}
+.place-info-feedback{font-size:11px;color:var(--place-info-muted);line-height:1.9;margin:12px 0 0}
+.place-info-feedback:empty{display:none}
+.place-info-advanced{font-size:10px;margin-top:12px}
+.place-info-editor :is(input,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.place-info-editor button:disabled{opacity:.55;cursor:wait}
 .place-info-dialog a:focus-visible,
 .place-info-dialog button:focus-visible { outline: 2px solid var(--accent, #b8754d); outline-offset: 3px; border-radius: 3px; }
 [data-theme=dark] .place-info-dialog { --place-info-surface: #27362a; --place-info-muted: #afbea4; }
@@ -74,4 +95,5 @@
   .place-info-city { gap: 12px; }
   .place-info-city-link { font-size: 9px; }
   .place-info-main-link { gap: 22px; padding: 11px 14px; font-size: 11px; }
+  .place-info-guide-row{grid-template-columns:1fr auto;gap:0 10px}.place-info-guide-row label{grid-column:1}.place-info-remove{grid-column:2;grid-row:1/3}
 }

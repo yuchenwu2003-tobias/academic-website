@@ -1,10 +1,10 @@
-import {Converter} from './vendor/opencc/cn2t.js';
-import {COUNTRIES, CONTINENTS} from './geography-data.js';
-import {DESTINATIONS} from './destination-catalog.js';
-import {UI_EN} from './i18n-messages.js';
-import {DESTINATION_UI_EN} from './i18n-destinations.js';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js';
-import {ACADEMIC_UI_EN} from './i18n-academic.js';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-profile';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-profile';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-profile';
+import {UI_EN} from './i18n-messages.js?v=20261018-profile';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-profile';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-profile';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-profile';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
@@ -52,7 +52,7 @@ function englishText(source, depth = 0) {
     [/^(.+?)(不能为空，且)?最多 (\d+) 个字符。$/,(_,field,required,n)=>`${tr(field)} ${required?'is required and ':''}must have at most ${n} characters.`],
     [/^(\d+) 个结果 · (\d+) 个已评分$/,(_,n,rated)=>`${n} results · ${rated} rated`],
     [/^心愿评分：(.+)$/,(_,score)=>`Desire rating: ${tr(score)}`],
-    [/^(.+)，有多想去$/,(_,title)=>`${title}, desire rating`],
+    [/^(.+)，(有多想去|有多推荐)$/,(_,title,kind)=>`${title}, ${kind==='有多推荐'?'recommendation rating':'desire rating'}`],
     [/^已将「(.+)」设为 ([1-5]) 分。$/,(_,title,n)=>`Set “${title}” to ${n}/5.`],
     [/^已清除「(.+)」的评分，地点仍保留在地图中。$/,(_,title)=>`Cleared the rating for “${title}”. The place stays on your map.`],
     [/^([0-5]) · (.+)$/,(_,n,label)=>`${n} · ${tr(label)}`],
@@ -138,9 +138,9 @@ function translateAttributes(element) {
     const source = previous && current === previous.last ? previous.source : current;
     // Keep saved titles intact in both Chinese writing systems.
     const pinKindLabel=element.matches('.map-pin-marker')&&source.match(/^(.+)，(城市／景点|国家／地区)，(去过|想去)，点击查看资料$/);
-    const ratingLabel=source.match(/^(.+)，有多想去$/);
+    const ratingLabel=source.match(/^(.+)，(有多想去|有多推荐)$/);
     const pinLabel = element.matches('.map-pin-marker') && source.match(/^(.+)，(去过|想去)，点击编辑$/);
-    const next=ratingLabel&&language==='zh-TW'?`${ratingLabel[1]}，有多想去`:pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
+    const next=ratingLabel&&language==='zh-TW'?`${ratingLabel[1]}，${toTraditional(ratingLabel[2])}`:pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
     records[attribute] = {source, last: next};
     if (current !== next) element.setAttribute(attribute, next);
   }
@@ -178,8 +178,9 @@ export function refreshTranslations(root = globalThis.document?.body) {
 }
 
 function updateLanguageControl() {
-  const select = document.querySelector('[data-language-select]');
-  if (select) select.value = language;
+  document.querySelectorAll('[data-language-button]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.languageButton === language));
+  });
   document.documentElement.lang = language;
   document.documentElement.dataset.language = language;
 }
@@ -197,12 +198,18 @@ export function setLanguage(value, {persist = true} = {}) {
 
 function initialize() {
   const actions = document.querySelector('.topbar-actions');
-  if (actions && !document.querySelector('[data-language-select]')) {
-    const control = document.createElement('label');
+  if (actions && !document.querySelector('[data-language-switch]')) {
+    const control = document.createElement('div');
     control.className = 'language-switch';
-    control.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3a14 14 0 0 1 0 14 14 14 0 0 1 0-14Z"/></svg><span class="language-control-label">选择网站语言</span><select data-language-select data-language-control aria-label="选择网站语言"><option value="zh-CN" lang="zh-CN">简体中文</option><option value="zh-TW" lang="zh-TW">繁體中文</option><option value="en" lang="en">English</option></select>';
+    control.dataset.languageSwitch = '';
+    control.setAttribute('role', 'group');
+    control.setAttribute('aria-label', '选择网站语言');
+    control.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3a14 14 0 0 1 0 14 14 14 0 0 1 0-14Z"/></svg><button type="button" data-language-button="zh-CN" data-language-control data-i18n-skip lang="zh-CN" aria-label="简体中文" aria-pressed="false">简中</button><button type="button" data-language-button="zh-TW" data-language-control data-i18n-skip lang="zh-TW" aria-label="繁體中文" aria-pressed="false">繁中</button><button type="button" data-language-button="en" data-language-control data-i18n-skip lang="en" aria-label="English" aria-pressed="false">EN</button>';
     actions.insertBefore(control, actions.querySelector('#theme-toggle'));
-    control.querySelector('select').addEventListener('change', event => setLanguage(event.target.value));
+    control.addEventListener('click', event => {
+      const button = event.target.closest('[data-language-button]');
+      if (button) setLanguage(button.dataset.languageButton);
+    });
   }
   updateLanguageControl();
   observer = new MutationObserver(() => {

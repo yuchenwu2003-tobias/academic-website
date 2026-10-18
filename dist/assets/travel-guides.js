@@ -1,11 +1,11 @@
-import {countryById,pinCountry} from './geography.js';
-import {countryPlaces} from './country-destinations.js';
-import {normalizeGuideLinks} from './map-model.js';
-import {getPlaceMedia,placeGuideHref} from './place-media.js';
+import {countryById,pinCountry} from './geography.js?v=20261018-profile';
+import {countryPlaces} from './country-destinations.js?v=20261018-profile';
+import {normalizeGuideLinks} from './map-model.js?v=20261018-profile';
+import {getPlaceMedia,placeGuideHref} from './place-media.js?v=20261018-profile';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-profile';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const countryPlaceById=new Map(countryPlaces.map(place=>[place.id,place]));
-const ratingText=pin=>Number.isInteger(pin?.desireRating)&&pin.desireRating>0&&pin.desireRating<=5?`${pin.desireRating} / 5`:'未评分';
 const external='target="_blank" rel="noopener noreferrer"';
 
 function safeUrl(value,{httpsOnly=false,wikipediaOnly=false}={}) {
@@ -46,7 +46,7 @@ function renderGuideLinks(guides,{compact=false}={}) {
   return `<ul class="guide-link-list ${compact?'is-compact':''}">${links.map((guide,index)=>`<li><span class="mono">${String(index+1).padStart(2,'0')}</span><a href="${esc(safeUrl(guide.url))}" ${external}><span data-i18n-skip>${esc(guide.title)}</span><span aria-hidden="true">↗</span></a></li>`).join('')}</ul>`;
 }
 function renderCountryPlaces(places) {
-  return `<div class="guide-country-places-heading"><div><span class="section-kicker mono">PLACES WITHIN THIS COUNTRY</span><h2>收藏的城市与景点 <span>${places.length}</span></h2></div><span>各个地点的介绍与攻略，汇集在这里。</span></div>${places.length?`<div class="guide-country-places-grid">${places.map(pin=>`<article class="guide-country-place"><div class="guide-place-status"><span>${pin.status==='visited'?'去过':'想去'}</span><span>心愿评分：<span>${ratingText(pin)}</span></span></div><h3><a href="${esc(placeGuideHref(pin))}" data-i18n-skip>${esc(pin.title)} <span aria-hidden="true">↗</span></a></h3>${pin.note?`<p class="guide-place-note" data-i18n-skip>${esc(pin.note)}</p>`:''}${renderGuideLinks(pin.guides,{compact:true})}</article>`).join('')}</div>`:'<p class="guide-empty">这个国家还没有收藏的城市或景点。可以先去地图上添加。</p>'}`;
+  return `<div class="guide-country-places-heading"><div><span class="section-kicker mono">PLACES WITHIN THIS COUNTRY</span><h2>收藏的城市与景点 <span>${places.length}</span></h2></div><span>各个地点的介绍与攻略，汇集在这里。</span></div>${places.length?`<div class="guide-country-places-grid">${places.map(pin=>`<article class="guide-country-place"><div class="guide-place-status"><span>${pin.status==='visited'?'去过':'想去'}</span></div><h3><a href="${esc(placeGuideHref(pin))}" data-i18n-skip>${esc(pin.title)} <span aria-hidden="true">↗</span></a></h3><div data-guide-place-rating="${esc(pin.id)}">${renderPlaceRating(pin)}</div>${pin.note?`<p class="guide-place-note" data-i18n-skip>${esc(pin.note)}</p>`:''}${renderGuideLinks(pin.guides,{compact:true})}</article>`).join('')}</div>`:'<p class="guide-empty">这个国家还没有收藏的城市或景点。可以先去地图上添加。</p>'}`;
 }
 function renderNote(note) {
   return note?`<p class="guide-personal-note" data-i18n-skip>${esc(note)}</p>`:'<p class="guide-empty">还没有写下自己的介绍，慢慢补充就好。</p>';
@@ -69,8 +69,8 @@ export function renderTravelGuide(spec,pins=[]) {
     <p class="guide-virtual-note" data-guide-virtual-note ${isVirtual?'':'hidden'}>这个国家还没有加入我的地图。保存资料时，会同时加入它的国家标记。</p>
     <div class="guide-overview"><figure class="guide-media"><div class="guide-image" data-guide-image>${photo?renderImage(photo,pin.title):'<span class="guide-image-placeholder">正在寻找图片…</span>'}</div><figcaption data-guide-image-credit>${photo?'图片由你提供。':''}</figcaption><div class="guide-photo-actions"><button type="button" class="text-link" data-guide-photo-edit>更换图片 <span aria-hidden="true">↗</span></button><span>图片自动加载，也可以手动更换。</span></div></figure><div class="guide-introduction"><span class="section-kicker mono">MY OWN WORDS</span><h2>我的介绍</h2><div data-guide-note>${renderNote(pin.note)}</div><div class="guide-reference-links"><a class="text-link" data-guide-wikipedia href="${esc(wikipedia||'https://www.wikipedia.org/')}" ${external} ${wikipedia?'':'hidden'}>在 Wikipedia 阅读更多 <span>↗</span></a>${spec.kind==='place'&&country?`<a class="text-link" href="${esc(placeGuideHref(virtualCountryPin(country)))}">查看所属国家攻略 <span>↗</span></a>`:''}</div></div></div>
     <section class="guide-saved-links"><div class="guide-section-heading"><h2>我收藏的攻略</h2><span data-guide-link-count>${guideLinks(pin.guides).length}</span></div><div data-guide-links>${renderGuideLinks(pin.guides)}</div></section>
-    <a class="guide-rating-link" href="#/travel/ratings"><span>心愿评分</span><strong data-guide-rating>${ratingText(pin)}</strong><span>调整评分 <span aria-hidden="true">↗</span></span></a>
-    <details class="guide-editor"><summary>编辑介绍与攻略 <span aria-hidden="true">＋</span></summary><form data-guide-form><p class="guide-form-intro">只写下自己的介绍与收藏。留空的部分可以以后再补充。</p><label>我的介绍<textarea name="note" maxlength="5000" rows="6" placeholder="为什么想去这里，或一段自己的旅行记忆…">${esc(pin.note||'')}</textarea><small>最多 5000 个字符。</small></label><div class="guide-form-url-grid"><label>图片链接 <span>选填</span><input type="url" name="photoUrl" maxlength="2000" placeholder="https://…" value="${esc(pin.photoUrl||'')}"><small>留空时自动从维基百科获取图片；填写 HTTPS 图片链接可替换，清空并保存可恢复自动图片。</small></label><label>Wikipedia 链接 <span>选填</span><input type="url" name="wikipediaUrl" maxlength="2000" placeholder="https://…wikipedia.org/wiki/…" value="${esc(pin.wikipediaUrl||'')}"><small>可填写 Wikipedia 文章地址。</small></label></div><label>我收藏的攻略<textarea name="guides" rows="6" maxlength="64000" placeholder="攻略标题 | https://…">${esc(guideLinks(pin.guides).map(guide=>`${guide.title} | ${guide.url}`).join('\n'))}</textarea><small>每行一条，格式为“标题 | https://…”，最多 30 条。</small></label><p class="guide-form-status" data-guide-form-status role="status"></p><div class="guide-form-actions"><span>点击保存后才会更新资料。</span><button type="submit" class="map-add" data-guide-save>保存资料 <span>↗</span></button></div></form></details>
+    <div class="guide-inline-rating">${renderPlaceRating(pin)}</div>
+    <section class="guide-editor"><button type="button" class="guide-editor-toggle" data-guide-edit aria-expanded="false" aria-controls="guide-editor-fields">编辑资料 <span aria-hidden="true">＋</span></button><form id="guide-editor-fields" data-guide-form hidden><p class="guide-form-intro">只写下自己的介绍与收藏。留空的部分可以以后再补充。</p><label>我的介绍<textarea name="note" maxlength="5000" rows="6" placeholder="为什么想去这里，或一段自己的旅行记忆…">${esc(pin.note||'')}</textarea><small>最多 5000 个字符。</small></label><div class="guide-form-url-grid"><label>图片链接 <span>选填</span><input type="url" name="photoUrl" maxlength="2000" placeholder="https://…" value="${esc(pin.photoUrl||'')}"><small>留空时自动从维基百科获取图片；填写 HTTPS 图片链接可替换，清空并保存可恢复自动图片。</small></label><label>Wikipedia 链接 <span>选填</span><input type="url" name="wikipediaUrl" maxlength="2000" placeholder="https://…wikipedia.org/wiki/…" value="${esc(pin.wikipediaUrl||'')}"><small>可填写 Wikipedia 文章地址。</small></label></div><label>我收藏的攻略<textarea name="guides" rows="6" maxlength="64000" placeholder="攻略标题 | https://…">${esc(guideLinks(pin.guides).map(guide=>`${guide.title} | ${guide.url}`).join('\n'))}</textarea><small>每行一条，格式为“标题 | https://…”，最多 30 条。</small></label><p class="guide-form-status" data-guide-form-status role="status"></p><div class="guide-form-actions"><span>点击保存后才会更新资料。</span><button type="submit" class="map-add" data-guide-save>保存资料 <span>↗</span></button></div></form></section>
     ${spec.kind==='country'?`<section class="guide-country-places" data-guide-country-places>${renderCountryPlaces(places)}</section>`:''}
   </section>`;
 }
@@ -92,7 +92,8 @@ export function mountTravelGuide(root,{spec,getPins,onSave}) {
   const form=page.querySelector('[data-guide-form]'),fields=form.elements;
   const status=page.querySelector('[data-guide-form-status]'),save=page.querySelector('[data-guide-save]');
   const image=page.querySelector('[data-guide-image]'),credit=page.querySelector('[data-guide-image-credit]'),wiki=page.querySelector('[data-guide-wikipedia]');
-  const photoEdit=page.querySelector('[data-guide-photo-edit]'),editor=page.querySelector('.guide-editor');
+  const photoEdit=page.querySelector('[data-guide-photo-edit]'),edit=page.querySelector('[data-guide-edit]');
+  let ratingCleanup=()=>{},countryRatingCleanups=[];
   let stopped=false,mediaRevision=0,mediaController;
   function setImage(url,title) {
     image.innerHTML=url?renderImage(url,title):'<span class="guide-image-placeholder">这里还没有图片，可在编辑资料时添加。</span>';
@@ -118,9 +119,16 @@ export function mountTravelGuide(root,{spec,getPins,onSave}) {
     page.querySelector('[data-guide-note]').innerHTML=renderNote(pin.note);
     page.querySelector('[data-guide-links]').innerHTML=renderGuideLinks(pin.guides);
     page.querySelector('[data-guide-link-count]').textContent=String(guideLinks(pin.guides).length);
-    page.querySelector('[data-guide-rating]').textContent=ratingText(pin);
+    ratingCleanup.refresh?.();
     page.querySelector('[data-guide-virtual-note]').hidden=!state.isVirtual;
-    const places=page.querySelector('[data-guide-country-places]');if(places)places.innerHTML=renderCountryPlaces(state.places);
+    const places=page.querySelector('[data-guide-country-places]');if(places){places.innerHTML=renderCountryPlaces(state.places);mountCountryRatings();}
+  }
+  function mountCountryRatings(){
+    countryRatingCleanups.forEach(cleanup=>cleanup());countryRatingCleanups=[];
+    for(const card of page.querySelectorAll?.('[data-guide-place-rating]')||[]){
+      const id=card.dataset.guidePlaceRating;
+      countryRatingCleanups.push(mountPlaceRating(card,{getPin:()=>getPins().find(pin=>pin.id===id&&pin.kind!=='country'),onSave}));
+    }
   }
   async function onSubmit(event) {
     event.preventDefault();if(!form.reportValidity()||save.disabled)return;
@@ -146,7 +154,18 @@ export function mountTravelGuide(root,{spec,getPins,onSave}) {
     }catch(error){if(!stopped){status.textContent=error.message;status.classList.add('is-warning');}}
     finally{if(!stopped)save.disabled=false;}
   }
-  function onPhotoEdit(){if(editor)editor.open=true;fields.photoUrl.focus();fields.photoUrl.scrollIntoView?.({block:'center'});}
-  form.addEventListener('submit',onSubmit);photoEdit?.addEventListener('click',onPhotoEdit);void updateMedia(state.pin);
-  return ()=>{stopped=true;mediaRevision++;mediaController?.abort();form.removeEventListener('submit',onSubmit);photoEdit?.removeEventListener('click',onPhotoEdit);};
+  function setEditor(open){form.hidden=!open;edit?.setAttribute('aria-expanded',String(open));}
+  function onEdit(){setEditor(form.hidden);if(!form.hidden)fields.note.focus();}
+  function onPhotoEdit(){setEditor(true);fields.photoUrl.focus();fields.photoUrl.scrollIntoView?.({block:'center'});}
+  ratingCleanup=mountPlaceRating(page,{getPin:()=>resolveTravelGuide(spec,getPins())?.pin,onSave:async next=>{
+    const latest=resolveTravelGuide(spec,getPins());if(!latest)throw new Error('这个地点已经不在收藏中，请返回地图查看。');
+    if(latest.isVirtual&&!next.desireRating)return {saved:true,pin:latest.pin};
+    const field=latest.pin.status==='visited'?'recommendationRating':'desireRating';
+    const merged={...latest.pin,[field]:next[field]};
+    const result=await onSave(merged);if(stopped||result===false||result?.ok===false||result?.success===false||result?.error)return result;
+    state={...(resolveTravelGuide(spec,getPins())||latest),pin:result?.pin||merged,isVirtual:false};updateView(state.pin);return result;
+  }});
+  mountCountryRatings();
+  form.addEventListener('submit',onSubmit);photoEdit?.addEventListener('click',onPhotoEdit);edit?.addEventListener('click',onEdit);void updateMedia(state.pin);
+  return ()=>{stopped=true;mediaRevision++;mediaController?.abort();ratingCleanup();countryRatingCleanups.forEach(cleanup=>cleanup());form.removeEventListener('submit',onSubmit);photoEdit?.removeEventListener('click',onPhotoEdit);edit?.removeEventListener('click',onEdit);};
 }

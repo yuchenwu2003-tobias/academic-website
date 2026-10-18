@@ -1,0 +1,18 @@
+select[data-click-choice-ready][hidden]{display:none!important}
+.click-choices{display:flex;flex-direction:column;gap:10px;min-width:0;margin-top:8px;font-family:inherit;font-weight:400}
+.click-choice-options{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.click-choice{display:inline-flex;align-items:center;justify-content:center;min-height:40px;max-width:100%;padding:9px 14px;border:1px solid var(--line,#d9ddd3);border-radius:7px;background:transparent;color:var(--ink,#30372f);font:inherit;font-size:13px;line-height:1.4;cursor:pointer;transition:background-color .18s ease,border-color .18s ease,color .18s ease}
+.click-choice[aria-pressed="true"]{background:var(--ink,#30372f);border-color:var(--ink,#30372f);color:var(--paper,#f7f6f1)}
+.click-choice:hover:not(:disabled){border-color:var(--accent,#b47752)}
+.click-choice:focus-visible,.click-choice-search:focus-visible,.click-choice-more:focus-visible{outline:2px solid var(--accent,#b47752);outline-offset:3px}
+.click-choice:disabled,.click-choices.is-disabled{opacity:.55;cursor:default}
+.click-choice-selection{margin:0;color:var(--ink,#30372f);font-size:13px;font-weight:600}
+.click-choice-selection:before{content:'✓ ';color:var(--accent,#b47752)}
+.click-choice-search{width:100%;box-sizing:border-box;min-height:42px;padding:10px 12px;border:1px solid var(--line,#d9ddd3);border-radius:6px;background:transparent;color:var(--ink,#30372f);font:inherit;font-size:14px}
+.click-choices.is-searchable .click-choice-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.click-choices.is-searchable .click-choice{justify-content:flex-start;text-align:left}
+.click-choice-empty{margin:3px 0;color:var(--muted,#7a8375);font-size:13px}
+.click-choice-validation{margin:0;color:var(--accent,#b47752);font-size:13px}
+.click-choice-more{align-self:flex-start;padding:4px 0;border:0;background:transparent;color:var(--accent,#b47752);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.click-choices [hidden]{display:none!important}
+@media(max-width:420px){.click-choices.is-searchable .click-choice-options{grid-template-columns:1fr}.click-choice{padding:9px 11px}}

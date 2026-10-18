@@ -1,9 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js';
-import {COUNTRY_FLAGS} from './country-flags.js';
-import {countryById} from './geography.js';
-import {unproject} from './projection.js';
-import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js';
-import {countryPlaces,searchCountryPlaces} from './country-destinations.js';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-profile';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-profile';
+import {countryById} from './geography.js?v=20261018-profile';
+import {unproject} from './projection.js?v=20261018-profile';
+import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-profile';
+import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-profile';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PHOTON_ENDPOINT='https://photon.komoot.io/api/';
@@ -98,22 +98,22 @@ export async function searchOnlinePlaces(query,{signal,focus=null,fetcher=global
 export function renderPlaceSearch(region={kind:'world'}) {
   return `<dialog class="place-search-dialog" data-place-search-dialog aria-labelledby="place-search-title"><div class="place-search-top"><span class="mono">FIND YOUR NEXT PLACE</span><button type="button" class="pin-close" data-place-search-close aria-label="关闭地点搜索">×</button></div><h2 id="place-search-title">想去哪里？</h2>
     <div class="place-search-kind-tabs" role="group" aria-label="标记类型"><button type="button" data-place-search-kind="city" aria-pressed="true">城市／景点</button><button type="button" data-place-search-kind="country" aria-pressed="false">国家／地区</button></div>
-    <p class="place-search-intro" data-place-search-intro>输入城市、景点或地名，找到后即可加入旅行心愿。</p><form data-place-search-form><label class="sr-only" for="place-search-query" data-place-search-label>搜索地点名称</label><div class="place-search-input-row"><input id="place-search-query" name="query" type="search" maxlength="180" placeholder="例如：哥本哈根、故宫、Mount Fuji…" autocomplete="off" required data-place-search-query><button type="submit" class="map-add" data-place-search-submit>搜索</button></div>${region.kind==='world'?'':`<label class="place-search-scope">搜索范围<select data-place-search-scope><option value="preferred">优先当前区域</option><option value="world">全球</option></select></label>`}</form><p class="place-search-status" data-place-search-status role="status">输入地名后，点击“搜索”查看更多地点。</p><div data-place-search-local></div><div data-place-search-online></div><div class="place-search-feedback" data-place-search-feedback role="status"></div><div class="place-search-edit" hidden data-place-search-edit-wrap><button type="button" class="text-link" data-place-search-edit>编辑这个地点 <span>↗</span></button></div><p class="place-search-source" data-place-search-source>在线地名搜索：<a href="https://photon.komoot.io/" target="_blank" rel="noopener noreferrer">Photon</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p></dialog>`;
+    <p class="place-search-intro" data-place-search-intro>输入城市、景点或地名，找到后即可加入旅行心愿。</p><form data-place-search-form><label class="sr-only" for="place-search-query" data-place-search-label>搜索地点名称</label><div class="place-search-input-row"><input id="place-search-query" name="query" type="search" maxlength="180" placeholder="例如：哥本哈根、故宫、Mount Fuji…" autocomplete="off" required data-place-search-query><button type="submit" class="map-add" data-place-search-submit>搜索</button></div>${region.kind==='world'?'':`<div class="place-search-scope"><span>搜索范围</span><div class="place-search-scope-options" role="group" aria-label="搜索范围"><button type="button" data-place-search-scope="preferred" aria-pressed="true">优先当前区域</button><button type="button" data-place-search-scope="world" aria-pressed="false">全球</button></div></div>`}</form><p class="place-search-status" data-place-search-status role="status">输入地名后，点击“搜索”查看更多地点。</p><div data-place-search-local></div><div data-place-search-online></div><div class="place-search-feedback" data-place-search-feedback role="status"></div><div class="place-search-edit" hidden data-place-search-edit-wrap><button type="button" class="text-link" data-place-search-edit>编辑这个地点 <span>↗</span></button></div><p class="place-search-source" data-place-search-source>在线地名搜索：<a href="https://photon.komoot.io/" target="_blank" rel="noopener noreferrer">Photon</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p></dialog>`;
 }
 
 export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=searchOnlinePlaces}) {
   const dialog=root.querySelector('[data-place-search-dialog]');
   if(!dialog)return {open(){},update(){},destroy(){}};
   const form=dialog.querySelector('[data-place-search-form]'),input=dialog.querySelector('[data-place-search-query]');
-  const submit=dialog.querySelector('[data-place-search-submit]'),scope=dialog.querySelector('[data-place-search-scope]');
+  const submit=dialog.querySelector('[data-place-search-submit]');
   const status=dialog.querySelector('[data-place-search-status]'),local=dialog.querySelector('[data-place-search-local]'),online=dialog.querySelector('[data-place-search-online]');
   const feedback=dialog.querySelector('[data-place-search-feedback]'),editWrap=dialog.querySelector('[data-place-search-edit-wrap]');
   const source=dialog.querySelector('[data-place-search-source]'),intro=dialog.querySelector('[data-place-search-intro]'),inputLabel=dialog.querySelector('[data-place-search-label]');
-  let revision=0,controller=null,onlineResults=[],phase='idle',errorMessage='',selectedPinId=null,kind='city';
+  let revision=0,controller=null,onlineResults=[],phase='idle',errorMessage='',selectedPinId=null,kind='city',scope='preferred';
   let available=new Map();
   function stop(){revision++;controller?.abort();controller=null;}
   function update() {
-    const preferred=scope?.value!=='world'?region:{kind:'world'};
+    const preferred=scope!=='world'?region:{kind:'world'};
     const isCountry=kind==='country';
     const localResults=isCountry?countryPlaceMatches(input.value,preferred):localPlaceMatches(input.value,preferred);
     const matchingCountries=!isCountry&&input.value.trim()?countryPlaceMatches(input.value,preferred).slice(0,8):[];
@@ -122,6 +122,7 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
     inputLabel.textContent=isCountry?'搜索国家或地区':'搜索地点名称';
     input.setAttribute('placeholder',isCountry?'例如：中国、丹麦、Japan…':'例如：丹麦、哥本哈根、故宫…');
     dialog.querySelectorAll('[data-place-search-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.placeSearchKind===kind)));
+    dialog.querySelectorAll('[data-place-search-scope]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.placeSearchScope===scope)));
     const pins=getPins();available=new Map();
     const section=(items,label,prefix)=>items.length?`<section class="place-search-group"><h3>${label} <span>${items.length}</span></h3><div class="place-search-results">${items.map(place=>{
       const key=`${prefix}-${place.id}`,added=findDestinationPin({...place,id:place.pinId},pins);available.set(key,place);
@@ -144,7 +145,7 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
     stop();const token=revision;controller=new AbortController();phase='loading';onlineResults=[];clearFeedback();update();
     const requestController=controller;
     try {
-      const results=await searchPlaces(query,{signal:requestController.signal,focus:scope?.value==='world'?null:searchFocus(region)});
+      const results=await searchPlaces(query,{signal:requestController.signal,focus:scope==='world'?null:searchFocus(region)});
       if(token!==revision||!dialog.open||requestController.signal.aborted)return;
       onlineResults=results;phase='done';update();
     }catch(error){
@@ -158,6 +159,8 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
     if(event.target.closest('[data-place-search-close]')){close();return;}
     const modeButton=event.target.closest('[data-place-search-kind]');
     if(modeButton){const next=modeButton.dataset.placeSearchKind;if(['city','country'].includes(next)&&next!==kind){kind=next;onInput();input.focus();}return;}
+    const scopeButton=event.target.closest('[data-place-search-scope]');
+    if(scopeButton){const next=scopeButton.dataset.placeSearchScope;if(['preferred','world'].includes(next)&&next!==scope){scope=next;onInput();}return;}
     if(event.target.closest('[data-place-search-edit]')){if(selectedPinId){close();onEdit?.(selectedPinId);}return;}
     const button=event.target.closest('[data-place-search-result]');if(!button||button.disabled)return;
     const place=available.get(button.dataset.placeSearchResult);if(!place)return;
@@ -169,11 +172,11 @@ export function mountPlaceSearch(root,{region,getPins,onAdd,onEdit,searchPlaces=
   }
   function onBackdrop(event){if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)close();}}
   function onLanguage(){if(dialog.open)update();}
-  form.addEventListener('submit',onSubmit);input.addEventListener('input',onInput);scope?.addEventListener('change',onInput);
+  form.addEventListener('submit',onSubmit);input.addEventListener('input',onInput);
   dialog.addEventListener('click',onClick);dialog.addEventListener('click',onBackdrop);dialog.addEventListener('cancel',onClose);dialog.addEventListener('close',onClose);window.addEventListener('site-language-change',onLanguage);
   return {
     open(){stop();kind='city';phase='idle';onlineResults=[];input.value='';clearFeedback();update();dialog.showModal();input.focus();},
     update(){if(dialog.open)update();},
-    destroy(){stop();form.removeEventListener('submit',onSubmit);input.removeEventListener('input',onInput);scope?.removeEventListener('change',onInput);dialog.removeEventListener('click',onClick);dialog.removeEventListener('click',onBackdrop);dialog.removeEventListener('cancel',onClose);dialog.removeEventListener('close',onClose);window.removeEventListener('site-language-change',onLanguage);if(dialog.open)dialog.close();}
+    destroy(){stop();form.removeEventListener('submit',onSubmit);input.removeEventListener('input',onInput);dialog.removeEventListener('click',onClick);dialog.removeEventListener('click',onBackdrop);dialog.removeEventListener('cancel',onClose);dialog.removeEventListener('close',onClose);window.removeEventListener('site-language-change',onLanguage);if(dialog.open)dialog.close();}
   };
 }

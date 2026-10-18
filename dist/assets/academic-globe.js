@@ -1,5 +1,5 @@
-import {COUNTRIES} from './geography-data.js';
-import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js';
+import {COUNTRIES} from './geography-data.js?v=20261018-profile';
+import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-profile';
 
 const RAD=Math.PI/180,DEG=180/Math.PI;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));

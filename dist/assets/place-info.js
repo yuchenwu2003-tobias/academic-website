@@ -1,6 +1,7 @@
-import {getPlaceMedia, placeGuideHref} from './place-media.js';
-import {pinCountry} from './geography.js';
-import {normalizeCountryId} from './map-model.js';
+import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-profile';
+import {pinCountry} from './geography.js?v=20261018-profile';
+import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-profile';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-profile';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
 const safeUrl = value => {try {const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';} catch {return '';}};
@@ -18,22 +19,34 @@ function cardMarkup(pin, pins) {
   const href = placeGuideHref(pin), guides = guideLinks(pin);
   const countryId = pin.kind === 'country' ? normalizeCountryId(pin.countryId) : null;
   const children = countryId ? pins.filter(item => item && item.kind !== 'country' && pinCountry(item) === countryId) : [];
-  const rating = Number.isInteger(pin.desireRating) && pin.desireRating >= 1 && pin.desireRating <= 5 ? pin.desireRating : 0;
-  return `<a class="place-info-cover" href="${esc(href)}"><div class="place-info-media"><img data-place-info-image alt="${esc(pin.title)}" data-i18n-skip hidden referrerpolicy="no-referrer"><div class="place-info-placeholder" data-place-info-placeholder>${placeholderIcon}<span data-place-info-image-status>正在寻找地点图片…</span><small data-place-info-image-help hidden>可在编辑标记中添加图片链接。</small></div></div><div class="place-info-heading"><div class="place-info-meta"><span>${pin.kind === 'country' ? '国家／地区' : '城市／景点'}</span><span class="place-info-status ${pin.status === 'visited' ? 'is-visited' : ''}">${pin.status === 'visited' ? '已去过' : '想去'}</span></div><h2 id="place-info-title" data-i18n-skip>${esc(pin.title)}</h2><span class="place-info-open-label">打开攻略页 <span aria-hidden="true">↗</span></span></div></a>
+  return `<a class="place-info-cover" href="${esc(href)}"><div class="place-info-media"><img data-place-info-image alt="${esc(pin.title)}" data-i18n-skip hidden referrerpolicy="no-referrer"><div class="place-info-placeholder" data-place-info-placeholder>${placeholderIcon}<span data-place-info-image-status>正在寻找地点图片…</span><small data-place-info-image-help hidden>点击编辑资料，添加图片链接。</small></div></div><div class="place-info-heading"><div class="place-info-meta"><span>${pin.kind === 'country' ? '国家／地区' : '城市／景点'}</span><span class="place-info-status ${pin.status === 'visited' ? 'is-visited' : ''}">${pin.status === 'visited' ? '已去过' : '想去'}</span></div><h2 id="place-info-title" data-i18n-skip>${esc(pin.title)}</h2><span class="place-info-open-label">打开攻略页 <span aria-hidden="true">↗</span></span></div></a>
     <div class="place-info-source-row"><a data-place-info-wikipedia hidden ${external}>维基百科 ↗</a><a data-place-info-credit hidden ${external}></a></div>
-    <div class="place-info-rating"><span>心愿评分</span><a href="#/travel/ratings">${rating ? `${rating}/5` : '未评分'} <span aria-hidden="true">↗</span></a></div>
+    ${renderPlaceRating(pin)}
     <section class="place-info-section"><h3>我的介绍</h3>${pin.note ? `<p class="place-info-note" data-i18n-skip>${esc(pin.note)}</p>` : '<p class="place-info-empty">还没有个人介绍，留待慢慢补充。</p>'}</section>
     <section class="place-info-section"><h3>收藏的攻略 <span class="place-info-count">${guides.length}</span></h3>${guides.length ? `<ul class="place-info-guides">${guides.map(guide => `<li><a href="${esc(safeUrl(guide.url))}" ${external}><span data-i18n-skip>${esc(guide.title || '收藏的攻略')}</span><span aria-hidden="true">↗</span></a></li>`).join('')}</ul>` : '<p class="place-info-empty">攻略还在慢慢收集。</p>'}</section>
     ${countryId ? `<section class="place-info-section place-info-country"><h3>这里收藏的城市与景点 <span class="place-info-count">${children.length}</span></h3>${children.length ? `<div class="place-info-cities">${children.map(child => `<a class="place-info-city" href="${esc(placeGuideHref(child))}"><span><strong data-i18n-skip>${esc(child.title)}</strong><small>${child.status === 'visited' ? '已去过' : '想去'}</small></span><span class="place-info-city-link">查看攻略 <span aria-hidden="true">↗</span></span></a>`).join('')}</div>` : '<p class="place-info-empty">这个国家还没有收藏的城市或景点。</p>'}</section>` : ''}
-    <div class="place-info-actions"><a class="place-info-main-link" href="${esc(href)}">打开攻略页 <span aria-hidden="true">↗</span></a><button type="button" class="place-info-edit" data-place-info-edit>编辑标记</button></div>`;
+    <div class="place-info-actions"><a class="place-info-main-link" href="${esc(href)}">打开攻略页 <span aria-hidden="true">↗</span></a><button type="button" class="place-info-edit" data-place-info-edit aria-expanded="false" aria-controls="place-info-editor">编辑资料</button></div><p class="place-info-feedback" data-place-info-feedback role="status"></p>
+    <section id="place-info-editor" class="place-info-editor" data-place-info-editor hidden></section>`;
 }
 
-export function mountPlaceInfo(root, {getPins = () => [], onEdit} = {}) {
+export function applyPlaceInfoDraft(pin, draft) {
+  // Only editable profile fields are copied. Identity, coordinates and the latest
+  // independent desire rating survive edits made in another browser tab.
+  return normalizePin({...pin,title:draft.title,note:draft.note,status:draft.status,photoUrl:draft.photoUrl,wikipediaUrl:draft.wikipediaUrl,guides:draft.guides});
+}
+function guideRow(guide={}) {
+  return `<div class="place-info-guide-row" data-info-guide-row><label>攻略标题<input data-info-guide-title maxlength="120" value="${esc(guide.title||'')}" placeholder="例如：三日旅行路线" required></label><label>攻略链接<input data-info-guide-url type="url" maxlength="2000" value="${esc(guide.url||'')}" placeholder="https://…" required></label><button type="button" class="place-info-remove" data-info-guide-remove aria-label="移除这条攻略">移除</button></div>`;
+}
+function editorMarkup(pin) {
+  return `<form data-place-info-form><h3>编辑资料</h3><label>地点名称<input name="title" maxlength="80" value="${esc(pin.title)}" required></label><fieldset><legend>旅行状态</legend><div class="place-info-choice-row">${[['want','想去'],['visited','去过']].map(([value,label])=>`<button type="button" data-info-status="${value}" aria-pressed="${pin.status===value}">${label}</button>`).join('')}</div><input type="hidden" name="status" value="${esc(pin.status)}"></fieldset><label>我的介绍<textarea name="note" maxlength="5000" rows="5" placeholder="为什么想去这里，或一段自己的旅行记忆…">${esc(pin.note||'')}</textarea></label><label>图片链接<input name="photoUrl" type="url" maxlength="2000" placeholder="https://…" value="${esc(pin.photoUrl||'')}"></label><div class="place-info-auto-photo"><button type="button" class="text-link" data-info-photo-auto>使用自动图片</button><small>留空并保存，恢复自动加载图片。</small></div><label>Wikipedia 链接<input name="wikipediaUrl" type="url" maxlength="2000" placeholder="https://…wikipedia.org/wiki/…" value="${esc(pin.wikipediaUrl||'')}"></label><fieldset><legend>收藏的攻略</legend><div data-info-guide-rows>${guideLinks(pin).map(guideRow).join('')}</div><button type="button" class="text-link" data-info-guide-add>＋ 添加攻略链接</button></fieldset><p class="place-info-feedback" data-info-form-status role="status"></p><div class="place-info-editor-actions"><button type="button" class="place-info-edit" data-info-edit-cancel>取消编辑</button><button type="submit" class="map-add" data-info-save>保存资料</button></div><button type="button" class="place-info-edit place-info-advanced" data-info-advanced>编辑标记类型与位置 <span aria-hidden="true">↗</span></button></form>`;
+}
+
+export function mountPlaceInfo(root, {getPins = () => [], onEdit, onSave} = {}) {
   const dialog = root?.querySelector('[data-place-info-dialog]');
   if (!dialog) return {open() {}, destroy() {}};
   const content = dialog.querySelector('[data-place-info-content]');
-  let revision = 0, controller, currentPin, destroyed = false;
-  function stop() {revision++; controller?.abort(); controller = null;}
+  let revision = 0, controller, currentPin, destroyed = false, ratingCleanup;
+  function stop() {revision++; controller?.abort(); controller = null;ratingCleanup?.();ratingCleanup=null;}
   function close() {stop(); if (dialog.open) dialog.close();}
   function noImage(version) {
     if (destroyed || version !== revision || !dialog.open) return;
@@ -45,7 +58,7 @@ export function mountPlaceInfo(root, {getPins = () => [], onEdit} = {}) {
     content.querySelector('[data-place-info-image-status]').textContent = '暂时没有可用图片';
     content.querySelector('[data-place-info-image-help]').hidden = false;
   }
-  async function open(pin) {
+  async function open(pin,{preserveScroll=false,feedback=''}={}) {
     if (destroyed || !pin || typeof pin.id !== 'string' || typeof pin.title !== 'string') return;
     stop();
     currentPin = pin;
@@ -53,10 +66,13 @@ export function mountPlaceInfo(root, {getPins = () => [], onEdit} = {}) {
     controller = new AbortController();
     const request = controller;
     const pins = getPins();
+    const previousScroll=dialog.scrollTop;
     content.innerHTML = cardMarkup(pin, Array.isArray(pins) ? pins : []);
+    ratingCleanup=mountPlaceRating(content,{getPin:()=>getPins().find(item=>item.id===currentPin?.id),onSave});
+    content.querySelector('[data-place-info-feedback]').textContent=feedback;
     if (!dialog.open) dialog.showModal();
-    dialog.scrollTop = 0;
-    dialog.querySelector('[data-place-info-close]')?.focus();
+    dialog.scrollTop = preserveScroll?previousScroll:0;
+    if(!preserveScroll)dialog.querySelector('[data-place-info-close]')?.focus();
     try {
       const media = await getPlaceMedia(pin, {signal: request.signal});
       if (destroyed || version !== revision || !dialog.open || request.signal.aborted) return;
@@ -81,9 +97,43 @@ export function mountPlaceInfo(root, {getPins = () => [], onEdit} = {}) {
   function onClick(event) {
     if (event.target.closest('[data-place-info-close]')) {close(); return;}
     if (event.target.closest('[data-place-info-edit]')) {
-      const id = currentPin?.id;
-      close();
-      if (id) onEdit?.(id);
+      const editor=content.querySelector('[data-place-info-editor]');
+      editor.innerHTML=editorMarkup(getPins().find(pin=>pin.id===currentPin?.id)||currentPin);
+      editor.hidden=false;
+      content.querySelector('[data-place-info-edit]').setAttribute('aria-expanded','true');
+      editor.querySelector('[name=title]').focus();
+      return;
+    }
+    if(event.target.closest('[data-info-edit-cancel]')) {
+      const editor=content.querySelector('[data-place-info-editor]');editor.hidden=true;editor.innerHTML='';
+      const button=content.querySelector('[data-place-info-edit]');button.setAttribute('aria-expanded','false');button.focus();
+      return;
+    }
+    if(event.target.closest('[data-info-advanced]')) {
+      const id=currentPin?.id;close();if(id)onEdit?.(id);
+      return;
+    }
+    const statusChoice=event.target.closest('[data-info-status]');
+    if(statusChoice){
+      const form=statusChoice.closest('form');form.elements.status.value=statusChoice.dataset.infoStatus;
+      form.querySelectorAll('[data-info-status]').forEach(button=>button.setAttribute('aria-pressed',String(button===statusChoice)));
+      return;
+    }
+    if(event.target.closest('[data-info-photo-auto]')) {
+      content.querySelector('[name=photoUrl]').value='';
+      content.querySelector('[data-info-form-status]').textContent='保存后将恢复自动图片。';
+      return;
+    }
+    if(event.target.closest('[data-info-guide-add]')) {
+      const rows=content.querySelector('[data-info-guide-rows]');
+      if(rows.children.length>=30){content.querySelector('[data-info-form-status]').textContent='攻略最多保存 30 条，请先整理链接。';return;}
+      rows.insertAdjacentHTML('beforeend',guideRow());rows.lastElementChild.querySelector('input').focus();
+      return;
+    }
+    const remove=event.target.closest('[data-info-guide-remove]');
+    if(remove){
+      const row=remove.closest('[data-info-guide-row]'),next=row.nextElementSibling||row.previousElementSibling;row.remove();
+      (next?.querySelector('input')||content.querySelector('[data-info-guide-add]')).focus();
       return;
     }
     if (event.target === dialog) {
@@ -91,9 +141,28 @@ export function mountPlaceInfo(root, {getPins = () => [], onEdit} = {}) {
       if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
     }
   }
+  async function onSubmit(event) {
+    const form=event.target.closest('[data-place-info-form]');if(!form)return;
+    event.preventDefault();const save=form.querySelector('[data-info-save]'),status=form.querySelector('[data-info-form-status]');
+    if(save.disabled||!form.reportValidity())return;
+    const version=revision;
+    try {
+      const latest=getPins().find(pin=>pin.id===currentPin?.id);
+      if(!latest)throw new Error('这个地点已经不在收藏中，请返回地图查看。');
+      if(typeof onSave!=='function')throw new Error('暂时无法保存资料，请稍后重试。');
+      const fields=form.elements;
+      const next=applyPlaceInfoDraft(latest,{title:fields.title.value,note:fields.note.value,status:fields.status.value,photoUrl:fields.photoUrl.value,wikipediaUrl:fields.wikipediaUrl.value,guides:[...form.querySelectorAll('[data-info-guide-row]')].map(row=>({title:row.querySelector('[data-info-guide-title]').value,url:row.querySelector('[data-info-guide-url]').value}))});
+      save.disabled=true;status.textContent='正在保存资料…';
+      const result=await onSave(next);
+      if(destroyed||version!==revision||!dialog.open)return;
+      void open(result?.pin||next,{preserveScroll:true,feedback:result?.saved===false?'浏览器未能保存，本次修改暂存在当前页面。请返回地图导出备份。':'资料已保存到当前浏览器。'});
+      content.querySelector('[data-place-info-edit]')?.focus();
+    }catch(error){if(!destroyed&&version===revision){status.textContent=error.message;save.disabled=false;}}
+  }
   const onCancel = () => stop();
   const onClose = () => {if (!dialog.open) stop();};
   dialog.addEventListener('click', onClick);
+  dialog.addEventListener('submit',onSubmit);
   dialog.addEventListener('cancel', onCancel);
   dialog.addEventListener('close', onClose);
   return {
@@ -102,6 +171,7 @@ export function mountPlaceInfo(root, {getPins = () => [], onEdit} = {}) {
       destroyed = true;
       stop();
       dialog.removeEventListener('click', onClick);
+      dialog.removeEventListener('submit',onSubmit);
       dialog.removeEventListener('cancel', onCancel);
       dialog.removeEventListener('close', onClose);
       const image = content.querySelector('[data-place-info-image]');

@@ -15,8 +15,12 @@
 .place-search-input-row input:focus{outline:1px solid var(--sage);outline-offset:1px}
 .place-search-input-row .map-add{min-width:76px;font-size:12px}
 .place-search-input-row .map-add:disabled{cursor:wait;opacity:.6}
-.place-search-scope{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--muted);margin-top:12px}
-.place-search-scope select{border:1px solid var(--line);border-radius:3px;background:var(--paper);color:var(--ink);padding:6px 8px;font:10px var(--sans)}
+.place-search-scope{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:12px}
+.place-search-scope-options{display:flex;gap:5px;flex-wrap:wrap}
+.place-search-scope-options button{min-height:40px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--muted);padding:8px 12px;font:11px var(--sans);cursor:pointer;touch-action:manipulation}
+.place-search-scope-options button[aria-pressed=true]{background:var(--theme-control);border-color:var(--sage);color:var(--ink)}
+.place-search-scope-options button:hover{color:var(--ink);border-color:var(--sage)}
+.place-search-scope-options button:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
 .place-search-status{font-size:11px;color:var(--muted);line-height:1.8;margin:17px 0;min-height:20px}
 .place-search-status.is-error,.place-search-feedback.is-warning{color:#ad6e45}
 .place-search-group{margin:21px 0}

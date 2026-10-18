@@ -35,11 +35,13 @@
 .guide-rating-link strong{font:17px var(--serif);color:var(--ink)}
 .guide-rating-link>span:last-child{margin-left:auto;display:flex;gap:15px;align-items:center}
 .guide-editor{border:1px solid var(--line);border-radius:5px;background:var(--paper);margin-top:30px}
-.guide-editor>summary{padding:18px 21px;cursor:pointer;font-size:12px;list-style:none;display:flex;justify-content:space-between;gap:20px;color:var(--ink)}
-.guide-editor>summary::-webkit-details-marker{display:none}
-.guide-editor>summary>span{color:var(--accent);font-size:17px;line-height:1}
-.guide-editor[open]>summary{border-bottom:1px solid var(--line)}
-.guide-editor[open]>summary>span{transform:rotate(45deg)}
+.guide-inline-rating{margin:28px 0;border-block:1px solid var(--line)}
+.guide-editor-toggle{width:100%;min-height:52px;padding:18px 21px;cursor:pointer;font:12px var(--sans);display:flex;justify-content:space-between;gap:20px;color:var(--ink);border:0;background:transparent;text-align:left}
+.guide-editor-toggle>span{color:var(--accent);font-size:17px;line-height:1;transition:transform .18s ease}
+.guide-editor-toggle[aria-expanded=true]{border-bottom:1px solid var(--line)}
+.guide-editor-toggle[aria-expanded=true]>span{transform:rotate(45deg)}
+.guide-editor-toggle:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+.guide-editor form[hidden]{display:none}
 .guide-editor form{padding:22px}
 .guide-form-intro{font-size:11px;line-height:1.9;color:var(--muted);margin-bottom:20px}
 .guide-editor label{display:flex;flex-direction:column;gap:8px;font-size:12px;margin:18px 0;color:var(--ink);min-width:0}
@@ -68,6 +70,7 @@
 .guide-link-list.is-compact li{padding:11px 0;gap:12px}
 .guide-link-list.is-compact a{font-size:11px}
 .guide-country-place .guide-empty{font-size:11px}
+.guide-country-place .place-rating{padding:0 0 14px;margin-bottom:15px;border-bottom:1px solid var(--line)}
 .guide-not-found{padding:85px 0}
 .guide-not-found h1{font:35px/1.5 var(--serif);font-weight:400;margin:20px 0 15px}
 .guide-not-found p{font-size:12px;color:var(--muted);line-height:2;margin-bottom:25px}
