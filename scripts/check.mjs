@@ -165,7 +165,7 @@ if (expect(isObject(site), 'site.json 必须包含配置对象。')) {
         expect(Number.isFinite(destination.lon) && destination.lon >= -180 && destination.lon <= 180, `${label}.lon 必须是 -180 至 180 的数字。`);
       }
       if (destination.status !== undefined) {
-        expect(['want', 'visited'].includes(destination.status), `${label}.status 必须是 want 或 visited。`);
+        expect(['want', 'visited', 'resident', 'want-resident'].includes(destination.status), `${label}.status 必须是 want、visited、resident 或 want-resident。`);
       }
       if (destination.url !== undefined) webUrl(destination.url, `${label}.url`);
       if (destination.image !== undefined) text(destination.image, `${label}.image`);

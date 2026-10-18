@@ -1,9 +1,9 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-profile';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-profile';
-import {countryById} from './geography.js?v=20261018-profile';
-import {unproject} from './projection.js?v=20261018-profile';
-import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-profile';
-import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-profile';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-residences';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-residences';
+import {countryById} from './geography.js?v=20261018-residences';
+import {unproject} from './projection.js?v=20261018-residences';
+import {searchDestinations,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-residences';
+import {countryPlaces,searchCountryPlaces} from './country-destinations.js?v=20261018-residences';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PHOTON_ENDPOINT='https://photon.komoot.io/api/';

@@ -1,13 +1,15 @@
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-profile';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-profile';
-import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-profile';
-import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-profile';
-import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-profile';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-residences';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-residences';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-residences';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-residences';
+import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-residences';
+import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-residences';
+import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-residences';
 
 export const DESIRE_RATING_LABELS=['未评分','随缘','有点想去','值得计划','很想去','非去不可'];
 export const RECOMMENDATION_RATING_LABELS=['未评分','不太推荐','一般','值得一去','很推荐','强烈推荐'];
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ratingField=pin=>pin?.status==='visited'?'recommendationRating':'desireRating';
+const ratingField=pin=>isExperienced(pin)?'recommendationRating':'desireRating';
 const ratingOf=pin=>{const value=pin?.[ratingField(pin)];return Number.isInteger(value)&&value>=0&&value<=5?value:0;};
 const textKey=text=>String(text??'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLocaleLowerCase().trim();
 const newPin=place=>({id:place.kind==='country'?place.pinId:destinationPinId(place),title:place.name,kind:place.kind==='country'?'country':'city',...(place.kind==='country'?{countryId:place.countryId}:{}),lat:place.lat,lon:place.lon,note:'',status:'want',guides:[],desireRating:0});
@@ -97,11 +99,11 @@ export function ratedTravelPin(row,value){
 function cards(rows,{heading='h3'}={}){
   return rows.map(row=>{
     const country=countryPlaceById.get(row.countryId);
-    const visited=row.pin?.status==='visited',caption=visited?'有多推荐':'有多想去';
+    const visited=isExperienced(row.pin),caption=visited?'有多推荐':'有多想去';
     const guide=row.kind==='country'?`#/travel/guide/country/${encodeURIComponent(row.countryId)}`:row.saved?`#/travel/guide/place/${encodeURIComponent(row.pin.id)}`:null;
     const countryMap=!guide&&countryById.has(row.countryId)?`#/travel/country/${encodeURIComponent(row.countryId)}`:null;
     const stars=(visited?RECOMMENDATION_RATING_LABELS:DESIRE_RATING_LABELS).slice(1).map((label,index)=>{const value=index+1;return `<button type="button" class="travel-rating-star ${value<=row.rating?'is-filled':''}" data-rating-key="${esc(row.key)}" data-rating-value="${value}" aria-pressed="${value===row.rating}" aria-label="${value} 分，${label}" title="${value} 分，${label}"><span aria-hidden="true">★</span></button>`;}).join('');
-    return `<article class="travel-rating-card ${row.saved?'is-saved':''}"><div class="travel-rating-meta"><span>${row.kind==='country'?'国家':esc(country?.name||'自定义地点')}</span><span>${visited?'去过':'想去'}</span></div><${heading}${row.saved?' data-i18n-skip':''}>${esc(row.title)}</${heading}>${row.english?`<p class="travel-rating-english">${esc(row.english)}</p>`:''}<div class="travel-rating-control"><div class="travel-rating-control-heading"><span>${caption}</span><span class="travel-rating-value">${row.rating?`${row.rating} / 5`:'未评分'}</span></div><div class="travel-rating-actions"><div class="travel-rating-stars" role="group" aria-label="${esc(row.title)}，${caption}" data-rating-group>${stars}</div></div></div><div class="travel-rating-card-bottom">${guide?`<a href="${guide}">查看攻略 <span>↗</span></a>`:countryMap?`<a href="${countryMap}">查看国家地图 <span>↗</span></a>`:`<button type="button" data-rating-add="${esc(row.key)}">加入心愿 <span>＋</span></button>`}</div></article>`;
+    return `<article class="travel-rating-card ${row.saved?'is-saved':''}"><div class="travel-rating-meta"><span>${row.kind==='country'?'国家':esc(country?.name||'自定义地点')}</span><span>${pinStatusLabel(row.pin)}</span></div><${heading}${row.saved?' data-i18n-skip':''}>${esc(row.title)}</${heading}>${row.english?`<p class="travel-rating-english">${esc(row.english)}</p>`:''}<div class="travel-rating-control"><div class="travel-rating-control-heading"><span>${caption}</span><span class="travel-rating-value">${row.rating?`${row.rating} / 5`:'未评分'}</span></div><div class="travel-rating-actions"><div class="travel-rating-stars" role="group" aria-label="${esc(row.title)}，${caption}" data-rating-group>${stars}</div></div><div class="travel-rating-visit" role="group" aria-label="旅行状态"><button type="button" data-rating-visit="${esc(row.key)}" data-visit-status="want" aria-pressed="${row.pin.status==='want'}">还没去过</button><button type="button" data-rating-visit="${esc(row.key)}" data-visit-status="visited" aria-pressed="${row.pin.status==='visited'}">去过</button><button type="button" data-rating-visit="${esc(row.key)}" data-visit-status="resident" aria-pressed="${row.pin.status==='resident'}">居住</button><button type="button" data-rating-visit="${esc(row.key)}" data-visit-status="want-resident" aria-pressed="${row.pin.status==='want-resident'}">想要居住</button></div>${renderResidenceEditor(row.pin)}</div><div class="travel-rating-card-bottom">${guide?`<a href="${guide}">查看攻略 <span>↗</span></a>`:countryMap?`<a href="${countryMap}">查看国家地图 <span>↗</span></a>`:`<button type="button" data-rating-add="${esc(row.key)}">加入心愿 <span>＋</span></button>`}</div></article>`;
   }).join('');
 }
 
@@ -125,7 +127,7 @@ export function mountTravelRatings(root,{getPins,onSave}){
   const feedback=panel.querySelector('[data-ratings-feedback]');
   const more=panel.querySelector('[data-ratings-more]');
   const states={country:{query:'',sort:'desc',limit:24},city:{query:'',sort:'desc',limit:24}};
-  let kind='country',saving=false,stopped=false;
+  let kind='country',saving=false,stopped=false,residenceEditors=[];
   const pendingClicks=new Map();
   const clickDelay=400;
   let lastDouble={key:null,time:0};
@@ -145,31 +147,33 @@ export function mountTravelRatings(root,{getPins,onSave}){
     search.value=state.query;
     grid.setAttribute('aria-label',kind==='country'?'国家评分':'城市与景点评分');
     count.textContent=`${matches.length} 个结果 · ${all.filter(row=>row.saved&&row.rating>0).length} 个已评分`;
+    residenceEditors.forEach(editor=>editor.destroy());residenceEditors=[];
     grid.innerHTML=visibleCount?groupedCards(groups,kind):`<div class="travel-ratings-empty"><span aria-hidden="true">✳</span><p>${state.query?'没有匹配的地点，试试其他名字。':'这里还没有收藏的地点。先去旅行地图添加想去的国家、城市或景点。'}</p><a class="text-link" href="#/travel">前往旅行地图 <span>↗</span></a></div>`;
-    grid.querySelectorAll('[data-rating-key],[data-rating-add]').forEach(control=>{control.disabled=saving;});
+    grid.querySelectorAll('[data-rating-key],[data-rating-add],[data-rating-visit]').forEach(control=>{control.disabled=saving;});
+    for(const form of grid.querySelectorAll('[data-residence-form]'))residenceEditors.push(mountResidenceEditor(form,{getPin:()=>getPins().find(pin=>pin.id===form.dataset.residencePinId),onSave}));
     more.hidden=visibleCount>=matches.length;
   }
-  async function save(key,value,explicitAdd=false){
+  async function save(key,value,explicitAdd=false,visitStatus=null){
     if(saving||stopped)return;
     const row=Object.values(travelRatingRows(getPins())).flat().find(item=>item.key===key);
     if(!row)return;
-    let pin=ratedTravelPin(row,value);
+    let pin=visitStatus?{...row.pin,status:visitStatus}:ratedTravelPin(row,value);
     if(!pin&&explicitAdd)pin={...row.pin,kind:row.kind,desireRating:0};
     if(!pin){feedback.textContent='选择 1 至 5 分，会将这个地点加入心愿。';update();return;}
     saving=true;feedback.textContent='正在保存…';
-    grid.querySelectorAll('[data-rating-key],[data-rating-add]').forEach(control=>{control.disabled=true;});
+    grid.querySelectorAll('[data-rating-key],[data-rating-add],[data-rating-visit]').forEach(control=>{control.disabled=true;});
     try{
       const result=await onSave(pin);
       if(result===false||result?.ok===false||result?.success===false||result?.error)throw new Error(result?.error?.message||result?.error||result?.message||'评分未保存，请重试。');
       if(stopped)return;
-      feedback.textContent=result?.saved===false?'评分暂存在本页，浏览器未能保存。请导出地图备份。':explicitAdd?'已加入心愿，可以查看地点攻略。':value?`已将「${row.title}」设为 ${value} 分。`:`已清除「${row.title}」的评分，地点仍保留在地图中。`;
+      feedback.textContent=result?.saved===false?'评分暂存在本页，浏览器未能保存。请导出地图备份。':visitStatus?(visitStatus==='want-resident'?'已设为想要居住，可以评价想去程度。':visitStatus==='resident'?'已设为居住，现在可以评价推荐程度。':visitStatus==='visited'?'已设为去过，现在可以评价推荐程度。':'已设为还没去过，现在可以评价想去程度。'):explicitAdd?'已加入心愿，可以查看地点攻略。':value?`已将「${row.title}」设为 ${value} 分。`:`已清除「${row.title}」的评分，地点仍保留在地图中。`;
       feedback.classList.toggle('is-warning',result?.saved===false);
     }catch(error){if(!stopped){feedback.textContent=error.message||'评分未保存，请重试。';feedback.classList.add('is-warning');}}
     finally{
       saving=false;update();
       // Updating the sorted cards replaces their controls. Keep keyboard focus
       // on the chosen star (or the first star after clearing) after the save.
-      if(!stopped){const focused=[...grid.querySelectorAll('[data-rating-key]')].find(button=>button.dataset.ratingKey===key&&Number(button.dataset.ratingValue)===(value||1));focused?.focus({preventScroll:true});preview(focused?.closest('[data-rating-group]'));}
+      if(!stopped){const focused=visitStatus?[...grid.querySelectorAll('[data-rating-visit]')].find(button=>button.dataset.ratingVisit===key&&button.dataset.visitStatus===visitStatus):[...grid.querySelectorAll('[data-rating-key]')].find(button=>button.dataset.ratingKey===key&&Number(button.dataset.ratingValue)===(value||1));focused?.focus({preventScroll:true});preview(focused?.closest('[data-rating-group]'));}
     }
   }
   function clearDouble(key){
@@ -194,6 +198,8 @@ export function mountTravelRatings(root,{getPins,onSave}){
     pending.timer=setTimeout(commit,clickDelay);pendingClicks.set(key,pending);
   }
   function onClick(event){
+    const visit=event.target.closest('[data-rating-visit]');
+    if(visit){const value=visit.dataset.visitStatus;if(!visit.disabled&&['want','visited','resident','want-resident'].includes(value)){cancelPending(visit.dataset.ratingVisit);void save(visit.dataset.ratingVisit,0,false,value);}return;}
     const star=event.target.closest('[data-rating-value]');
     if(star){if(!star.disabled)scheduleRating(star,event);return;}
     const tab=event.target.closest('[data-ratings-tab]');
@@ -236,5 +242,5 @@ export function mountTravelRatings(root,{getPins,onSave}){
   const events={click:onClick,dblclick:onDoubleClick,pointerover:onPreview,pointerout:onPreviewEnd,focusin:onPreview,focusout:onPreviewEnd,keydown:onKeyDown};
   Object.entries(events).forEach(([type,listener])=>panel.addEventListener(type,listener));search.addEventListener('input',onInput);
   update();
-  return ()=>{cancelPending();stopped=true;Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
+  return ()=>{cancelPending();stopped=true;residenceEditors.forEach(editor=>editor.destroy());Object.entries(events).forEach(([type,listener])=>panel.removeEventListener(type,listener));search.removeEventListener('input',onInput);};
 }

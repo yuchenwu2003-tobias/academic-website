@@ -1,13 +1,13 @@
-import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-profile';
-import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-profile';
-import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-profile';
-import {layoutLandmarks} from './landmark-layout.js?v=20261018-profile';
-import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-profile';
-import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-profile';
-import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-profile';
-import {mountMapDetail} from './map-detail.js?v=20261018-profile';
-import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-profile';
-import {translateText} from './i18n.js?v=20261018-profile';
+import {CONTINENTS,COUNTRIES,continentById,countryById,fitRegion,zoomView,regionHref} from './geography.js?v=20261018-residences';
+import {WORLD_OUTLINE,GRATICULE,project,unproject} from './projection.js?v=20261018-residences';
+import {LANDMARK_CATALOG} from './landmark-catalog.js?v=20261018-residences';
+import {layoutLandmarks} from './landmark-layout.js?v=20261018-residences';
+import {selectLandmarks,landmarkPresentation} from './landmark-curation.js?v=20261018-residences';
+import {ATLAS_SRC,ATLAS_SIZE,SPRITES} from './landmark-sprites-v3.js?v=20261018-residences';
+import {renderLakeLayer,mountLakeLayer} from './lake-layer.js?v=20261018-residences';
+import {mountMapDetail} from './map-detail.js?v=20261018-residences';
+import {COUNTRY_FLAGS} from './country-flags.js?v=20261018-residences';
+import {translateText} from './i18n.js?v=20261018-residences';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mapRouteBase=value=>typeof value==='string'&&/^#\/[a-z0-9/_-]+$/i.test(value)?value.replace(/\/+$/,''):'#/travel';
 function countryShapes(region,routeBase) {

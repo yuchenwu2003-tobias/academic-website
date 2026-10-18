@@ -1,10 +1,14 @@
-import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-profile';
-import {project} from './projection.js?v=20261018-profile';
-import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-profile';
-import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-profile';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-4k';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-profile';
-import {toTraditional} from './i18n.js?v=20261018-profile';
+import {getTravelResidences} from './travel-map.js?v=20261018-residences';
+import {residencePeriod,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-residences';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-residences';
+import {placeGuideHref} from './place-media.js?v=20261018-residences';
+import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-residences';
+import {project} from './projection.js?v=20261018-residences';
+import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-residences';
+import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-residences';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-residences';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-residences';
+import {toTraditional} from './i18n.js?v=20261018-residences';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external='target="_blank" rel="noopener noreferrer"';
@@ -31,7 +35,7 @@ export function renderAcademicMap({region={kind:'world',name:'世界'},compact=f
   return `<div class="academic-map ${compact?'academic-map-compact':''}" data-academic-map>
     <div class="academic-map-toolbar"><div><button type="button" class="academic-add" data-academic-add>＋ 收藏研究组</button><button type="button" class="academic-tool" data-academic-pick aria-pressed="false">在地图上选位置</button></div><div><button type="button" class="academic-tool" data-academic-export>导出研究组</button><button type="button" class="academic-tool" data-academic-import>导入</button><input type="file" accept="application/json,.json" data-academic-file hidden></div></div>
     <div class="academic-view-switch" role="group" aria-label="学术地图显示方式"><button type="button" data-academic-view="flat" aria-pressed="false">平面地图</button><button type="button" data-academic-view="globe" aria-pressed="true">地理球</button><button type="button" data-academic-view="satellite" aria-pressed="false">卫星地球</button></div>
-    <div class="academic-view-host" data-academic-globe-host>${renderAcademicGlobe()}</div>
+    <div class="academic-residences" data-academic-residences hidden></div><div class="academic-view-host" data-academic-globe-host>${renderAcademicGlobe()}</div>
     <div class="academic-view-host" data-academic-flat-host hidden>${renderMapScene(region,false,{geographicOnly:true,routeBase:'#/academic'})}</div>
     <div class="academic-map-summary"><span class="academic-marker-key"><i aria-hidden="true"></i>感兴趣的研究组</span><span data-academic-count>0 个研究组</span><span data-academic-map-credit>Natural Earth</span></div>
     <p class="academic-map-message" data-academic-message role="status">研究组收藏保存在当前浏览器，独立于旅行地图。可导出备份。</p>
@@ -73,10 +77,15 @@ export function mountAcademicMap(root,{region={kind:'world',name:'世界'}}={}) 
     root.querySelectorAll('[data-map-hint]').forEach(hint=>{hint.hidden=!value;if(hint.firstChild?.nodeType===3)hint.firstChild.textContent='点击地图，选择研究组所在位置。 ';});
     if(value)announce('请在地图上选择研究组所在位置，再填写资料。');
   }
+  let residenceSnapshot=[];const residenceRecords=()=>residenceSnapshot;
   function draw() {
+    residenceSnapshot=getTravelResidences().map(pin=>({id:'@residence:'+pin.id,name:pin.title,lat:pin.lat,lon:pin.lon,isResidence:true,status:pin.status,period:pin.status==='resident'?residencePeriod(pin):pinStatusLabel(pin),pin}));
     const regional=getOverviewFiltered(groups,region),visible=filterAcademicGroups(regional,listQuery.value);
-    globe?.setGroups(regional);
+    const residences=residenceRecords(),regionalResidences=getOverviewFiltered(residences,region);
+    globe?.setGroups([...regional,...regionalResidences]);
+    const residenceStrip=root.querySelector('[data-academic-residences]');if(residenceStrip){residenceStrip.hidden=!residences.length;residenceStrip.innerHTML=residences.map(home=>`<a class="academic-residence-link ${home.status==='want-resident'?'is-wanted':''}" href="${esc(placeGuideHref(home.pin))}"><span aria-hidden="true">★</span><span>${pinStatusLabel(home.pin)}</span><strong data-i18n-skip>${esc(home.name)}</strong><small>${esc(home.period)}</small></a>`).join('');}
     markers.innerHTML=regional.map(group=>{const point=project(group.lat,group.lon);return `<g class="academic-marker" data-pin-id="${esc(group.id)}" transform="translate(${point.x} ${point.y}) scale(${view.width/1000})" tabindex="0" role="button" aria-label="${esc(group.name)}，查看研究组资料" data-i18n-skip><title>${esc(group.name)}</title><circle class="academic-marker-hit" r="21"/><g class="academic-marker-visual"><circle class="academic-marker-halo" r="16"/><circle class="academic-marker-disc" r="11"/><path class="academic-marker-book" d="M0-4.5C-2-6-4.5-6-6.5-5V5C-4.5 4-2 4 0 5.5C2 4 4.5 4 6.5 5V-5C4.5-6 2-6 0-4.5ZM0-4.5V5.5"/></g></g>`;}).join('');
+    markers.innerHTML+=regionalResidences.map(home=>{const point=project(home.lat,home.lon);return `<g class="academic-residence-marker ${home.status==='want-resident'?'is-wanted':''}" data-pin-id="${esc(home.id)}" role="button" tabindex="0" transform="translate(${point.x} ${point.y}) scale(${view.width/1000})" aria-label="${esc(home.name)}，${pinStatusLabel(home.pin)}" data-i18n-skip><circle r="20" fill="transparent"/>${renderPinDrawing('city',home.status)}<text x="18" y="2" class="academic-residence-label">${esc(home.name)}</text><text x="18" y="14" class="academic-residence-period">${esc(home.period)}</text></g>`;}).join('');
     root.querySelector('[data-academic-count]').textContent=`${regional.length} 个研究组`;
     root.querySelector('[data-academic-visible-count]').textContent=String(visible.length);
     root.querySelector('[data-academic-list]').innerHTML=visible.length?`<div class="academic-group-grid">${visible.map(group=>`<article class="academic-group-card"><button type="button" class="academic-group-open" data-academic-group-id="${esc(group.id)}"><span class="section-kicker mono">RESEARCH GROUP</span><h3 data-i18n-skip>${esc(group.name)}</h3>${group.institution?`<p class="academic-group-institution" data-i18n-skip>${esc(group.institution)}</p>`:''}${group.research?`<p class="academic-group-research" data-i18n-skip>${esc(group.research)}</p>`:''}${group.note?`<p class="academic-group-note" data-i18n-skip>${esc(group.note)}</p>`:''}<span class="academic-group-edit">查看与编辑资料 ↗</span></button>${group.website?`<a class="academic-group-website" href="${esc(academicWebsite(group.website))}" ${external}>研究组官网 <span>↗</span></a>`:''}</article>`).join('')}</div>`:`<div class="academic-empty"><span aria-hidden="true">⌕</span><h3>${listQuery.value.trim()?'没有找到匹配的研究组。':'从一个感兴趣的研究组开始。'}</h3><p>${listQuery.value.trim()?'试试机构名称或研究方向关键词。':'这里还没有研究组收藏，资料由你自己添加。'}</p>${listQuery.value.trim()?'':'<button type="button" class="text-link" data-academic-first>收藏第一个研究组 ↗</button>'}</div>`;
@@ -106,7 +115,7 @@ export function mountAcademicMap(root,{region={kind:'world',name:'世界'}}={}) 
     const website=root.querySelector('[data-academic-current-website]');website.hidden=!group?.website;if(group?.website)website.href=academicWebsite(group.website);
     error.textContent='';drawLocations();setAdding(false);dialog.showModal();fields.name.focus();
   }
-  function selectGroup(id){const group=groups.find(item=>item.id===id);if(group)openEditor(group);}
+  function selectGroup(id){const home=residenceRecords().find(item=>item.id===id);if(home){location.hash=placeGuideHref(home.pin);return;}const group=groups.find(item=>item.id===id);if(group)openEditor(group);}
   function closeEditor(){stopSearch();dialog.close();}
   function onLocationInput(){stopSearch();searchPhase='idle';onlineChoices=[];fields.lat.value='';fields.lon.value='';selectedHint=undefined;locationChoice.textContent='请从搜索结果中选择一个位置。';drawLocations();}
   async function searchLocation() {
@@ -150,10 +159,10 @@ export function mountAcademicMap(root,{region={kind:'world',name:'世界'}}={}) 
   function onDialogClose(){stopSearch();}
   function onBackdrop(event){if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)closeEditor();}}
   function onEscape(event){if(event.key==='Escape')setAdding(false);}
-  function onStorage(event){if(event.key===ACADEMIC_STORAGE_KEY||event.key===null){memoryGroups=undefined;groups=readGroups();draw();announce(readWarning||'学术地图已与此浏览器中的另一个标签页同步。');}}
+  function onStorage(event){if(event.key===TRAVEL_STORAGE_KEY){draw();return;}if(event.key===ACADEMIC_STORAGE_KEY||event.key===null){memoryGroups=undefined;groups=readGroups();draw();announce(readWarning||'学术地图已与此浏览器中的另一个标签页同步。');}}
   function onLanguage(){if(dialog.open)drawLocations();}
   root.addEventListener('click',onClick);form.addEventListener('submit',onSubmit);file.addEventListener('change',onImport);listQuery.addEventListener('input',draw);locationQuery.addEventListener('input',onLocationInput);locationQuery.addEventListener('keydown',onLocationKey);dialog.addEventListener('close',onDialogClose);dialog.addEventListener('cancel',onDialogClose);dialog.addEventListener('click',onBackdrop);window.addEventListener('storage',onStorage);window.addEventListener('site-language-change',onLanguage);document.addEventListener('keydown',onEscape);
-  const scene=mountMapScene(flatHost,{region,geographicOnly:true,routeBase:'#/academic',isAdding:()=>adding,onMarkerClick:selectGroup,onChoosePoint:point=>openEditor(null,point),announce,onViewChange:next=>{view=next;markers.querySelectorAll('[data-pin-id]').forEach(marker=>{const group=groups.find(item=>item.id===marker.dataset.pinId);if(group){const point=project(group.lat,group.lon);marker.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${view.width/1000})`);}});}});
+  const scene=mountMapScene(flatHost,{region,geographicOnly:true,routeBase:'#/academic',isAdding:()=>adding,onMarkerClick:selectGroup,onChoosePoint:point=>openEditor(null,point),announce,onViewChange:next=>{view=next;markers.querySelectorAll('[data-pin-id]').forEach(marker=>{const group=[...groups,...residenceRecords()].find(item=>item.id===marker.dataset.pinId);if(group){const point=project(group.lat,group.lon);marker.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${view.width/1000})`);}});}});
   globe=mountAcademicGlobe(globeHost,{region,isAdding:()=>adding,onMarkerClick:selectGroup,onChoosePoint:point=>openEditor(null,point),announce});
   applyView(activeView);draw();if(readWarning)announce(readWarning);
   return ()=>{stopped=true;stopSearch();scene.destroy();globe.destroy();root.removeEventListener('click',onClick);form.removeEventListener('submit',onSubmit);file.removeEventListener('change',onImport);listQuery.removeEventListener('input',draw);locationQuery.removeEventListener('input',onLocationInput);locationQuery.removeEventListener('keydown',onLocationKey);dialog.removeEventListener('close',onDialogClose);dialog.removeEventListener('cancel',onDialogClose);dialog.removeEventListener('click',onBackdrop);window.removeEventListener('storage',onStorage);window.removeEventListener('site-language-change',onLanguage);document.removeEventListener('keydown',onEscape);if(dialog.open)dialog.close();};

@@ -1,5 +1,6 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-profile';
-import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-profile';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-residences';
+import {COUNTRIES,CONTINENTS} from './geography-data.js?v=20261018-residences';
+import {unproject as unprojectEqualEarth,project as projectEqualEarth} from './projection.js?v=20261018-residences';
 
 const RAD=Math.PI/180,DEG=180/Math.PI;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -81,17 +82,28 @@ function preparedCountry(country){
   }).filter(ring=>ring.points.length>=6);
   preparedShapes.set(country.id,{source,rings});return rings;
 }
+const continentColors=new Map(CONTINENTS.map(continent=>[continent.id,continent.color]));
+function flatNightColor(hex){
+  const rgb=hex.replace('#','').match(/../g).map(value=>parseInt(value,16));
+  const light=rgb[0]*.213+rgb[1]*.715+rgb[2]*.072;
+  return '#'+rgb.map(value=>Math.round((light+(value-light)*.67)*.74).toString(16).padStart(2,'0')).join('');
+}
+export function geographicPalette(dark=false){
+  return {ocean:dark?'#21352d':'#e8efeb',grid:dark?'#4d6958':'#ccd9cf',border:dark?flatNightColor('#4f6249'):'#f6f6ed',land:continent=>{const color=continentColors.get(continent)||'#becbad';return dark?flatNightColor(color):color;}};
+}
 function geographicTexture(document,dark) {
   const cacheKey=`${dark}:${geographicRevision}`;
   if(geographicTextures.has(cacheKey))return geographicTextures.get(cacheKey);
   const width=4096,height=2048,canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   if(!ctx)return null;
-  ctx.fillStyle=dark?'#1e3542':'#dae8eb';ctx.fillRect(0,0,width,height);
-  ctx.strokeStyle=dark?'#547172':'#91adb0';ctx.lineWidth=1;
+  const palette=geographicPalette(dark);
+  ctx.fillStyle=palette.ocean;ctx.fillRect(0,0,width,height);
+  ctx.strokeStyle=palette.grid;ctx.lineWidth=1;ctx.globalAlpha=dark ? .55 : 1;
   ctx.beginPath();
   for(let lon=-180;lon<=180;lon+=30){const x=(lon+180)/360*width;ctx.moveTo(x,0);ctx.lineTo(x,height);}
   for(let lat=-60;lat<=60;lat+=30){const y=(90-lat)/180*height;ctx.moveTo(0,y);ctx.lineTo(width,y);}ctx.stroke();
+  ctx.globalAlpha=1;
   for(const country of COUNTRIES){
     ctx.beginPath();
     for(const ring of preparedCountry(country)){
@@ -100,10 +112,10 @@ function geographicTexture(document,dark) {
         ctx.closePath();
       }
     }
-    ctx.fillStyle=dark?'#7c9587':'#c4cdb2';ctx.fill('evenodd');
+    ctx.fillStyle=palette.land(country.continent);ctx.fill('evenodd');
     // Fine boundary strokes are projected directly onto the final framebuffer.
     // A faint atlas line only supplies context during the fast drag preview.
-    ctx.strokeStyle=dark?'#5c7265':'#a8b49e';ctx.lineWidth=.4;ctx.stroke();
+    ctx.strokeStyle=palette.border;ctx.lineWidth=.4;ctx.stroke();
   }
   const texture={width,height,data:ctx.getImageData(0,0,width,height).data};
   // One theme at a time bounds the CPU texture to 32 MiB rather than retaining
@@ -155,7 +167,7 @@ function drawGeographicBoundaries(ctx,camera,raster,ratio,dark){
       ctx.lineTo(centerX+r*(-slon*bx+clon*bz),centerY-r*(-slat*clon*bx+clat*by-slat*slon*bz));
     }
   }
-  ctx.strokeStyle=dark?'#29473f':'#718772';ctx.lineWidth=.72*ratio;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();ctx.restore();
+  ctx.strokeStyle=geographicPalette(dark).border;ctx.lineWidth=.72*ratio;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();ctx.restore();
 }
 function sphereRaster(width,height,ratio,radius){
   const centerX=width/2,centerY=height/2,r=radius*ratio;
@@ -190,7 +202,7 @@ function sampleTexture(output,dest,texture,u,v,shade,weight,add,bilinear){
 
 const bookIcon='<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11.5"/><path d="M14 9C11.5 7.5 9 8 7 9V19C9 18 11.5 18 14 19.5C16.5 18 19 18 21 19V9C19 8 16.5 7.5 14 9ZM14 9V19.5"/></svg>';
 export function renderAcademicGlobe() {
-  return `<section class="academic-globe" data-academic-globe aria-label="学术地球"><div class="academic-globe-stage" data-globe-stage tabindex="0" role="group" aria-label="可拖动的学术地球"><canvas data-globe-canvas aria-label="球面世界地图"></canvas><div class="academic-globe-markers" data-globe-markers></div><span class="academic-globe-center" aria-hidden="true"></span></div><div class="academic-globe-controls" aria-label="地球操作"><button type="button" data-globe-zoom="in" aria-label="放大地球">＋</button><button type="button" data-globe-zoom="out" aria-label="缩小地球">−</button><button type="button" data-globe-reset aria-label="重置地球视角">↺</button></div><div class="academic-globe-heading"><span class="mono">RESEARCH AROUND THE WORLD</span><span data-globe-geographic>地理地球</span><span data-globe-satellite hidden>昼夜卫星地球</span></div><p class="academic-globe-hint">拖动旋转 · 滚轮或双指缩放 · 方向键旋转</p><p class="academic-globe-status" data-globe-status role="status" hidden></p><div class="academic-globe-pick" data-map-hint hidden><span>点击地球，选择研究组所在位置。</span><button type="button" data-map-cancel>取消</button></div><p class="academic-globe-credit" data-globe-geographic>地理底图：Natural Earth</p><p class="academic-globe-credit" data-globe-satellite hidden><span>NASA 合成影像，非实时天气；昼夜按当前 UTC 时间模拟。</span> <a href="https://svs.gsfc.nasa.gov/2915" target="_blank" rel="noopener noreferrer">Blue Marble</a> · <a href="https://svs.gsfc.nasa.gov/30028" target="_blank" rel="noopener noreferrer">Earth at Night 2012</a></p></section>`;
+  return `<section class="academic-globe" data-academic-globe aria-label="学术地球"><div class="academic-globe-stage" data-globe-stage tabindex="0" role="group" aria-label="可拖动的学术地球"><canvas data-globe-canvas aria-label="球面世界地图"></canvas><div class="academic-globe-markers" data-globe-markers></div><span class="academic-globe-center" aria-hidden="true"></span></div><div class="academic-globe-controls" aria-label="地球操作"><button type="button" data-globe-zoom="in" aria-label="放大地球">＋</button><button type="button" data-globe-zoom="out" aria-label="缩小地球">−</button><button type="button" data-globe-reset aria-label="重置地球视角">↺</button></div><div class="academic-globe-heading"><span class="mono">RESEARCH AROUND THE WORLD</span><span data-globe-geographic>地理地球</span><span data-globe-satellite hidden>昼夜卫星地球</span></div><p class="academic-globe-hint">拖动旋转 · 滚轮或双指缩放 · 方向键旋转</p><p class="academic-globe-status" data-globe-status role="status" hidden></p><div class="academic-globe-pick" data-map-hint hidden><span>点击地球，选择研究组所在位置。</span><button type="button" data-map-cancel>取消</button></div><p class="academic-globe-credit" data-globe-geographic>地理底图：Natural Earth</p><p class="academic-globe-credit" data-globe-satellite hidden><span>NASA 合成影像，非实时天气；昼夜按当前 UTC 时间模拟。</span> <a href="https://svs.gsfc.nasa.gov/2915" target="_blank" rel="noopener noreferrer">Blue Marble</a> · <a href="https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/" target="_blank" rel="noopener noreferrer">Black Marble</a></p></section>`;
 }
 
 function initialCamera(region) {
@@ -296,7 +308,7 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
         const nx=forward*clon-east*slon,ny=front*slat+north*clat,nz=forward*slon+east*clon;
         const u=(Math.atan2(nz,nx)/Math.PI+1)/2,v=.5-Math.asin(clamp(ny,-1,1))/Math.PI;
         const dest=index*4;
-        const shade=.83+.17*front;
+        const shade=satellite ? .83+.17*front : 1;
         if(night){
           const light=smoothstep(-.12,.12,nx*sunX+ny*sunY+nz*sunZ);
           if(light>0)sampleTexture(output,dest,day,u,v,shade,light,false,!low);
@@ -333,8 +345,11 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
   function ensureTextures(){
     if(textures||textureFailure||host.dataset.textureLoading)return;
     host.dataset.textureLoading='true';
-    Promise.all([loadTexture('./earth-day.jpg?v=5400-bmng-200412'),loadTexture('./earth-night.jpg?v=3600-viirs-2012')]).then(([day,night])=>{
-      if(stopped)return;if(day&&night)textures={day,night};else textureFailure=true;updateModeUI();schedule();
+    const highDetail=(stage.getBoundingClientRect().width||width||window.innerWidth)>=700;
+    const standard=()=>Promise.all([loadTexture('./earth-day.jpg?v=5400-bmng-200412'),loadTexture('./earth-night.jpg?v=3600-viirs-2012')]);
+    const request=highDetail?Promise.all([loadTexture('./earth-day-8k.jpg?v=8192-bmng-200412'),loadTexture('./earth-night-8k.jpg?v=8192-viirs-2016')]).catch(()=>{if(stopped)return [null,null];return standard();}):standard();
+    request.then(([day,night])=>{
+      if(stopped)return;if(day&&night){textures={day,night};host.dataset.textureResolution=`${day.width}/${night.width}`;}else textureFailure=true;updateModeUI();schedule();
     }).catch(()=>{if(stopped)return;textureFailure=true;updateModeUI();schedule();}).finally(()=>{if(!stopped)delete host.dataset.textureLoading;});
   }
   function setMode(value){if(stopped)return;mode=value==='satellite'?'satellite':'geographic';updateModeUI();resize();if(mode==='satellite')ensureTextures();}
@@ -342,8 +357,8 @@ export function mountAcademicGlobe(root,{region={kind:'world'},onMarkerClick=()=
     if(stopped)return;
     groups=Array.isArray(next)?next.filter(group=>validPoint(group)&&typeof group.id==='string'):[];
     overlay.replaceChildren();markerElements=groups.map(group=>{
-      const element=document.createElement('button');element.type='button';element.className='academic-globe-marker';element.dataset.globeGroupId=group.id;element.dataset.i18nSkip='';
-      element.setAttribute('aria-label',String(group.name||group.id));element.title=String(group.name||group.id);element.innerHTML=bookIcon;
+      const element=document.createElement('button');element.type='button';element.className='academic-globe-marker'+(group.isResidence?' is-residence'+(group.status==='want-resident'?' is-wanted':''):'');element.dataset.globeGroupId=group.id;element.dataset.i18nSkip='';
+      element.setAttribute('aria-label',String(group.name||group.id));element.title=String(group.name||group.id);element.innerHTML=group.isResidence?`<svg viewBox="-20 -20 40 40" aria-hidden="true">${renderPinDrawing('city',group.status)}</svg>`:bookIcon;if(group.isResidence){const label=document.createElement('span');label.className='academic-globe-residence-label';label.textContent=group.name+(group.period?' · '+group.period:'');element.append(label);}
       overlay.append(element);return {element,point:{lat:group.lat,lon:group.lon}};
     });updateMarkers();
   }

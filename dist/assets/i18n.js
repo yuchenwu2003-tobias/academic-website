@@ -1,10 +1,10 @@
-import {Converter} from './vendor/opencc/cn2t.js?v=20261018-profile';
-import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-profile';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-profile';
-import {UI_EN} from './i18n-messages.js?v=20261018-profile';
-import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-profile';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-profile';
-import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-profile';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-residences';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-residences';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-residences';
+import {UI_EN} from './i18n-messages.js?v=20261018-residences';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-residences';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-residences';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-residences';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
@@ -44,6 +44,7 @@ function englishText(source, depth = 0) {
   if (depth > 5 || !/[\u3400-\u9fff]/.test(source)) return source;
   const tr = value => englishText(value, depth + 1);
   const patterns = [
+    [/^(\d{4}\.\d{2}) — 至今$/,(_,month)=>`${month} — present`],
     [/^([1-5]) 分，(.+)$/,(_,n,label)=>`${n}/5, ${tr(label)}`],
     [/^(\d+) 个研究组$/,(_,n)=>`${n} research ${n==='1'?'group':'groups'}`],
     [/^已导入 (\d+) 个研究组，并与学术地图合并。$/,(_,n)=>`Imported ${n} research groups and merged them with your academic map.`],
@@ -75,8 +76,8 @@ function englishText(source, depth = 0) {
     [/^(.+)旗帜$/, (_, name) => `${tr(name)} flag`],
     [/^(.+)，(已在地图中|加入旅行心愿)$/, (_, name, action) => `${tr(name)}, ${action === '已在地图中' ? 'already on your map' : 'add to travel wishlist'}`],
     // Saved pin titles are user content; only their action/status suffix changes.
-    [/^(.+)，(城市／景点|国家／地区)，(去过|想去)，点击查看资料$/, (_,title,kind,status)=>`${title}, ${tr(kind)}, ${tr(status)}, view details`],
-    [/^(.+)，(去过|想去)，点击编辑$/, (_, title, status) => `${title}, ${tr(status)}, select to edit`],
+    [/^(.+)，(城市／景点|国家／地区)，(去过|想去|居住|想要居住)，点击查看资料$/, (_,title,kind,status)=>`${title}, ${tr(kind)}, ${tr(status)}, view details`],
+    [/^(.+)，(去过|想去|居住|想要居住)，点击编辑$/, (_, title, status) => `${title}, ${tr(status)}, select to edit`],
     [/^(.+)，进入大洲页面$/, (_, name) => `${tr(name)}, explore continent`],
     [/^(.+)，查看国家或地区页面$/, (_, name) => `${tr(name)}, explore country or region`],
     [/^(.+)，查看(.+)页面$/, (_, title, name) => `${tr(title)}, explore ${tr(name)}`],
@@ -137,9 +138,9 @@ function translateAttributes(element) {
     const previous = records[attribute];
     const source = previous && current === previous.last ? previous.source : current;
     // Keep saved titles intact in both Chinese writing systems.
-    const pinKindLabel=element.matches('.map-pin-marker')&&source.match(/^(.+)，(城市／景点|国家／地区)，(去过|想去)，点击查看资料$/);
+    const pinKindLabel=element.matches('.map-pin-marker')&&source.match(/^(.+)，(城市／景点|国家／地区)，(去过|想去|居住|想要居住)，点击查看资料$/);
     const ratingLabel=source.match(/^(.+)，(有多想去|有多推荐)$/);
-    const pinLabel = element.matches('.map-pin-marker') && source.match(/^(.+)，(去过|想去)，点击编辑$/);
+    const pinLabel = element.matches('.map-pin-marker') && source.match(/^(.+)，(去过|想去|居住|想要居住)，点击编辑$/);
     const next=ratingLabel&&language==='zh-TW'?`${ratingLabel[1]}，${toTraditional(ratingLabel[2])}`:pinKindLabel&&language==='zh-TW'?`${pinKindLabel[1]}，${toTraditional(pinKindLabel[2])}，${toTraditional(pinKindLabel[3])}，點擊查看資料`:pinLabel && language === 'zh-TW' ? `${pinLabel[1]}，${toTraditional(pinLabel[2])}，點擊編輯` : translateText(source);
     records[attribute] = {source, last: next};
     if (current !== next) element.setAttribute(attribute, next);

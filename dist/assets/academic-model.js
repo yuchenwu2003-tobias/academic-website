@@ -1,4 +1,4 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-profile';
+import {COUNTRIES} from './geography-data.js?v=20261018-residences';
 
 export const ACADEMIC_STORAGE_KEY='tobias.academic-map.v1';
 export const ACADEMIC_BACKUP_TYPE='academic-map';

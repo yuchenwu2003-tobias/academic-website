@@ -1,6 +1,10 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-profile';
+import {COUNTRIES} from './geography-data.js?v=20261018-residences';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
-export {project,unproject} from './projection.js?v=20261018-profile';
+export const isExperienced=pin=>['visited','resident'].includes(pin?.status);
+export const isResidenceStatus=pin=>['resident','want-resident'].includes(pin?.status);
+export const pinStatusLabel=pin=>pin?.status==='want-resident'?'想要居住':pin?.status==='resident'?'居住':pin?.status==='visited'?'去过':'想去';
+export function residencePeriod(pin){return pin?.residenceStart?`${pin.residenceStart.replace('-','.')} — ${pin.residenceEnd?pin.residenceEnd.replace('-','.'):'至今'}`:'';}
+export {project,unproject} from './projection.js?v=20261018-residences';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
 export function normalizeCountryId(value) {
   if(typeof value!=='string')return null;
@@ -32,7 +36,7 @@ export function normalizeGuideLinks(guides=[]) {
   });
 }
 export function normalizePin(pin) {
-  if (!pin || typeof pin !== 'object' || typeof pin.title !== 'string' || !pin.title.trim() || pin.title.length>80 || typeof pin.lat!=='number' || !Number.isFinite(pin.lat) || Math.abs(pin.lat)>90 || typeof pin.lon!=='number' || !Number.isFinite(pin.lon) || Math.abs(pin.lon)>180 || (pin.note!==undefined && (typeof pin.note!=='string'||pin.note.length>5000)) || !['want','visited'].includes(pin.status ?? 'want')) throw new Error('地点需要名称、有效经纬度、“想去”或“去过”状态，介绍最多 5000 个字符。');
+  if (!pin || typeof pin !== 'object' || typeof pin.title !== 'string' || !pin.title.trim() || pin.title.length>80 || typeof pin.lat!=='number' || !Number.isFinite(pin.lat) || Math.abs(pin.lat)>90 || typeof pin.lon!=='number' || !Number.isFinite(pin.lon) || Math.abs(pin.lon)>180 || (pin.note!==undefined && (typeof pin.note!=='string'||pin.note.length>5000)) || !['want','visited','resident','want-resident'].includes(pin.status ?? 'want')) throw new Error('地点需要名称、有效经纬度和有效旅行状态，介绍最多 5000 个字符。');
   const result={id:typeof pin.id==='string'&&/^[\w-]{1,100}$/.test(pin.id)?pin.id:crypto.randomUUID(),title:pin.title.trim(),note:pin.note || '',lat:pin.lat,lon:pin.lon,status:pin.status || 'want'};
   const countryId=normalizeCountryId(pin.countryId);
   // Unknown future kinds and malformed country metadata remain recoverable as
@@ -41,6 +45,11 @@ export function normalizePin(pin) {
   if(countryId)result.countryId=countryId;
   result.desireRating=Number.isInteger(pin.desireRating)&&pin.desireRating>=0&&pin.desireRating<=5?pin.desireRating:0;
   result.recommendationRating=Number.isInteger(pin.recommendationRating)&&pin.recommendationRating>=0&&pin.recommendationRating<=5?pin.recommendationRating:0;
+  for(const field of ['residenceStart','residenceEnd']){
+    const value=pin[field];if(value===undefined||value==='')continue;
+    if(typeof value!=='string'||!(/^[1-9]\d{3}-(0[1-9]|1[0-2])$/).test(value))throw new Error('居住时间请使用有效的年和月。');result[field]=value;
+  }
+  if(result.residenceEnd&&(!result.residenceStart||result.residenceEnd<result.residenceStart))throw new Error('请先填写入住时间，结束时间不能早于入住时间。');
   const countryHint=normalizeCountryHint(pin.countryHint);
   if(countryHint)result.countryHint=countryHint;
   result.guides=normalizeGuideLinks(pin.guides);

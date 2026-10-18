@@ -1,4 +1,4 @@
-import {project} from './projection.js?v=20261018-profile';
+import {project} from './projection.js?v=20261018-residences';
 
 const PADDING = 8;
 const MARGIN = 10;
