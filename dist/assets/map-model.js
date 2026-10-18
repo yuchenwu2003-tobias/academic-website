@@ -1,10 +1,17 @@
-import {COUNTRIES} from './geography-data.js?v=20261018-residences';
+import {COUNTRIES} from './geography-data.js?v=20261018-duration';
 export const STORAGE_KEY = 'tobias.travel-map.v1';
 export const isExperienced=pin=>['visited','resident'].includes(pin?.status);
 export const isResidenceStatus=pin=>['resident','want-resident'].includes(pin?.status);
 export const pinStatusLabel=pin=>pin?.status==='want-resident'?'想要居住':pin?.status==='resident'?'居住':pin?.status==='visited'?'去过':'想去';
 export function residencePeriod(pin){return pin?.residenceStart?`${pin.residenceStart.replace('-','.')} — ${pin.residenceEnd?pin.residenceEnd.replace('-','.'):'至今'}`:'';}
-export {project,unproject} from './projection.js?v=20261018-residences';
+export function residenceDuration(pin,now=new Date()){
+  if(!pin?.residenceStart)return '';
+  const [startYear,startMonth]=pin.residenceStart.split('-').map(Number);
+  const [endYear,endMonth]=pin.residenceEnd?pin.residenceEnd.split('-').map(Number):[now.getFullYear(),now.getMonth()+1];
+  const months=Math.max(0,(endYear-startYear)*12+endMonth-startMonth),years=Math.floor(months/12),rest=months%12;
+  return years?`${years}yr${rest?` ${rest}mo`:''}`:`${months}mo`;
+}
+export {project,unproject} from './projection.js?v=20261018-duration';
 const countryHintIds=new Set([...COUNTRIES.map(country=>country.id),'sgp','mdv']);
 export function normalizeCountryId(value) {
   if(typeof value!=='string')return null;

@@ -1,14 +1,14 @@
-import {getTravelResidences} from './travel-map.js?v=20261018-residences';
-import {residencePeriod,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-residences';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-residences';
-import {placeGuideHref} from './place-media.js?v=20261018-residences';
-import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-residences';
-import {project} from './projection.js?v=20261018-residences';
-import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-residences';
-import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-residences';
-import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-residences';
-import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-residences';
-import {toTraditional} from './i18n.js?v=20261018-residences';
+import {getTravelResidences} from './travel-map.js?v=20261018-duration';
+import {residenceDuration,pinStatusLabel,STORAGE_KEY as TRAVEL_STORAGE_KEY} from './map-model.js?v=20261018-duration';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-duration';
+import {placeGuideHref} from './place-media.js?v=20261018-duration';
+import {ACADEMIC_STORAGE_KEY,ACADEMIC_LIMIT,academicWebsite,normalizeAcademicGroup,normalizeAcademicCountryHint,academicBackup,parseAcademicBackup,mergeAcademicGroups} from './academic-model.js?v=20261018-duration';
+import {project} from './projection.js?v=20261018-duration';
+import {fitRegion,pinsInRegion,countryAt} from './geography.js?v=20261018-duration';
+import {renderMapScene,mountMapScene,renderRegionDirectory} from './map-scene.js?v=20261018-duration';
+import {renderAcademicGlobe,mountAcademicGlobe} from './academic-globe.js?v=20261018-duration';
+import {localPlaceMatches,searchOnlinePlaces,searchFocus} from './place-search.js?v=20261018-duration';
+import {toTraditional} from './i18n.js?v=20261018-duration';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external='target="_blank" rel="noopener noreferrer"';
@@ -79,13 +79,13 @@ export function mountAcademicMap(root,{region={kind:'world',name:'世界'}}={}) 
   }
   let residenceSnapshot=[];const residenceRecords=()=>residenceSnapshot;
   function draw() {
-    residenceSnapshot=getTravelResidences().map(pin=>({id:'@residence:'+pin.id,name:pin.title,lat:pin.lat,lon:pin.lon,isResidence:true,status:pin.status,period:pin.status==='resident'?residencePeriod(pin):pinStatusLabel(pin),pin}));
+    residenceSnapshot=getTravelResidences().map(pin=>({id:'@residence:'+pin.id,name:pin.title,lat:pin.lat,lon:pin.lon,isResidence:true,status:pin.status,period:pin.status==='resident'?residenceDuration(pin):pinStatusLabel(pin),pin}));
     const regional=getOverviewFiltered(groups,region),visible=filterAcademicGroups(regional,listQuery.value);
     const residences=residenceRecords(),regionalResidences=getOverviewFiltered(residences,region);
     globe?.setGroups([...regional,...regionalResidences]);
     const residenceStrip=root.querySelector('[data-academic-residences]');if(residenceStrip){residenceStrip.hidden=!residences.length;residenceStrip.innerHTML=residences.map(home=>`<a class="academic-residence-link ${home.status==='want-resident'?'is-wanted':''}" href="${esc(placeGuideHref(home.pin))}"><span aria-hidden="true">★</span><span>${pinStatusLabel(home.pin)}</span><strong data-i18n-skip>${esc(home.name)}</strong><small>${esc(home.period)}</small></a>`).join('');}
     markers.innerHTML=regional.map(group=>{const point=project(group.lat,group.lon);return `<g class="academic-marker" data-pin-id="${esc(group.id)}" transform="translate(${point.x} ${point.y}) scale(${view.width/1000})" tabindex="0" role="button" aria-label="${esc(group.name)}，查看研究组资料" data-i18n-skip><title>${esc(group.name)}</title><circle class="academic-marker-hit" r="21"/><g class="academic-marker-visual"><circle class="academic-marker-halo" r="16"/><circle class="academic-marker-disc" r="11"/><path class="academic-marker-book" d="M0-4.5C-2-6-4.5-6-6.5-5V5C-4.5 4-2 4 0 5.5C2 4 4.5 4 6.5 5V-5C4.5-6 2-6 0-4.5ZM0-4.5V5.5"/></g></g>`;}).join('');
-    markers.innerHTML+=regionalResidences.map(home=>{const point=project(home.lat,home.lon);return `<g class="academic-residence-marker ${home.status==='want-resident'?'is-wanted':''}" data-pin-id="${esc(home.id)}" role="button" tabindex="0" transform="translate(${point.x} ${point.y}) scale(${view.width/1000})" aria-label="${esc(home.name)}，${pinStatusLabel(home.pin)}" data-i18n-skip><circle r="20" fill="transparent"/>${renderPinDrawing('city',home.status)}<text x="18" y="2" class="academic-residence-label">${esc(home.name)}</text><text x="18" y="14" class="academic-residence-period">${esc(home.period)}</text></g>`;}).join('');
+    markers.innerHTML+=regionalResidences.map(home=>{const point=project(home.lat,home.lon);return `<g class="academic-residence-marker ${home.status==='want-resident'?'is-wanted':''}" data-pin-id="${esc(home.id)}" role="button" tabindex="0" transform="translate(${point.x} ${point.y}) scale(${view.width/1000})" aria-label="${esc(home.name)}，${pinStatusLabel(home.pin)}" data-i18n-skip><circle r="20" fill="transparent"/><g class="academic-residence-visual">${renderPinDrawing('city',home.status)}</g><text x="18" y="2" class="academic-residence-label">${esc(home.name)}</text><text x="18" y="14" class="academic-residence-period">${esc(home.period)}</text></g>`;}).join('');
     root.querySelector('[data-academic-count]').textContent=`${regional.length} 个研究组`;
     root.querySelector('[data-academic-visible-count]').textContent=String(visible.length);
     root.querySelector('[data-academic-list]').innerHTML=visible.length?`<div class="academic-group-grid">${visible.map(group=>`<article class="academic-group-card"><button type="button" class="academic-group-open" data-academic-group-id="${esc(group.id)}"><span class="section-kicker mono">RESEARCH GROUP</span><h3 data-i18n-skip>${esc(group.name)}</h3>${group.institution?`<p class="academic-group-institution" data-i18n-skip>${esc(group.institution)}</p>`:''}${group.research?`<p class="academic-group-research" data-i18n-skip>${esc(group.research)}</p>`:''}${group.note?`<p class="academic-group-note" data-i18n-skip>${esc(group.note)}</p>`:''}<span class="academic-group-edit">查看与编辑资料 ↗</span></button>${group.website?`<a class="academic-group-website" href="${esc(academicWebsite(group.website))}" ${external}>研究组官网 <span>↗</span></a>`:''}</article>`).join('')}</div>`:`<div class="academic-empty"><span aria-hidden="true">⌕</span><h3>${listQuery.value.trim()?'没有找到匹配的研究组。':'从一个感兴趣的研究组开始。'}</h3><p>${listQuery.value.trim()?'试试机构名称或研究方向关键词。':'这里还没有研究组收藏，资料由你自己添加。'}</p>${listQuery.value.trim()?'':'<button type="button" class="text-link" data-academic-first>收藏第一个研究组 ↗</button>'}</div>`;

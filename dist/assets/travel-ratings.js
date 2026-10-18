@@ -1,10 +1,10 @@
-import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-residences';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-residences';
-import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-residences';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-residences';
-import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-residences';
-import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-residences';
-import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-residences';
+import {renderResidenceEditor,mountResidenceEditor} from './residence.js?v=20261018-duration';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-duration';
+import {countryPlaces,countryPlaceById,countryMatchesQuery} from './country-destinations.js?v=20261018-duration';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-duration';
+import {destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-duration';
+import {CONTINENTS,countryById,pinCountry} from './geography.js?v=20261018-duration';
+import {toTraditional,countrySearchAliases} from './i18n.js?v=20261018-duration';
 
 export const DESIRE_RATING_LABELS=['未评分','随缘','有点想去','值得计划','很想去','非去不可'];
 export const RECOMMENDATION_RATING_LABELS=['未评分','不太推荐','一般','值得一去','很推荐','强烈推荐'];

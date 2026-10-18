@@ -1,14 +1,14 @@
-import {isExperienced,pinStatusLabel,residencePeriod,isResidenceStatus} from './map-model.js?v=20261018-residences';
-import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-residences';
-import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-residences';
-import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-residences';
-import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-residences';
-import {renderPinDrawing} from './pin-icons.js?v=20261018-residences';
-import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-residences';
-import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-residences';
-import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-residences';
-import {mountClickChoices} from './click-choices.js?v=20261018-residences';
-import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-residences';
+import {isExperienced,pinStatusLabel,residenceDuration,isResidenceStatus} from './map-model.js?v=20261018-duration';
+import {STORAGE_KEY,project,normalizePin,parseImportState,combinePins} from './map-model.js?v=20261018-duration';
+import {renderMapScene,renderRegionDirectory,mountMapScene} from './map-scene.js?v=20261018-duration';
+import {fitRegion,pinsInRegion,pinCountry} from './geography.js?v=20261018-duration';
+import {countryPlaces,anchorCountryPin,countryMatchesQuery} from './country-destinations.js?v=20261018-duration';
+import {renderPinDrawing} from './pin-icons.js?v=20261018-duration';
+import {renderPlaceInfo,mountPlaceInfo} from './place-info.js?v=20261018-duration';
+import {renderDestinationPicker,mountDestinationPicker,destinationPinId,findDestinationPin} from './destination-picker.js?v=20261018-duration';
+import {renderPlaceSearch,mountPlaceSearch} from './place-search.js?v=20261018-duration';
+import {mountClickChoices} from './click-choices.js?v=20261018-duration';
+import {countrySearchAliases,toTraditional} from './i18n.js?v=20261018-duration';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kindName=pin=>pin.kind==='country'?'国家／地区':'城市／景点';
@@ -94,7 +94,7 @@ export function mountTravelMap(root,destinations=[],region={kind:"world",name:"�
   function draw() {
     const pins=pinsInRegion(allPins(),region).sort((a,b)=>Number(isResidenceStatus(a))-Number(isResidenceStatus(b)));
     const scale=view.width/1000;
-    markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon),country=pin.kind==='country',resident=isResidenceStatus(pin);return `<g class="map-pin-marker ${country?'is-country':'is-city'} ${isExperienced(pin)?'is-visited':''} ${resident?'is-resident':''} ${pin.status==='want-resident'?'is-want-resident':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" data-pin-kind="${country?'country':'city'}" aria-label="${esc(pin.title)}，${kindName(pin)}，${pinStatusLabel(pin)}，点击查看资料"><title>${esc(pin.title)}</title><circle cx="${resident?0:country?6:0}" cy="${resident?0:country?-15:-12}" r="20" class="marker-hit-area"/><g class="marker-visual">${renderPinDrawing(pin.kind,pin.status)}</g>${resident?`<text class="marker-resident-label" x="18" y="2" data-i18n-skip>${esc(pin.title)}</text><text class="marker-resident-period" x="18" y="14">${esc(pin.status==='resident'?residencePeriod(pin):'想要居住')}</text>`:''}</g>`;}).join('');
+    markers.innerHTML=pins.map(pin=>{const p=project(pin.lat,pin.lon),country=pin.kind==='country',resident=isResidenceStatus(pin);return `<g class="map-pin-marker ${country?'is-country':'is-city'} ${isExperienced(pin)?'is-visited':''} ${resident?'is-resident':''} ${pin.status==='want-resident'?'is-want-resident':''}" transform="translate(${p.x} ${p.y}) scale(${scale})" tabindex="0" role="button" data-pin-id="${esc(pin.id)}" data-pin-kind="${country?'country':'city'}" aria-label="${esc(pin.title)}，${kindName(pin)}，${pinStatusLabel(pin)}，点击查看资料"><title>${esc(pin.title)}</title><circle cx="${resident?0:country?6:0}" cy="${resident?0:country?-15:-12}" r="20" class="marker-hit-area"/><g class="marker-visual">${renderPinDrawing(pin.kind,pin.status)}</g>${resident?`<text class="marker-resident-label" x="18" y="2" data-i18n-skip>${esc(pin.title)}</text><text class="marker-resident-period" x="18" y="14">${esc(pin.status==='resident'?residenceDuration(pin):'想要居住')}</text>`:''}</g>`;}).join('');
     root.querySelector('[data-pin-count]').textContent=`${pins.length} 个地点`;
     document.querySelector('.travel-count')?.replaceChildren(document.createTextNode(`${String(pins.length).padStart(2,'0')} PLACES TO GO`));
     const list=root.querySelector('[data-map-list]');

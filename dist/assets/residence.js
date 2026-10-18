@@ -1,4 +1,4 @@
-import {normalizePin,residencePeriod} from './map-model.js?v=20261018-residences';
+import {normalizePin,residencePeriod} from './map-model.js?v=20261018-duration';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function renderResidenceEditor(pin){
   return `<form class="residence-editor" data-residence-form data-residence-pin-id="${esc(pin.id)}" ${pin.status==='resident'?'':'hidden'}><div class="residence-heading"><span>居住时间</span><span data-residence-period>${esc(residencePeriod(pin))}</span></div><div class="residence-dates"><label>入住月份<input type="month" data-residence-start value="${esc(pin.residenceStart||'')}"></label><label>结束月份<input type="month" data-residence-end value="${esc(pin.residenceEnd||'')}"></label></div><small>结束时间留空表示至今。</small><button type="submit" data-residence-save>保存居住时间</button><p data-residence-feedback role="status"></p></form>`;

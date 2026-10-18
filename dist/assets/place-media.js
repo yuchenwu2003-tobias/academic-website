@@ -1,7 +1,7 @@
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-residences';
-import {countryPlaceById} from './country-destinations.js?v=20261018-residences';
-import {pinCountry} from './geography.js?v=20261018-residences';
-import {normalizeCountryId} from './map-model.js?v=20261018-residences';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-duration';
+import {countryPlaceById} from './country-destinations.js?v=20261018-duration';
+import {pinCountry} from './geography.js?v=20261018-duration';
+import {normalizeCountryId} from './map-model.js?v=20261018-duration';
 
 // API reference: https://www.mediawiki.org/wiki/API:Pageimages and API:Search.
 // Only public place/country names are queried. Personal notes and guides are never read here.

@@ -1,9 +1,9 @@
-import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-residences';
-import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-residences';
-import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-residences';
-import {pinCountry} from './geography.js?v=20261018-residences';
-import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-residences';
-import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-residences';
+import {renderEditableField,mountEditableFields} from './editable-field.js?v=20261018-duration';
+import {isExperienced,pinStatusLabel,residencePeriod} from './map-model.js?v=20261018-duration';
+import {getPlaceMedia, placeGuideHref} from './place-media.js?v=20261018-duration';
+import {pinCountry} from './geography.js?v=20261018-duration';
+import {normalizeCountryId,normalizePin} from './map-model.js?v=20261018-duration';
+import {renderPlaceRating,mountPlaceRating} from './place-rating.js?v=20261018-duration';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
 const safeUrl = value => {try {const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';} catch {return '';}};

@@ -1,10 +1,10 @@
-import {Converter} from './vendor/opencc/cn2t.js?v=20261018-residences';
-import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-residences';
-import {DESTINATIONS} from './destination-catalog.js?v=20261018-residences';
-import {UI_EN} from './i18n-messages.js?v=20261018-residences';
-import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-residences';
-import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-residences';
-import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-residences';
+import {Converter} from './vendor/opencc/cn2t.js?v=20261018-duration';
+import {COUNTRIES, CONTINENTS} from './geography-data.js?v=20261018-duration';
+import {DESTINATIONS} from './destination-catalog.js?v=20261018-duration';
+import {UI_EN} from './i18n-messages.js?v=20261018-duration';
+import {DESTINATION_UI_EN} from './i18n-destinations.js?v=20261018-duration';
+import {PLACE_SEARCH_UI_EN} from './i18n-place-search.js?v=20261018-duration';
+import {ACADEMIC_UI_EN} from './i18n-academic.js?v=20261018-duration';
 
 export const LANGUAGE_STORAGE_KEY = 'tobias-personal-space.language.v1';
 export const LANGUAGES = ['zh-CN', 'zh-TW', 'en'];
