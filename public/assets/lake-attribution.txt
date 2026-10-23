@@ -1,0 +1,12 @@
+Natural Earth physical water data, public domain.
+
+Source repository: https://github.com/nvkelso/natural-earth-vector
+Files: ne_110m_lakes.geojson, ne_50m_lakes.geojson, ne_10m_lakes.geojson.
+The Caspian Sea is sourced from its independent polygon in ne_110m_ocean.geojson, ne_50m_ocean.geojson, and ne_10m_ocean.geojson.
+All source files: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/
+No lakes_historic layer is used. The two Aral overview pieces come from the normal 50m lakes layer.
+Terms: https://www.naturalearthdata.com/about/terms-of-use/
+Accessed: 2026-10-17. These are map-source geometries, not real-time hydrological observations.
+Projection: Equal Earth, exact projection.js equations, scale 176, center [500,250].
+Coordinates rounded to 0.001 SVG units, with consecutive duplicates removed.
+Repeated ne_id features are grouped as separate polygons; polygon rings and island holes are retained for SVG evenodd fill.

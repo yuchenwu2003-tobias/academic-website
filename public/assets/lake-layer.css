@@ -1,0 +1,7 @@
+/* Water overlays cover country fill and internal border strokes; island holes
+   remain transparent through evenodd. Colours match the scene's ocean layer. */
+.map-lakes{pointer-events:none}
+.map-lake{fill:#e8efeb;stroke:#e8efeb;stroke-width:.7;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+[data-map-style=cartoon] .map-lake{fill:#dcecea;stroke:#dcecea}
+[data-theme=dark] .map-lake{fill:#21352d;stroke:#21352d}
+[data-theme=dark] [data-map-style=cartoon] .map-lake{fill:#2c413c;stroke:#2c413c}

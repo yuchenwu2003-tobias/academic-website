@@ -1,0 +1,188 @@
+{
+  "profile": {
+    "name": "Tobias",
+    "handle": "yuchenwu2003-tobias",
+    "eyebrow": "欢迎，来坐一会儿。",
+    "description": "欢迎来到我的一小块互联网。这里放着我写下的文字、想再看一遍的视频，也为下一个想法留着位置。",
+    "bio": "这里是 Tobias 的个人空间。比起匆忙地展示一个完整的答案，我更想在这里慢慢记录、整理和分享。你可以读读这里的文字，看看我的视频收藏，或通过 GitHub 与我相遇。"
+  },
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "https://github.com/yuchenwu2003-tobias"
+    }
+  ],
+  "navigation": [
+    {
+      "id": "home",
+      "label": "首页",
+      "enabled": true
+    },
+    {
+      "id": "travel",
+      "label": "旅行地图",
+      "enabled": true
+    },
+    {
+      "id": "academic",
+      "label": "学术地图",
+      "enabled": true
+    },
+    {
+      "id": "interests",
+      "label": "兴趣爱好",
+      "enabled": true
+    },
+    {
+      "id": "writing",
+      "label": "文章",
+      "enabled": true
+    },
+    {
+      "id": "videos",
+      "label": "收藏视频",
+      "enabled": true
+    },
+    {
+      "id": "about",
+      "label": "关于我",
+      "enabled": true
+    },
+    {
+      "id": "projects",
+      "label": "项目",
+      "enabled": false
+    }
+  ],
+  "posts": [
+    {
+      "id": "hello-world",
+      "title": "给想法留一个位置",
+      "category": "开站说明",
+      "date": "2026-10-17",
+      "excerpt": "一个个人空间的开始。用文字记录，用收藏连接，也为还没出现的想法留一点空白。",
+      "readingMinutes": 2,
+      "featured": true,
+      "body": [
+        {
+          "type": "paragraph",
+          "text": "欢迎来到这个刚刚开始的小站。这里将以个人介绍为起点，慢慢收录文章，以及值得反复观看的视频。"
+        },
+        {
+          "type": "heading",
+          "text": "文字，让想法留下来"
+        },
+        {
+          "type": "paragraph",
+          "text": "文章可以直接放在这里，也可以链接到已经发布在其他平台的内容。无论是长文、短笔记，还是某一个问题的思考，都可以有自己的位置。"
+        },
+        {
+          "type": "heading",
+          "text": "收藏，给好内容一个去处"
+        },
+        {
+          "type": "paragraph",
+          "text": "视频收藏页已经准备好了。等第一条真实收藏加入后，它会在首页和收藏页出现；可以按主题筛选，也可以直接前往原平台观看。"
+        },
+        {
+          "type": "quote",
+          "text": "不必一次写完。让它随着时间，长成自己的样子。"
+        },
+        {
+          "type": "paragraph",
+          "text": "这篇文字是小站的开站说明。之后，更多个人故事、文章和收藏会陆续填进来。"
+        }
+      ]
+    }
+  ],
+  "videos": [],
+  "projects": [],
+  "now": [
+    {
+      "label": "写下来",
+      "text": "把零散的想法，慢慢变成文字。"
+    },
+    {
+      "label": "留住它",
+      "text": "收藏那些值得再看一遍的片刻。"
+    },
+    {
+      "label": "继续探索",
+      "text": "为新的兴趣和可能，留一点空间。"
+    }
+  ],
+  "extensionNotes": "个人介绍、站内文章、外链文章和视频收藏分别维护；项目栏目默认关闭，可随时启用。",
+  "travel": {
+    "title": "下一站，去哪里玩？",
+    "description": "山野、城市，或某个还没遇见的角落。把想去的地方，钉在这张世界地图上。",
+    "destinations": []
+  },
+  "interests": [
+    {
+      "id": "reading-writing",
+      "title": "阅读与写作",
+      "description": "给书、文字和一闪而过的想法留个位置。",
+      "topics": [
+        "阅读清单",
+        "写作片段",
+        "随手摘录"
+      ],
+      "notes": []
+    },
+    {
+      "id": "music-film",
+      "title": "音乐与影像",
+      "description": "旋律、画面，以及值得回味的片刻。",
+      "topics": [
+        "音乐与现场",
+        "电影与纪录片",
+        "值得重看的片段"
+      ],
+      "notes": []
+    },
+    {
+      "id": "sports-outdoors",
+      "title": "运动与户外",
+      "description": "走出门，给身体和心情一点新鲜空气。",
+      "topics": [
+        "散步与徒步",
+        "日常运动",
+        "户外体验"
+      ],
+      "notes": []
+    },
+    {
+      "id": "travel-nature",
+      "title": "旅行与自然",
+      "description": "远方的风景，也有身边的小小发现。",
+      "topics": [
+        "想看的风景",
+        "自然观察",
+        "旅途中的发现"
+      ],
+      "notes": []
+    },
+    {
+      "id": "technology-making",
+      "title": "科技与创造",
+      "description": "给新工具、小实验和未成形的点子留白。",
+      "topics": [
+        "有趣的工具",
+        "小项目与实验",
+        "新的学习方向"
+      ],
+      "notes": []
+    },
+    {
+      "id": "art-everyday",
+      "title": "艺术与生活",
+      "description": "收集日常里让人多看一眼的细节。",
+      "topics": [
+        "展览与设计",
+        "摄影与手作",
+        "生活里的小发现"
+      ],
+      "notes": []
+    }
+  ]
+}

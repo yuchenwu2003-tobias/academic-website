@@ -1,0 +1,52 @@
+Interactive geography uses the Equal Earth projection with Natural Earth boundaries.
+
+Equal Earth projection:
+Šavrič, Patterson & Jenny (2018), The Equal Earth map projection.
+UN initiative on equal-area maps:
+https://www.un.org/osaa/en/news/victory-africa-un-votes-resolution-correct-map
+Mathematical reference:
+https://proj.org/en/stable/operations/projections/eqearth.html
+https://github.com/d3/d3-geo/blob/main/src/projection/equalEarth.js
+
+The projection follows the equal-area approach promoted by the UN; country boundary
+data is from Natural Earth. This website is not an official United Nations map.
+The illustrations are navigation aids, not the owner's saved travel destinations.
+
+Current interactive assets: geography-data.js and geography-detail/, 177 country/area features.
+Uniform scale 176, origin [500,250], SVG viewBox 0 0 1000 500.
+
+Dataset: Natural Earth 1:110m Admin 0 - Countries
+Source: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson
+Project: https://github.com/nvkelso/natural-earth-vector
+License: Public domain; no permission or attribution required.
+Terms: https://www.naturalearthdata.com/about/terms-of-use/
+Accessed: 2026-10-17
+
+Progressive detail uses the same Natural Earth Admin 0 source at 1:50 million
+and 1:10 million scales, projected to Equal Earth. These are map scales,
+not metre-level positional accuracy. Detail is loaded only when needed.
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson
+
+Display correction for the Baikonur leased area (10m KAZ only):
+The source includes KAB / Baykonur Cosmodrome as TYPE=Lease,
+SOVEREIGNT=Kazakhstan, ADM0_ISO=KAZ, and NOTE_BRK="Leased to Russia by Kazakhstan".
+Its 65-point outer ring is exactly the reverse of KAZ polygon 0, inner ring 1.
+Our country display omits separate lease units, so that one verified matching
+inner ring is removed from the KAZ display surface to avoid exposing water colour.
+Kazakh sovereign coverage and the existing outer national boundary are retained;
+RUS geometry, other KAZ components, physical lakes and islands are unchanged.
+The raw source GeoJSON is preserved. The build verifies the exact reversed ring
+and source lease/sovereignty properties before applying this display correction.
+
+Flags: local flag-icons SVGs, MIT; see flags/LICENSE.txt and flags/SOURCES.txt.
+Antarctica uses a regional symbol, not an official national flag. Geographic
+units without an ISO2 flag use a neutral placeholder.
+
+Legacy static asset retained for compatibility: world-map.svg
+Projection: Equirectangular / plate carree, longitude [-180,180], latitude [-90,90].
+SVG viewBox: 0 0 1000 500
+x=(longitude+180)/360*1000; y=(90-latitude)/180*500.
+Each of the 177 source country features is retained as a path, including polygons and holes.
+Coordinates are rounded to 0.01 SVG units. The original antimeridian split is retained.
+The full-width south-pole edge belongs to Antarctica, closing the polygon at y=500.

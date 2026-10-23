@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="500" viewBox="0 0 520 500" fill="none">
+<defs><pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="#c7c6b9"/></pattern><pattern id="lines" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><path d="M0 0V5" stroke="#d8c4ac" stroke-width="1"/></pattern></defs>
+<path d="M55 423H470" stroke="#c3c4b7"/><path d="M82 445H438" stroke="#d8d8cd"/>
+<circle cx="273" cy="241" r="172" stroke="#d2d2c5" stroke-dasharray="3 6"/>
+<circle cx="389" cy="124" r="47" fill="#cd7147"/>
+<path d="M389 60V48M389 200V187M453 124H465M313 124H325M434 79L444 69M334 179L344 169M434 169L444 179M334 69L344 79" stroke="#cd7147" stroke-width="1.5"/>
+<path d="M103 422V245a133 133 0 0 1 266 0v177H103Z" fill="#e7e6d9"/>
+<path d="M123 422V251a113 113 0 0 1 226 0v171H123Z" fill="#f6f5f0" stroke="#bbbdad"/>
+<path d="M148 422V258a88 88 0 0 1 176 0v164H148Z" fill="url(#dots)"/>
+<path d="M165 422V271a71 71 0 0 1 142 0v151H165Z" fill="#d9dfd0"/>
+<text x="205" y="353" font-family="Georgia,serif" font-size="135" fill="#464f3e">t</text><circle cx="267" cy="341" r="9" fill="#cc7047"/>
+<path d="M86 422H388" stroke="#828777" stroke-width="2"/>
+<path d="M373 422c-1-50 14-90 41-130M394 363c-42-4-49-24-44-48 26 3 43 17 44 48ZM405 333c33-6 44-24 43-45-28 0-46 18-43 45ZM382 395c-35-3-50-22-48-47 27 0 47 18 48 47ZM383 395c36-9 51-24 50-48-27 3-45 21-50 48Z" fill="#737e62"/>
+<path d="m371 422 9-38M398 363l13-43" stroke="#56614b"/>
+<rect x="50" y="375" width="126" height="26" rx="3" fill="#c47a56" transform="rotate(-5 50 375)"/><path d="m57 386 107-9M57 393l107-9" stroke="#e7b596"/>
+<rect x="62" y="399" width="132" height="24" rx="2" fill="#a9b5a1"/><path d="M71 407h112M71 414h112" stroke="#d2d8c7"/>
+<rect x="326" y="188" width="122" height="65" rx="1" fill="#faf9f4" stroke="#c8c8bb" transform="rotate(9 326 188)"/>
+<path d="m342 211 74 12M340 222l55 9" stroke="#bbbeb0"/><circle cx="433" cy="211" r="4" fill="#d07b52"/>
+<path d="m83 178-6-13M70 184l-14-3M88 160l6-13" stroke="#7b866d" stroke-width="2"/>
+<circle cx="126" cy="117" r="4" fill="#a4ad97"/><path d="m443 398 5-5 5 5-5 5-5-5Z" fill="#b67c53"/>
+<text x="62" y="473" font-family="monospace" font-size="10" letter-spacing="3" fill="#888d7c">A SMALL SPACE, A GROWING WORLD.</text>
+</svg>

@@ -1,0 +1,12 @@
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pencil='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15Z"/></svg>';
+export {pencil as EDIT_PENCIL};
+export function renderEditableField({name,label,value='',type='url',placeholder='https://…',empty='未填写',required=false,extra='',help=''}){
+  return `<div class="profile-field" data-editable-field="${esc(name)}" data-field-empty="${esc(empty)}"><div class="profile-field-heading"><span>${esc(label)}</span><button type="button" class="profile-field-edit" data-edit-field="${esc(name)}" aria-label="${esc('编辑'+label)}" title="${esc('编辑'+label)}" aria-expanded="false">${pencil}</button></div><p class="profile-field-value" data-field-value ${value?'data-i18n-skip':''}>${esc(value||empty)}</p><div data-field-editor hidden><input name="${esc(name)}" aria-label="${esc(label)}" type="${esc(type)}" maxlength="${name==='title'?80:2000}" value="${esc(value)}" placeholder="${esc(placeholder)}" ${required?'required':''} readonly>${extra}${help?`<small>${esc(help)}</small>`:''}</div></div>`;
+}
+export function mountEditableFields(root){
+  function setOpen(field,open){if(!field)return;const editor=field.querySelector('[data-field-editor]'),input=editor.querySelector('input'),value=field.querySelector('[data-field-value]'),button=field.querySelector('[data-edit-field]');editor.hidden=!open;value.hidden=open;input.readOnly=!open;button.setAttribute('aria-expanded',String(open));if(open)input.focus();else {value.textContent=input.value||field.dataset.fieldEmpty;if(input.value)value.setAttribute('data-i18n-skip','');else value.removeAttribute('data-i18n-skip');}}
+  function onClick(event){const button=event.target.closest?.('[data-edit-field]');if(button)setOpen(button.closest('[data-editable-field]'),button.getAttribute('aria-expanded')!=='true');}
+  root.addEventListener('click',onClick);
+  return {open(name){setOpen(root.querySelector(`[data-editable-field="${name}"]`),true);},reset(){root.querySelectorAll('[data-editable-field]').forEach(field=>setOpen(field,false));},destroy(){root.removeEventListener('click',onClick);}};
+}

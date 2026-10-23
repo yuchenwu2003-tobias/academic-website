@@ -1,0 +1,41 @@
+/* Display the original photograph through a circular face-sized window. */
+.profile-photo {
+  --portrait-size: 64px;
+  position: relative;
+  display: inline-block;
+  width: var(--portrait-size);
+  height: var(--portrait-size);
+  flex: 0 0 var(--portrait-size);
+  overflow: hidden;
+  border: 1px solid #d2d8c5;
+  border-radius: 50%;
+  background: #e4e7db;
+  vertical-align: middle;
+  isolation: isolate;
+}
+.profile-photo--small { --portrait-size: 64px; }
+.profile-photo--nav { --portrait-size: 56px; }
+.profile-photo--about { --portrait-size: 168px; }
+.profile-photo > .portrait-source {
+  position: absolute;
+  display: block;
+  left: 50%;
+  top: 50%;
+  width: 900%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  transform: translate(-52.27%, -60%);
+}
+[data-theme="dark"] .profile-photo {
+  border-color: #58654d;
+  background: #29382a;
+}
+@media(max-width:700px) {
+  .profile-photo--nav { --portrait-size: 44px; }
+  .profile-photo--small { --portrait-size: 56px; }
+  .profile-photo--about { --portrait-size: 140px; }
+}

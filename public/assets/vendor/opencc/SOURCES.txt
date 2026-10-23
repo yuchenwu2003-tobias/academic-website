@@ -1,0 +1,5 @@
+OpenCC JavaScript 1.3.1, locally hosted Simplified-to-Traditional converter.
+https://github.com/nk2028/opencc-js/tree/v1.3.1
+Distribution: https://cdn.jsdelivr.net/npm/opencc-js@1.3.1/dist/esm/cn2t.js
+Code: MIT. Dictionary licensing: see THIRD_PARTY_LICENSES.md.
+No online translation service is used.
