@@ -6,4 +6,13 @@ node_modules/
 .env*
 !.env.example
 
-/dist/assets/portrait.jpg
+/node_modules/
+/.sites-runtime/
+/.wrangler/
+/.vinext/
+/dist/
+/.env*
+
+
+/public/assets/portrait.jpg
+/.next/

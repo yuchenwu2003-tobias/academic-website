@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const dist = path.join(root, 'dist');
+const dist = path.join(root, 'public');
 const errors = [];
 const registeredPages = new Set(['home', 'travel', 'academic', 'interests', 'writing', 'videos', 'about', 'projects']);
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -192,11 +192,11 @@ if (expect(isObject(site), 'site.json 必须包含配置对象。')) {
 const manifest = await jsonFile(path.join(root, '.openai', 'hosting.json'), 'hosting.json');
 if (expect(isObject(manifest), 'hosting.json 必须是对象。')) {
   text(manifest.project_id, 'hosting.json.project_id');
-  expect(isObject(manifest.static) && manifest.static.directory === 'dist', 'hosting.json.static.directory 必须是 dist。');
+  expect(manifest.static===undefined && manifest.d1==='DB', '云端站点需要 Worker 与 DB 绑定。');
 }
 
 async function localReference(reference, base, label) {
-  if (!reference || reference.startsWith('#') || reference.startsWith('//') || /^[a-z][a-z0-9+.-]*:/i.test(reference)) return;
+  if (['/api/cloud-state','/signin-with-chatgpt','/signout-with-chatgpt'].includes(reference?.split('?')[0])||!reference || reference.startsWith('#') || reference.startsWith('//') || /^[a-z][a-z0-9+.-]*:/i.test(reference)) return;
   let filename;
   try {
     const rawPath = decodeURIComponent(reference.split(/[?#]/)[0]);
@@ -234,13 +234,13 @@ async function walk(directory) {
   return lists.flat();
 }
 
-await localReference('index.html', dist, '站点入口');
-for (const filename of await walk(dist)) {
+expect((await stat(path.join(root,'web-shell.html'))).isFile(),'站点 HTML 入口必须存在。');
+for (const filename of [path.join(root,'web-shell.html'),...await walk(dist)]) {
   const extension = path.extname(filename).toLowerCase();
   if (!['.html', '.css', '.js', '.svg'].includes(extension)) continue;
   const source = await readFile(filename, 'utf8');
   const label = path.relative(root, filename);
-  const attributeBase = extension === '.js' ? dist : path.dirname(filename);
+  const attributeBase = extension === '.js'||filename===path.join(root,'web-shell.html') ? dist : path.dirname(filename);
   for (const match of source.matchAll(/\b(?:src|href|poster)\s*=\s*["']([^"']+)["']/gi)) {
     if (match[1].includes('${')) continue;
     await localReference(match[1], attributeBase, label);

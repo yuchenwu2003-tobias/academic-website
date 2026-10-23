@@ -1,19 +1,20 @@
 # Tobias 个人网站
 
-首页由个人介绍、旅行地图预览两块组成；完整旅行地图、兴趣爱好、文章与视频收藏通过独立入口访问。网站使用纯 HTML、CSS 和原生 JavaScript，个人内容集中保存在 `dist/content/site.json`，地图与目的地目录保存在独立资源文件中，没有构建依赖。
+首页由个人介绍、旅行地图预览两块组成；完整旅行地图、兴趣爱好、文章与视频收藏通过独立入口访问。前端保留 HTML、CSS 和原生 JavaScript；Vinext Worker 提供登录后的云端记录接口。个人展示内容保存在 `public/content/site.json`，地图与目的地目录保存在独立资源文件中。
 
 显示姓名为 **Tobias**，可随时修改。默认导航为首页、旅行地图（含心愿评分子页）、学术地图、兴趣爱好、文章、收藏视频与关于我；项目栏目默认隐藏，可按需启用。
 
-右上角的白昼 / 黑夜按钮可切换主题，并会记住当前浏览器的选择。
+右上角可选择苔绿、海蓝、紫雾、暖陶、石墨五种配色，每种均支持白昼 / 黑夜。配色与语言偏好保存在当前设备。
 
-语言切换提供简体中文、繁體中文和 English，选择保存在当前浏览器。翻译在本地完成，覆盖界面和预置地名；文章、个人标记的名称与备注保留原文。新增界面文案时按用途维护 `dist/assets/i18n-messages.js`、`i18n-destinations.js` 或 `i18n-place-search.js`，由 `i18n.js` 统一处理；不要将个人记录或在线搜索结果写进翻译字典。
+语言切换提供简体中文、繁體中文和 English，选择保存在当前浏览器。翻译在本地完成，覆盖界面和预置地名；文章、个人标记的名称与备注保留原文。新增界面文案时按用途维护 `public/assets/i18n-messages.js`、`i18n-destinations.js` 或 `i18n-place-search.js`，由 `i18n.js` 统一处理；不要将个人记录或在线搜索结果写进翻译字典。
 
 ## 本地运行与检查
 
-安装 Node.js 后，在项目目录运行：
+安装 Node.js 后，首次安装依赖，再启动框架开发服务：
 
 ```sh
-node scripts/serve.mjs
+npm ci
+npm run dev -- --hostname 127.0.0.1 --port 5173
 ```
 
 打开终端显示的地址预览，修改后刷新页面。提交或部署前运行：
@@ -29,35 +30,39 @@ node scripts/check.mjs
 
 | 位置 | 用途 |
 | --- | --- |
-| `dist/` | 可直接部署的网站文件 |
-| `dist/content/site.json` | 个人资料、发布的旅行地点、链接、导航、文章、视频与作品 |
-| `dist/assets/geography-data.js`、`geography-detail/` | 世界概览、区域与高清国界数据 |
-| `dist/assets/destination-catalog.js` | 250 个预置城市与地标坐标 |
-| `dist/assets/destinations-attribution.txt` | GeoNames 城市坐标来源与 CC BY 4.0 许可 |
-| `dist/assets/place-search.js`、`i18n-place-search.js` | 地名搜索添加、在线结果与三语言提示 |
-| `dist/assets/landmark-catalog.js`、`landmark-sprites-v3.js`、`travel-landmarks-atlas-v3.png` | 36 幅卡通地标、独立取图区域、地理坐标与优先级 |
-| `dist/assets/country-flags.js`、`flags/` | 国家与地区旗帜映射、SVG 与许可 |
-| `dist/assets/i18n.js` | 三语言界面与预置地名翻译 |
-| `dist/assets/country-destinations.js` | 179 个国家／地区收藏入口与定位 |
-| `dist/assets/pin-icons.js` | 城市水滴、国家旗杆与居住五角星 |
-| `dist/assets/place-info.js`、`place-media.js`、`travel-guides.js` | 地点资料卡、百科照片与旅行攻略详情 |
-| `dist/assets/travel-ratings.js` | 国家与城市分开的心愿评分 |
-| `dist/assets/academic-model.js`、`academic-map.js`、`academic-globe.js` | 研究组独立收藏、三种学术地图视图 |
-| `dist/assets/earth-day.jpg`、`earth-night.jpg`、`earth-attribution.txt` | NASA 白天／夜景合成影像和来源 |
-| `dist/assets/portrait.css` | 头像显示大小与脸部裁切位置 |
-| `dist/assets/world-map.svg` | 保留的旧静态兼容底图 |
-| `dist/assets/map-attribution.txt` | 地图数据来源与公共领域许可说明 |
-| `scripts/serve.mjs` | 本地预览服务 |
+| `public/`、`web-shell.html` | 静态资源与原生前端页面 |
+| `app/route.ts`、`app/api/cloud-state/route.ts` | 页面与云端记录接口 |
+| `server/cloud-state.mjs` | 账号隔离、验证、增量合并与幂等写入 |
+| `db/schema.ts`、`drizzle/` | D1 数据库结构与版本迁移 |
+| `dist/` | 框架生成的部署文件，不直接编辑 |
+| `public/content/site.json` | 个人资料、发布的旅行地点、链接、导航、文章、视频与作品 |
+| `public/assets/geography-data.js`、`geography-detail/` | 世界概览、区域与高清国界数据 |
+| `public/assets/destination-catalog.js` | 250 个预置城市与地标坐标 |
+| `public/assets/destinations-attribution.txt` | GeoNames 城市坐标来源与 CC BY 4.0 许可 |
+| `public/assets/place-search.js`、`i18n-place-search.js` | 地名搜索添加、在线结果与三语言提示 |
+| `public/assets/landmark-catalog.js`、`landmark-sprites-v3.js`、`travel-landmarks-atlas-v3.png` | 36 幅卡通地标、独立取图区域、地理坐标与优先级 |
+| `public/assets/country-flags.js`、`flags/` | 国家与地区旗帜映射、SVG 与许可 |
+| `public/assets/i18n.js` | 三语言界面与预置地名翻译 |
+| `public/assets/country-destinations.js` | 179 个国家／地区收藏入口与定位 |
+| `public/assets/pin-icons.js` | 城市水滴、国家旗杆与居住五角星 |
+| `public/assets/place-info.js`、`place-media.js`、`travel-guides.js` | 地点资料卡、百科照片与旅行攻略详情 |
+| `public/assets/travel-ratings.js` | 国家与城市分开的心愿评分 |
+| `public/assets/academic-model.js`、`academic-map.js`、`academic-globe.js` | 研究组独立收藏、三种学术地图视图 |
+| `public/assets/earth-day.jpg`、`earth-night.jpg`、`earth-attribution.txt` | NASA 白天／夜景合成影像和来源 |
+| `public/assets/portrait.css` | 头像显示大小与脸部裁切位置 |
+| `public/assets/world-map.svg` | 保留的旧静态兼容底图 |
+| `public/assets/map-attribution.txt` | 地图数据来源与公共领域许可说明 |
+| `scripts/run-framework.mjs` | 框架开发／构建入口 |
 | `scripts/check.mjs` | 项目检查 |
 | `README.md` | 内容维护与扩展说明 |
 
-生产环境直接托管 `dist/`。网站使用 hash 路由，例如 `/#/writing`，无需配置服务器路由重写。
+生产环境部署 Vinext Worker 和 D1（`DB` 绑定），不能仅发布静态文件。使用 Sites 提供的 `scripts/build-site.mjs` 构建，再由 Sites 源码与发布助手打包部署；构建产物及数据库迁移一同打包。网站主界面继续使用 hash 路由，例如 `/#/writing`。
 
 源码备份仓库为 <https://github.com/yuchenwu2003-tobias/academic-website>。推送源码后是否自动部署，取决于后续的托管配置。
 
 ## 修改个人资料
 
-编辑 `dist/content/site.json` 中的 `profile`：
+编辑 `public/content/site.json` 中的 `profile`：
 
 ```json
 {
@@ -88,7 +93,7 @@ node scripts/check.mjs
 }
 ```
 
-默认只配置 GitHub；添加邮箱链接后，关于页才会显示邮箱入口。`dist/` 中的内容会公开，请勿放入私密资料或密钥。
+默认只配置 GitHub；添加邮箱链接后，关于页才会显示邮箱入口。`public/` 中的内容会随网站发布，请勿放入私密记录或密钥。公开 GitHub 源码另行排除头像及全部浏览器／数据库记录。
 
 ## 使用与编辑旅行地图
 
@@ -108,7 +113,7 @@ node scripts/check.mjs
 
 浏览器不能保存时，页面会明确提示：本次修改暂存在当前页面，需导出地图备份；看到已添加状态不代表已成功写入持久存储。
 
-若要把地点发布给所有有权访问网站的访问者，在 `dist/content/site.json` 的 `travel.destinations` 中配置地点并重新发布网站。`travel.title` 与 `travel.description` 设置旅行内容的标题和介绍：
+若要把地点发布给所有有权访问网站的访问者，在 `public/content/site.json` 的 `travel.destinations` 中配置地点并重新发布网站。`travel.title` 与 `travel.description` 设置旅行内容的标题和介绍：
 
 ```json
 {
@@ -172,7 +177,7 @@ node scripts/check.mjs
 
 国界按缩放逐级加载 **110m 世界概览 → 50m 区域细节 → 10m 高清细节**。这里的 `m` 表示 million：对应约 1:1.1 亿、1:5000 万和 1:1000 万地图比例尺，**不是 110 米／50 米／10 米定位精度**。路径为矢量，放大时同时换用更细的轮廓；加载失败会保留可用轮廓并显示提示。177 个地理单元及其路由 ID 保持一致。
 
-哈萨克斯坦高清轮廓对拜科努尔作了一处显示修正：源数据将它单列为哈萨克斯坦主权下的租借区，并在国家图形中留下对应孔洞。本站核对租借区外环与该孔逐点反向一致后，将这一处孔并回哈萨克斯坦地表，避免露出水面底色；没有新增主权国界或国家入口。原始来源、租借性质及修正范围记录在 `dist/assets/map-attribution.txt`，其他地形和湖泊数据保持原样。
+哈萨克斯坦高清轮廓对拜科努尔作了一处显示修正：源数据将它单列为哈萨克斯坦主权下的租借区，并在国家图形中留下对应孔洞。本站核对租借区外环与该孔逐点反向一致后，将这一处孔并回哈萨克斯坦地表，避免露出水面底色；没有新增主权国界或国家入口。原始来源、租借性质及修正范围记录在 `public/assets/map-attribution.txt`，其他地形和湖泊数据保持原样。
 
 “地理地图”与“插画地图”共用坐标和个人标记。插画模式使用 **36 幅新版 3D 卡通地标与风景**；每幅插画的底部中心和小圆点始终锚定真实经纬度，缩放与拖拽时不做位置偏移。遇到其他插画、文字或控件遮挡时，按优先级隐藏部分插画，放大后有足够空间再显示。插画仅用于辨认和探索地点，不代表本人想去或去过；它们与候选目录、个人 📌 分开计数。
 
@@ -353,7 +358,7 @@ node scripts/check.mjs
 | `technology-making` | 科技与创造 |
 | `art-everyday` | 艺术与生活 |
 
-内容保存在 `dist/content/site.json` 的 `interests` 数组。每项包含稳定的 `id`、显示标题 `title`、说明 `description`、可展开的方向示例 `topics` 数组，以及真实记录 `notes` 数组。向 `notes` 添加文字后，卡片会显示记录及数量；空数组显示“待补充”。修改这些内容并重新发布即可更新页面，访客不能直接在页面编辑，也不会写入旅行地图的本地标记存储。
+内容保存在 `public/content/site.json` 的 `interests` 数组。每项包含稳定的 `id`、显示标题 `title`、说明 `description`、可展开的方向示例 `topics` 数组，以及真实记录 `notes` 数组。向 `notes` 添加文字后，卡片会显示记录及数量；空数组显示“待补充”。修改这些内容并重新发布即可更新页面，访客不能直接在页面编辑，也不会写入旅行地图的本地标记存储。
 
 
 ### 居住与想要居住
@@ -368,7 +373,7 @@ node scripts/check.mjs
 
 马特洪峰与多洛米蒂三峰山使用各自独立的透明 PNG，保持原始生成像素。`landmark-sprites-v3.js` 的 source box 只定义显示区域，不合并到旧图集中。马特洪峰在瑞士和意大利区域均可显示；多洛米蒂使用三峰山代表景观，展示点为 46.6191, 12.3030。两图沿用真实坐标锚点、缩放分层与碰撞避让。图库及可添加的目的地目录分别增加到 38 项和 252 项。
 
-图像由内置 ImageGen 生成，提示与来源见 `dist/assets/alpine-illustrations-attribution.txt`。
+图像由内置 ImageGen 生成，提示与来源见 `public/assets/alpine-illustrations-attribution.txt`。
 
 居住时间支持“离开期间”：在资料卡点击添加，填写离开和返回月份，保存为 `residenceBreaks:[{start:"YYYY-MM",end:"YYYY-MM"}]`。计算时合并重叠期间，仅扣除居住起止范围内的月份，不会重复扣除；旅行地图与学术地图使用相同净时长。起止月份与扣除记录均保留在版本 1 JSON 备份中。
 
@@ -421,3 +426,14 @@ node scripts/check.mjs
 自动关联先读取确切地点条目，兼容重定向、移动版和 zh-hans／zh-hant 等中文链接。对插画名称和重名地点使用 assets/wikipedia-places.js 的公开条目映射；不把搜索首项直接当成目的地。消歧义页不会成为自动图片来源，搜索回退须有相近坐标验证，无法确认时保留搜索入口。手动百科链接和图片仍优先；国家旅游图片也采用确切条目。
 
 添加地点的搜索结果可直接打开编辑资料卡：新地点一次添加后立即填写介绍、攻略、评分与旅行标签；已标记地点直接查看资料，不重复创建。地点名称、图片链接和 Wikipedia 链接继续使用紧邻标题的小铅笔。
+
+
+## 登录与跨设备记录
+
+点击右上角云端状态可查看账号、云端数量与最近连接时间，未登录时通过 Sites 原生“使用 ChatGPT 登录”进入。同一个 ChatGPT 账号可在电脑、手机和平板读取同一份记录；网站访问权限继续保持原有私有范围。登录由 Sites 托管，不收集密码。
+
+云端保存地点和国家、旅行标签、独立评分、居住区间、个人介绍、照片与百科链接、攻略、隐藏与手动显示设置、行程和研究组。首次连接先保留本地备份，再合并现有浏览器记录；云端已有的同名 ID 优先，明确排队的本地编辑仍保留。没有使用过此站的新设备直接读取云端。
+
+浏览器缓存用于离线操作；联网后自动补传。顶部“已同步云端”表示当前修改已确认保存。关闭网页前应等待该状态。多设备修改不同字段时分别合并，修改同一字段以服务器最后收到的修改为准。删除使用墓碑记录，旧设备缓存不会自动恢复已删除地点。每次请求有稳定编号，网络重试不会重复覆盖新记录。切换账号时隔离各账号的待传队列并保留本机备份。
+
+`/api/cloud-state` 只接受平台可信的登录身份，并按账号隔离 D1 数据；写操作限制同源、JSON 格式和字段大小。数据库结构只通过 `drizzle/` 迁移，不能在请求期间建表。`public/assets/cloud-sync.js` 负责缓存、首次迁移、队列和连接状态；`cloud-model.js` 提供可测试的纯数据合并逻辑。仍可手动导出／导入记录备份；导出文件包含个人资料，不应提交到源码仓库。
